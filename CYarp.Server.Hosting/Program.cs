@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,13 +11,19 @@ namespace CYarp.Server.Hosting
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddCYarp();
-            builder.Services.AddAuthentication();
+            builder.Services.AddAuthorization();
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
             var app = builder.Build();
-       
-            app.UseAuthentication();
-            app.UseCYarp();
 
+            app.UseAuthentication();
+            app.UseCYarpClient();
+
+            app.UseAuthorization();
+
+            app.Map("/{**any}", CYarpHandler.InvokeAsync)
+                //.RequireAuthorization()
+                ;
             app.Run();
         }
     }

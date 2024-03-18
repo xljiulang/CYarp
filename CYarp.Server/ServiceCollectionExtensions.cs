@@ -21,7 +21,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<CYarpMiddleware>();
             services.TryAddSingleton<CYarpClientMiddleware>();
             services.TryAddSingleton<TunnelStreamMiddleware>();
-            services.TryAddSingleton<HttpForwardMiddleware>();
 
             return services.AddHttpForwarder();
         }

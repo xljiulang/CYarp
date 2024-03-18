@@ -13,8 +13,8 @@ namespace CYarp.Server.Configs
         public string[] AllowRoles { get; init; } = Array.Empty<string>();
 
         /// <summary>
-        /// ClientId的ClaimType，默认为ClientId
+        /// ClientId的ClaimType，默认为http://schemas.xmlsoap.org/ws/2005/05/identity/claims/sid
         /// </summary>
-        public string ClientIdClaimType { get; init; } = "ClientId";
+        public string ClientIdClaimType { get; init; } = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/sid";
     }
 }

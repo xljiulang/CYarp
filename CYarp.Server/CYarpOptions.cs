@@ -13,11 +13,6 @@ namespace CYarp.Server
         public AuthorizationConfig ClientAuthorization { get; init; } = new AuthorizationConfig();
 
         /// <summary>
-        /// 转发器授权验证配置
-        /// </summary>
-        public AuthorizationConfig ForwardAuthorization { get; init; } = new AuthorizationConfig();
-
-        /// <summary>
         /// 客户端TcpKeepAlive配置
         /// </summary>
         public TcpKeepAliveConfig ClientTcpKeepAlive { get; init; } = new TcpKeepAliveConfig();
