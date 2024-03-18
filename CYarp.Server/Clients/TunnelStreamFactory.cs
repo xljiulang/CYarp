@@ -12,7 +12,7 @@ namespace CYarp.Server.Clients
     sealed partial class TunnelStreamFactory
     {
         private readonly ILogger<TunnelStreamFactory> logger;
-        private readonly TimeSpan timeout = TimeSpan.FromSeconds(10d);
+        private readonly TimeSpan handshakeTimeout = TimeSpan.FromSeconds(10d);
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<TunnelStream>> tunnelStreamCompletionSources = new();
 
         public TunnelStreamFactory(ILogger<TunnelStreamFactory> logger)
@@ -26,17 +26,16 @@ namespace CYarp.Server.Clients
         /// <param name="client"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async ValueTask<TunnelStream> CreateAsync(IClient client, CancellationToken cancellationToken)
+        public async Task<TunnelStream> CreateAsync(IClient client, CancellationToken cancellationToken)
         {
             var tunnelId = Guid.NewGuid();
             var tunnelCompletionSource = new TaskCompletionSource<TunnelStream>();
-            var registration = cancellationToken.Register(() => tunnelCompletionSource.TrySetException(new OperationCanceledException()));
             this.tunnelStreamCompletionSources.TryAdd(tunnelId, tunnelCompletionSource);
 
             try
             {
                 await client.CreateTunnelAsync(tunnelId, cancellationToken);
-                var tunnelStream = await tunnelCompletionSource.Task.WaitAsync(this.timeout, cancellationToken);
+                var tunnelStream = await tunnelCompletionSource.Task.WaitAsync(this.handshakeTimeout, cancellationToken);
 
                 Log.LogTunnelCreated(this.logger, client.Id, tunnelId);
                 return tunnelStream;
@@ -48,7 +47,6 @@ namespace CYarp.Server.Clients
             }
             finally
             {
-                registration.Dispose();
                 this.tunnelStreamCompletionSources.TryRemove(tunnelId, out _);
             }
         }
