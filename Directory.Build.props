@@ -1,0 +1,17 @@
+<Project>	
+	<PropertyGroup>
+		<Version>1.0.0-beta1</Version>
+	    <Nullable>enable</Nullable>		
+		<Copyright>Copyright © laojiu 2024-2024</Copyright> 
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Authors>laojiu</Authors>
+		<Company>laojiu</Company>		
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/xljiulang/CYarp</PackageProjectUrl>	
+	</PropertyGroup>
+ 
+</Project>

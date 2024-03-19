@@ -1,10 +1,11 @@
 ## CYarp
-基于YArp的http内网穿透中间件。支持tcp、http/2.0或http/3.0作为http/1.1的传输层
+基于Yarp的http内网穿透中间件。支持tcp、http/2.0或http/3.0作为http/1.1的传输层
 
 ![cyarp](cyarp.png)
 
 
-### 1 示例
+### 1 如何使用
+#### 1.1 Demo项目
 1. 运行CYarp.Hosting
 2. 在PostMan请求到`http://localhost`，此时收到401授权未通过
 3. 添加PostMan的Auth，选择Bearer Token，放如下的httpClient的Token
@@ -15,7 +16,64 @@
 eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJNb2JpbGUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9zaWQiOiJNb2JpbGUwMDEiLCJDbGllbnRJZCI6IkNsaWVudDAwMSIsImlhdCI6MTcxMDgxNjQ1MiwibmJmIjoxNzEwODE2NDUyLCJleHAiOjI3MTA5MDI4NTJ9.aC-9pVDvyhXsUub-wzZVttfc34wMtFrARDlUj3BYNFhy3Axr0U93CV_QFUP-m6DYI6gK0HkxUr6xlkWwItIFzvS95TsoMXOARVXlVQEP18_wQRQ0G3WRMmNJ_uElJ4uIcrha_Dr4e0cp38olHdABQgOXZgUNHFAHCY3rqtn6-gyTaTu6qAgoj2imi4tsOYFF_OPrCNkRoJavubzDTTXRB95cGz5kxzTSDdWCuIaktNsWN7WDK864VKyVgwca6ueQJogidvES_x26TZuLF6VNhYEkM6UjUZtT8WiD3nBhi2_dVS7BODMLfSyiFa68k1NK50DDfnYgiFU6Clb24Ra-2A
 ```
 
-### 2 协议
+#### 2.1 开发指南
+> 服务端开发
+
+CYarp设计为asp.netcore的一个http中间件，其依赖于Authentication身份认证中间件，使用如下方法进行注册和中间件的配置。
+
+```c#
+builder.Services.AddCYarp(cyarp=>
+{
+    ...
+});
+```
+
+中间件配置顺序如下：
+```c#
+...
+app.UseAuthentication();
+...
+app.UseCYarp();
+...
+```
+
+最后在Controller、minapi的处理者或中间件中处理http转发
+```c#
+// 请求者的授权验证
+[Authorize(Roles = "Mobile")]
+public class CYarpController : ControllerBase
+{ 
+    private static readonly string clientIdClaimType = "ClientId";
+
+    /// <summary>
+    /// 处理cyarp
+    /// 核心操作是从请求上下文获取clientId
+    /// 然后使用clientId从clientManager获取client来转发http
+    /// </summary>
+    /// <param name="clientManager"></param>
+    /// <returns></returns>
+    [Route("/{**cyarp}")]
+    public async Task InvokeAsync([FromServices] IClientManager clientManager)
+    {
+        var clientId = this.User.FindFirstValue(clientIdClaimType);
+        if (clientId != null && clientManager.TryGetValue(clientId, out var client))
+        {
+            this.Request.Headers.Remove(HeaderNames.Authorization);
+            await client.ForwardHttpAsync(this.HttpContext);
+        }
+        else
+        {
+            this.Response.StatusCode = StatusCodes.Status502BadGateway;
+        }
+    }
+}
+```
+
+> 客户端开发
+
+使用`CYary.Client.CYarpClient`
+
+### 2 连接协议
 #### 2.1 Client握手协议
 > http/1.1
 
