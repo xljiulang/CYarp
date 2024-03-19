@@ -21,6 +21,12 @@ namespace CYarp.Hosting
             this.clientManager = clientManager;
         }
 
+        /// <summary>
+        /// 处理cyarp
+        /// 核心操作是从请求上下文获取clientId
+        /// 然后使用client从clientManager获取client来转发http
+        /// </summary>
+        /// <returns></returns>
         [Route("/{**cyarp}")]
         public async Task InvokeAsync()
         {
