@@ -9,6 +9,7 @@ namespace CYarp.Server.Hosting
     sealed partial class CYarpHandler
     {
         private const string clientIdHeaderName = "Client-Id";
+
         public static async Task<IResult> InvokeAsync(
             HttpContext httpContext,
             IClientManager clientManager,

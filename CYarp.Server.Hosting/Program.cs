@@ -17,7 +17,7 @@ namespace CYarp.Server.Hosting
             var app = builder.Build();
 
             app.UseAuthentication();
-            app.UseCYarpClient();
+            app.UseCYarp();
 
             app.UseAuthorization();
 

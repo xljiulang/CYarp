@@ -48,7 +48,7 @@ namespace CYarp.Server.Middlewares
             this.yarpOptions = yarpOptions;
             this.logger = logger;
         }
- 
+
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
@@ -68,11 +68,11 @@ namespace CYarp.Server.Middlewares
             }
 
             // clientId参数验证
-            var options = yarpOptions.CurrentValue.ClientAuthorization;
-            var clientId = user.FindFirstValue(options.ClientIdClaimType);
+            var options = yarpOptions.CurrentValue;
+            var clientId = user.FindFirstValue(options.ClientAuthorization.ClientIdClaimType);
             if (string.IsNullOrEmpty(clientId))
             {
-                Log.ClientIdClaimTypeIsRequired(this.logger, options.ClientIdClaimType);
+                Log.ClientIdClaimTypeIsRequired(this.logger, options.ClientAuthorization.ClientIdClaimType);
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
@@ -86,7 +86,7 @@ namespace CYarp.Server.Middlewares
             }
 
             // 角色授权验证
-            if (options.AllowRoles.Length > 0 && options.AllowRoles.Any(user.IsInRole) == false)
+            if (options.ClientAuthorization.AllowRoles.Length > 0 && options.ClientAuthorization.AllowRoles.Any(user.IsInRole) == false)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
@@ -96,11 +96,12 @@ namespace CYarp.Server.Middlewares
             var socketFeature = context.Features.Get<IConnectionSocketFeature>();
             if (socketFeature != null)
             {
-                this.yarpOptions.CurrentValue.ClientTcpKeepAlive.SetTcpKeepAlive(socketFeature.Socket);
+                options.ClientTcpKeepAlive.SetTcpKeepAlive(socketFeature.Socket);
             }
 
             var clientStream = await cyarpFeature.AcceptAsync();
-            using var cyarpClient = new CYarpClient(clientStream, httpForwarder, tunnelStreamFactory, clientId, clientDestination);
+            using var cyarpClient = new CYarpClient(clientStream, options.ClientHttpHandler, httpForwarder, tunnelStreamFactory, clientId, clientDestination);
+
             if (await this.clientManager.AddAsync(cyarpClient))
             {
                 await cyarpClient.WaitForCloseAsync();

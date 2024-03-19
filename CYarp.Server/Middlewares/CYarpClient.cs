@@ -1,4 +1,5 @@
 ﻿using CYarp.Server.Clients;
+using CYarp.Server.Configs;
 using System;
 using System.IO;
 using System.Text;
@@ -14,10 +15,11 @@ namespace CYarp.Server.Middlewares
 
         public CYarpClient(
             Stream stream,
+            HttpHandlerConfig httpHandlerConfig,
             IHttpForwarder httpForwarder,
             TunnelStreamFactory tunnelStreamFactory,
             string clientId,
-            Uri clientDestination) : base(httpForwarder, tunnelStreamFactory, clientId, clientDestination)
+            Uri clientDestination) : base(httpHandlerConfig, httpForwarder, tunnelStreamFactory, clientId, clientDestination)
         {
             this.stream = stream;
         }

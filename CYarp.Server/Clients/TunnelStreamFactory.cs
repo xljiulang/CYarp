@@ -12,7 +12,6 @@ namespace CYarp.Server.Clients
     sealed partial class TunnelStreamFactory
     {
         private readonly ILogger<TunnelStreamFactory> logger;
-        private readonly TimeSpan handshakeTimeout = TimeSpan.FromSeconds(10d);
         private readonly ConcurrentDictionary<Guid, TaskCompletionSource<TunnelStream>> tunnelStreamCompletionSources = new();
 
         public TunnelStreamFactory(ILogger<TunnelStreamFactory> logger)
@@ -35,7 +34,7 @@ namespace CYarp.Server.Clients
             try
             {
                 await client.CreateTunnelAsync(tunnelId, cancellationToken);
-                var tunnelStream = await tunnelCompletionSource.Task.WaitAsync(this.handshakeTimeout, cancellationToken);
+                var tunnelStream = await tunnelCompletionSource.Task.WaitAsync(cancellationToken);
 
                 Log.LogTunnelCreated(this.logger, client.Id, tunnelId);
                 return tunnelStream;

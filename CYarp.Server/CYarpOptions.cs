@@ -16,5 +16,10 @@ namespace CYarp.Server
         /// 客户端TcpKeepAlive配置
         /// </summary>
         public TcpKeepAliveConfig ClientTcpKeepAlive { get; init; } = new TcpKeepAliveConfig();
+
+        /// <summary>
+        /// 客户端的HttpHandler配置
+        /// </summary>
+        public HttpHandlerConfig ClientHttpHandler { get; init; } = new HttpHandlerConfig();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CYarp.Server.Configs;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Net.Http;
 using System.Threading;
@@ -13,38 +14,34 @@ namespace CYarp.Server.Clients
     abstract class ClientBase : IClient
     {
         private readonly IHttpForwarder httpForwarder;
-        private readonly Lazy<HttpTunnelHandler> httpTunnelHandlerLazy;
+        private readonly Lazy<ClientHttpHandler> httpHandlerLazy;
 
         public string Id { get; }
         public Uri Destination { get; }
 
         public ClientBase(
+            HttpHandlerConfig httpHandlerConfig,
             IHttpForwarder httpForwarder,
             TunnelStreamFactory tunnelStreamFactory,
             string clientId,
             Uri clientDestination)
         {
             this.httpForwarder = httpForwarder;
-            httpTunnelHandlerLazy = new Lazy<HttpTunnelHandler>(() => new HttpTunnelHandler(tunnelStreamFactory, this));
+            this.httpHandlerLazy = new Lazy<ClientHttpHandler>(() => new ClientHttpHandler(httpHandlerConfig, tunnelStreamFactory, this));
 
-            Id = clientId;
-            Destination = clientDestination;
+            this.Id = clientId;
+            this.Destination = clientDestination;
         }
 
-        /// <summary>
-        /// 请求创建tunnel
-        /// </summary>
-        /// <param name="tunnelId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+
         public abstract Task CreateTunnelAsync(Guid tunnelId, CancellationToken cancellationToken = default);
 
 
-        public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context)
+        public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, ForwarderRequestConfig? requestConfig = default, HttpTransformer? transformer = default)
         {
-            var httpHandler = httpTunnelHandlerLazy.Value;
+            var httpHandler = httpHandlerLazy.Value;
             var httpClient = new HttpMessageInvoker(httpHandler, disposeHandler: false);
-            return httpForwarder.SendAsync(context, Destination.OriginalString, httpClient, ForwarderRequestConfig.Empty, HttpTransformer.Empty);
+            return this.httpForwarder.SendAsync(context, this.Destination.OriginalString, httpClient, requestConfig ?? ForwarderRequestConfig.Empty, transformer ?? HttpTransformer.Empty);
         }
 
         public abstract Task WaitForCloseAsync();
@@ -52,15 +49,15 @@ namespace CYarp.Server.Clients
 
         public virtual void Dispose()
         {
-            if (httpTunnelHandlerLazy.IsValueCreated)
+            if (this.httpHandlerLazy.IsValueCreated)
             {
-                httpTunnelHandlerLazy.Value.Dispose();
+                this.httpHandlerLazy.Value.Dispose();
             }
         }
 
         public override string ToString()
         {
-            return Id;
+            return this.Id;
         }
     }
 }

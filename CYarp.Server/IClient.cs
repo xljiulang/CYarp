@@ -33,8 +33,10 @@ namespace CYarp.Server
         /// 转发http请求
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="requestConfig"></param>
+        /// <param name="transformer"></param>
         /// <returns></returns>
-        ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context);
+        ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, ForwarderRequestConfig? requestConfig = default, HttpTransformer? transformer = default);
 
         /// <summary>
         /// 等待直到关闭
