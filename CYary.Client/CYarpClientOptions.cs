@@ -12,40 +12,46 @@ namespace CYary.Client
         /// CYarp服务器Uri
         /// </summary>
         [AllowNull]
-        public Uri CYarpServer { get; set; }
+        public Uri ServerUri { get; set; }
 
         /// <summary>
         /// 目标服务器Uri
         /// </summary>
         [AllowNull]
-        public Uri Destination { get; set; }
+        public Uri TargetUri { get; set; }
 
         /// <summary>
         /// 连接到CYarp服务器的Authorization请求头
         /// </summary>
         public string Authorization { get; set; } = string.Empty;
 
+        /// <summary>
+        /// 与server或target的连接超时时长
+        /// 默认为30s
+        /// </summary>
+        public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
 
         public void Validate()
         {
-            if (this.Destination == null)
+            if (this.TargetUri == null)
             {
-                throw new ArgumentNullException(nameof(this.Destination));
+                throw new ArgumentNullException(nameof(this.TargetUri));
             }
 
-            if (this.Destination.Scheme != Uri.UriSchemeHttp && this.Destination.Scheme != Uri.UriSchemeHttps)
+            if (this.TargetUri.Scheme != Uri.UriSchemeHttp && this.TargetUri.Scheme != Uri.UriSchemeHttps)
             {
-                throw new ArgumentException("Uri scheme must be http or https", nameof(Destination));
+                throw new ArgumentException("Uri scheme must be http or https", nameof(TargetUri));
             }
 
-            if (this.CYarpServer == null)
+            if (this.ServerUri == null)
             {
-                throw new ArgumentNullException(nameof(CYarpServer));
+                throw new ArgumentNullException(nameof(ServerUri));
             }
 
-            if (this.CYarpServer.Scheme != Uri.UriSchemeHttp && this.CYarpServer.Scheme != Uri.UriSchemeHttps)
+            if (this.ServerUri.Scheme != Uri.UriSchemeHttp && this.ServerUri.Scheme != Uri.UriSchemeHttps)
             {
-                throw new ArgumentException("Uri scheme must be http or https", nameof(CYarpServer));
+                throw new ArgumentException("Uri scheme must be http or https", nameof(ServerUri));
             }
 
             if (string.IsNullOrEmpty(Authorization))

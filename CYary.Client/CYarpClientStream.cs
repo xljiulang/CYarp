@@ -7,15 +7,19 @@ namespace CYary.Client
 {
     sealed class CYarpClientStream : DelegatingStream
     {
-        public CYarpClientStream(Stream inner)
+        public Version Version { get; }
+
+        public CYarpClientStream(Stream inner, Version version)
             : base(inner)
         {
+            this.Version = version;
         }
+
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             await base.WriteAsync(source, cancellationToken);
-            await FlushAsync(cancellationToken);
+            await this.FlushAsync(cancellationToken);
         }
 
         protected override void Dispose(bool disposing)
