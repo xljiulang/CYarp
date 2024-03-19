@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using CYarp.Server;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace CYarp.Server.Hosting
+namespace CYarp.Hosting
 {
     [Authorize(Roles = "Mobile")]
     public class CYarpController : ControllerBase

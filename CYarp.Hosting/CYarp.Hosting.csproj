@@ -12,6 +12,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\CYarp.Server\CYarp.Server.csproj" />
+		<ProjectReference Include="..\CYary.Client\CYary.Client.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

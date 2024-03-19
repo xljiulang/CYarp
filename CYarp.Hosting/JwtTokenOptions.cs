@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace CYarp.Server.Hosting
+namespace CYarp.Hosting
 {
     /// <summary>
     /// 表示token选项

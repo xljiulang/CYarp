@@ -1,9 +1,11 @@
+using CYarp.Server;
+using CYary.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace CYarp.Server.Hosting
+namespace CYarp.Hosting
 {
     public class Program
     {
@@ -13,6 +15,9 @@ namespace CYarp.Server.Hosting
 
             builder.Services.AddCYarp();
             builder.Services.Configure<CYarpOptions>(builder.Configuration.GetSection(nameof(CYarpOptions)));
+
+            builder.Services.AddHostedService<CYarpClientHostedService>();
+            builder.Services.Configure<CYarpClientOptions>(builder.Configuration.GetSection(nameof(CYarpClientOptions)));
 
             builder.Services.AddControllers();
             builder.Services.AddAuthorization();
