@@ -20,12 +20,12 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3d
 > http/1.1
 
 客户端发起如下请求
-```http
+```
 Get / HTTP/1.1
 Connection: Upgrade
 Upgrade: CYarp
 Authorization：{客户端身份}
-CYarp-Destination = {URI}
+CYarp-Destination: {URI}
 ```
 
 服务端验证通过则响应101状态码
@@ -39,12 +39,12 @@ Connection: Upgrade
 > http/2.0
 
 客户端发起如下请求
-```http
+```
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
 :path = /
-Authorization：{客户端身份}
+Authorization = {客户端身份}
 CYarp-Destination = {URI}
 ```
 
@@ -60,7 +60,7 @@ CYarp-Destination = {URI}
 > http/1.1
 
 客户端发起如下请求
-```http
+```
 Get /{tunnelId} HTTP/1.1
 Connection: Upgrade
 Upgrade: CYarp
@@ -77,7 +77,7 @@ Connection: Upgrade
 > http/2.0
 
 客户端发起如下请求
-```http
+```
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
@@ -90,3 +90,10 @@ Connection: Upgrade
 ```
 
 接着服务端将在连接后续的Stream里向客户端发送http/1.1的请求和接收客户端的http响应。
+
+### 3 安全传输
+当服务端为https时，以下部分为tls安全传输
+1. Client握手协议和其连接
+2. Tunnel的创建和其连接
+
+如果目标服务(Destination)也为https，则整个管道表现为tls in tls。
