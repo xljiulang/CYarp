@@ -71,7 +71,14 @@ public class CYarpController : ControllerBase
 
 > 客户端开发
 
-使用`CYary.Client.CYarpClient`
+使用`CYary.Client.CYarpClient`很方便完成客户端开发
+```c#
+ using var client = new CYarpClient();
+ while (true))
+ {
+     await client.TransportAsync(this.clientOptions.CurrentValue, stoppingToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+ }
+```
 
 ### 2 连接协议
 #### 2.1 Client握手协议
