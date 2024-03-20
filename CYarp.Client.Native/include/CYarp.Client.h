@@ -8,7 +8,7 @@ enum TransportError
 	NoError = 0,
 	InvalidHandle = 1,
 	ParameterError = 2,
-	ConnectError = 3,
+	ConnectError = 3
 };
 
 // 客户端选项
@@ -25,10 +25,10 @@ struct ClientOptions
 };
 
 // 创建客户端
-PClient CreateClient();
+extern "C" PClient CreateClient();
 
 // 释放客户端
-void FreeClient(PClient client);
+extern "C" void FreeClient(PClient client);
 
 // 传输数据
-enum TransportError Transport(PClient client, ClientOptions options);
+extern "C" enum TransportError Transport(PClient client, ClientOptions options);

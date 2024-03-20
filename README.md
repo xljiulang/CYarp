@@ -81,7 +81,7 @@ public class CYarpController : ControllerBase
  }
 ```
 
-客户端目前已经适配为[AOT编译为C导出](https://github.com/xljiulang/CYarp/blob/master/CYarp.Client/CYarp.Client.h)的动态共享库，到目前dotnet8.0为止，AOT仅支持各64位的系统和框架，dotnet9.0有希望支持32位的系统和框架。有关AOT编译请详细查阅[native-aot](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows)，以下是编译命令：
+客户端目前已经适配为[AOT编译为C导出](https://github.com/xljiulang/CYarp/blob/master/CYarp.Client.Native/include/CYarp.Client.h)的动态共享库，到目前dotnet8.0为止，AOT仅支持各64位的系统和框架，dotnet9.0有希望支持32位的系统和框架。有关AOT编译请详细查阅[native-aot](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows)，以下是编译命令：
 
 | 系统和框架  | 命令                                                        |
 | ----------- | ----------------------------------------------------------- |
