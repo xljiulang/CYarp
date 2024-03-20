@@ -39,10 +39,14 @@ namespace CYarp.Client
 
         /// <summary>
         /// 与server或target的连接超时时长
-        /// 默认为30s
+        /// 默认为5s
         /// </summary>
-        public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(30);
+        public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
+        /// <summary>
+        /// 隧道传输错误回调
+        /// </summary>
+        public Action<Exception>? TunnelErrorCallback;
 
         /// <summary>
         /// 验证参数

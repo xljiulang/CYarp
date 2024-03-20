@@ -20,15 +20,15 @@ struct ClientOptions
 {
 	// CYarp服务器Uri
 	// 支持http和https
-	char* ServerUri;
+	char16_t* ServerUri;
 	// 目标服务器Uri
 	// 支持http、https
-	char* TargetUri;
+	char16_t* TargetUri;
 	// 目标服务器的UnixDomainSocket路径[可选]
-	char* TargetUnixDomainSocket;
+	char16_t* TargetUnixDomainSocket;
 	// 连接到CYarp服务器的Authorization请求头的值
-	char* Authorization;
-	// 与server或target的连接超时时长秒数，0默认为30s
+	char16_t* Authorization;
+	// 与server或target的连接超时时长秒数，0默认为5s
 	int32_t ConnectTimeout;
 };
 
@@ -36,7 +36,13 @@ struct ClientOptions
 extern "C" PClient CreateClient();
 
 // 释放客户端
-extern "C" void FreeClient(PClient client);
+extern "C" void FreeClient(
+	// 客户端句柄
+	PClient client);
 
 // 传输数据
-extern "C" enum TransportError Transport(PClient client, ClientOptions* options);
+extern "C" enum TransportError Transport(
+	// 客户端句柄
+	PClient client,
+	// 选项
+	ClientOptions * options);

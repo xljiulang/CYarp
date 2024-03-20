@@ -94,8 +94,8 @@ namespace CYarp.Client
                 clientOptions->ServerUri == default ||
                 clientOptions->TargetUri == default ||
                 clientOptions->Authorization == default ||
-                Uri.TryCreate(Marshal.PtrToStringAnsi(clientOptions->ServerUri), UriKind.Absolute, out var serverUri) == false ||
-                Uri.TryCreate(Marshal.PtrToStringAnsi(clientOptions->TargetUri), UriKind.Absolute, out var targetUri) == false)
+                Uri.TryCreate(Marshal.PtrToStringUni(clientOptions->ServerUri), UriKind.Absolute, out var serverUri) == false ||
+                Uri.TryCreate(Marshal.PtrToStringUni(clientOptions->TargetUri), UriKind.Absolute, out var targetUri) == false)
             {
                 return TransportError.OptionsArgumentError;
             }
@@ -104,12 +104,12 @@ namespace CYarp.Client
             {
                 ServerUri = serverUri,
                 TargetUri = targetUri,
-                Authorization = Marshal.PtrToStringAnsi(clientOptions->Authorization)!,
+                Authorization = Marshal.PtrToStringUni(clientOptions->Authorization)!,
             };
 
             if (clientOptions->TargetUnixDomainSocket != default)
             {
-                options.TargetUnixDomainSocket = Marshal.PtrToStringAnsi(clientOptions->TargetUnixDomainSocket);
+                options.TargetUnixDomainSocket = Marshal.PtrToStringUni(clientOptions->TargetUnixDomainSocket);
             }
 
             if (clientOptions->ConnectTimeout > 0)
