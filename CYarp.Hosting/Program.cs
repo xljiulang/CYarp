@@ -1,5 +1,5 @@
 using CYarp.Server;
-using CYary.Client;
+using CYarp.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;

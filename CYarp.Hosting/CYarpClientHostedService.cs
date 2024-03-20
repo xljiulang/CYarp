@@ -1,4 +1,4 @@
-﻿using CYary.Client;
+﻿using CYarp.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Threading;

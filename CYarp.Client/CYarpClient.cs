@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYary.Client
+namespace CYarp.Client
 {
     /// <summary>
     /// CYarp客户端

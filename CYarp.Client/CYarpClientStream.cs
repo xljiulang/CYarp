@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYary.Client
+namespace CYarp.Client
 {
     sealed class CYarpClientStream : DelegatingStream
     {

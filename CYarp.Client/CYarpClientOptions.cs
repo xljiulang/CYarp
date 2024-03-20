@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace CYary.Client
+namespace CYarp.Client
 {
     /// <summary>
     /// 客户端选项

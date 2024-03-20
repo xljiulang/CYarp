@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace CYary.Client
+namespace CYarp.Client
 {
     /// <summary>
     /// AOT编译
