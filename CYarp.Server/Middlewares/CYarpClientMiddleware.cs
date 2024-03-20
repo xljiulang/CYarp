@@ -99,8 +99,8 @@ namespace CYarp.Server.Middlewares
                 options.ClientTcpKeepAlive.SetTcpKeepAlive(socketFeature.Socket);
             }
 
-            var clientStream = await cyarpFeature.AcceptAsync();
-            using var cyarpClient = new CYarpClient(clientStream, options.ClientHttpHandler, httpForwarder, tunnelStreamFactory, clientId, clientDestination);
+            var stream = await cyarpFeature.AcceptAsync();
+            using var cyarpClient = new CYarpClient(stream, this.httpForwarder, options.ClientHttpHandler, tunnelStreamFactory, clientId, clientDestination);
 
             if (await this.clientManager.AddAsync(cyarpClient))
             {

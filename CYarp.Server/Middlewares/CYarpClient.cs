@@ -15,11 +15,11 @@ namespace CYarp.Server.Middlewares
 
         public CYarpClient(
             Stream stream,
-            HttpHandlerConfig httpHandlerConfig,
             IHttpForwarder httpForwarder,
+            HttpHandlerConfig httpHandlerConfig,
             TunnelStreamFactory tunnelStreamFactory,
             string clientId,
-            Uri clientDestination) : base(httpHandlerConfig, httpForwarder, tunnelStreamFactory, clientId, clientDestination)
+            Uri clientDestination) : base(httpForwarder, httpHandlerConfig, tunnelStreamFactory, clientId, clientDestination)
         {
             this.stream = stream;
         }

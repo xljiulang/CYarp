@@ -14,20 +14,25 @@ namespace CYarp.Server.Clients
     abstract class ClientBase : IClient
     {
         private readonly IHttpForwarder httpForwarder;
-        private readonly Lazy<ClientHttpHandler> httpHandlerLazy;
+        private readonly Lazy<HttpMessageInvoker> httpClientLazy;
 
         public string Id { get; }
+
         public Uri Destination { get; }
 
         public ClientBase(
-            HttpHandlerConfig httpHandlerConfig,
             IHttpForwarder httpForwarder,
+            HttpHandlerConfig httpHandlerConfig,
             TunnelStreamFactory tunnelStreamFactory,
             string clientId,
             Uri clientDestination)
         {
             this.httpForwarder = httpForwarder;
-            this.httpHandlerLazy = new Lazy<ClientHttpHandler>(() => new ClientHttpHandler(httpHandlerConfig, tunnelStreamFactory, this));
+            this.httpClientLazy = new Lazy<HttpMessageInvoker>(() =>
+            {
+                var httpHandler = new ClientHttpHandler(httpHandlerConfig, tunnelStreamFactory, this);
+                return new HttpMessageInvoker(httpHandler);
+            });
 
             this.Id = clientId;
             this.Destination = clientDestination;
@@ -39,9 +44,9 @@ namespace CYarp.Server.Clients
 
         public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, ForwarderRequestConfig? requestConfig = default, HttpTransformer? transformer = default)
         {
-            var httpHandler = httpHandlerLazy.Value;
-            var httpClient = new HttpMessageInvoker(httpHandler, disposeHandler: false);
-            return this.httpForwarder.SendAsync(context, this.Destination.OriginalString, httpClient, requestConfig ?? ForwarderRequestConfig.Empty, transformer ?? HttpTransformer.Empty);
+            var httpClient = this.httpClientLazy.Value;
+            var destination = this.Destination.OriginalString;
+            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig ?? ForwarderRequestConfig.Empty, transformer ?? HttpTransformer.Empty);
         }
 
         public abstract Task WaitForCloseAsync();
@@ -49,9 +54,9 @@ namespace CYarp.Server.Clients
 
         public virtual void Dispose()
         {
-            if (this.httpHandlerLazy.IsValueCreated)
+            if (this.httpClientLazy.IsValueCreated)
             {
-                this.httpHandlerLazy.Value.Dispose();
+                this.httpClientLazy.Value.Dispose();
             }
         }
 
