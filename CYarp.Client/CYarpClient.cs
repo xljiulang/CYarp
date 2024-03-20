@@ -105,13 +105,19 @@ namespace CYarp.Client
         /// <returns></returns>
         private static async Task<Stream> ConnectTargetAsync(CYarpClientOptions options, CancellationToken cancellationToken)
         {
-            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            EndPoint endPoint = string.IsNullOrEmpty(options.TargetUnixDomainSocket)
+                ? new DnsEndPoint(options.TargetUri.Host, options.TargetUri.Port)
+                : new UnixDomainSocketEndPoint(options.TargetUnixDomainSocket);
+
+            var socket = endPoint is DnsEndPoint
+                ? new Socket(SocketType.Stream, ProtocolType.Tcp)
+                : new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+
             try
             {
-                var destination = options.TargetUri;
                 using var timeoutTokenSource = new CancellationTokenSource(options.ConnectTimeout);
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
-                await socket.ConnectAsync(destination.Host, destination.Port, linkedTokenSource.Token);
+                await socket.ConnectAsync(endPoint, linkedTokenSource.Token);
                 return new NetworkStream(socket);
             }
             catch (Exception)
@@ -160,15 +166,13 @@ namespace CYarp.Client
             var serverUri = new Uri(options.ServerUri, $"/{tunnelId}");
             var request = new HttpRequestMessage(HttpMethod.Connect, serverUri);
             request.Headers.Protocol = "CYarp";
+            request.Version = HttpVersion.Version20;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
 
             if (string.IsNullOrEmpty(tunnelId))
             {
-                request.Headers.Authorization = AuthenticationHeaderValue.Parse(options.Authorization);
-                request.Headers.TryAddWithoutValidation("CYarp-Destination", options.TargetUri.OriginalString);
+                SetAuthorization(request, options);
             }
-
-            request.Version = HttpVersion.Version20;
-            request.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
 
             using var timeoutTokenSource = new CancellationTokenSource(options.ConnectTimeout);
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
@@ -192,15 +196,13 @@ namespace CYarp.Client
             var request = new HttpRequestMessage(HttpMethod.Get, serverUri);
             request.Headers.Connection.TryParseAdd("Upgrade");
             request.Headers.Upgrade.TryParseAdd("CYarp");
+            request.Version = HttpVersion.Version11;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
             if (string.IsNullOrEmpty(tunnelId))
             {
-                request.Headers.Authorization = AuthenticationHeaderValue.Parse(options.Authorization);
-                request.Headers.TryAddWithoutValidation("CYarp-Destination", options.TargetUri.OriginalString);
+                SetAuthorization(request, options);
             }
-
-            request.Version = HttpVersion.Version11;
-            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
             using var timeoutTokenSource = new CancellationTokenSource(options.ConnectTimeout);
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
@@ -213,6 +215,13 @@ namespace CYarp.Client
 
             var stream = await httpResponse.Content.ReadAsStreamAsync(linkedTokenSource.Token);
             return new CYarpClientStream(stream, httpResponse.Version);
+        }
+
+        private static void SetAuthorization(HttpRequestMessage request, CYarpClientOptions options)
+        {
+            var destination = options.TargetUri.OriginalString;
+            request.Headers.TryAddWithoutValidation("CYarp-Destination", destination);
+            request.Headers.Authorization = AuthenticationHeaderValue.Parse(options.Authorization);
         }
 
         /// <summary>

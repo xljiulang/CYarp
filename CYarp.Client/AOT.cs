@@ -7,17 +7,29 @@ namespace CYarp.Client
     /// <summary>
     /// AOT编译
     /// </summary>
-    static class AOT
+    unsafe static class AOT
     {
         /// <summary>
         /// 传输错误枚举
         /// </summary>
         public enum TransportError : int
         {
-            NoError = 0,
+            /// <summary>
+            /// 传输完成，表示与服务器的主连接和传输通道都已关闭
+            /// </summary>
+            Completed = 0,
+            /// <summary>
+            /// client句柄无效
+            /// </summary>
             InvalidHandle = 1,
-            ParameterError = 2,
-            ConnectError = 3,
+            /// <summary>
+            /// Options的一些参数错误
+            /// </summary>
+            OptionsArgumentError = 2,
+            /// <summary>
+            /// 建立主连接到服务器异常
+            /// </summary>
+            ServerConnectError = 3,
         }
 
         /// <summary>
@@ -27,11 +39,9 @@ namespace CYarp.Client
         public struct ClientOptions
         {
             public nint ServerUri;
-
             public nint TargetUri;
-
+            public nint TargetUnixDomainSocket;
             public nint Authorization;
-
             public int ConnectTimeout;
         }
 
@@ -72,7 +82,7 @@ namespace CYarp.Client
         /// <param name="clientOptions">选项句柄</param>
         /// <returns>传输错误枚举</returns>
         [UnmanagedCallersOnly(EntryPoint = "Transport", CallConvs = [typeof(CallConvCdecl)])]
-        public static TransportError Transport(nint clientPtr, ClientOptions clientOptions)
+        public static TransportError Transport(nint clientPtr, ClientOptions* clientOptions)
         {
             var gcHandle = GCHandle.FromIntPtr(clientPtr);
             if (gcHandle.IsAllocated == false || gcHandle.Target is not CYarpClient client)
@@ -80,39 +90,45 @@ namespace CYarp.Client
                 return TransportError.InvalidHandle;
             }
 
-            if (clientOptions.ServerUri == default ||
-                clientOptions.TargetUri == default ||
-                clientOptions.Authorization == default ||
-                Uri.TryCreate(Marshal.PtrToStringAnsi(clientOptions.ServerUri), UriKind.Absolute, out var serverUri) == false ||
-                Uri.TryCreate(Marshal.PtrToStringAnsi(clientOptions.TargetUri), UriKind.Absolute, out var targetUri) == false)
+            if (clientOptions == null ||
+                clientOptions->ServerUri == default ||
+                clientOptions->TargetUri == default ||
+                clientOptions->Authorization == default ||
+                Uri.TryCreate(Marshal.PtrToStringAnsi(clientOptions->ServerUri), UriKind.Absolute, out var serverUri) == false ||
+                Uri.TryCreate(Marshal.PtrToStringAnsi(clientOptions->TargetUri), UriKind.Absolute, out var targetUri) == false)
             {
-                return TransportError.ParameterError;
+                return TransportError.OptionsArgumentError;
             }
 
             var options = new CYarpClientOptions
             {
                 ServerUri = serverUri,
                 TargetUri = targetUri,
-                Authorization = Marshal.PtrToStringAnsi(clientOptions.Authorization)!,
+                Authorization = Marshal.PtrToStringAnsi(clientOptions->Authorization)!,
             };
 
-            if (clientOptions.ConnectTimeout > 0)
+            if (clientOptions->TargetUnixDomainSocket != default)
             {
-                options.ConnectTimeout = TimeSpan.FromSeconds(clientOptions.ConnectTimeout);
+                options.TargetUnixDomainSocket = Marshal.PtrToStringAnsi(clientOptions->TargetUnixDomainSocket);
+            }
+
+            if (clientOptions->ConnectTimeout > 0)
+            {
+                options.ConnectTimeout = TimeSpan.FromSeconds(clientOptions->ConnectTimeout);
             }
 
             try
             {
                 client.TransportAsync(options, default).Wait();
-                return TransportError.NoError;
+                return TransportError.Completed;
             }
             catch (ArgumentException)
             {
-                return TransportError.ParameterError;
+                return TransportError.OptionsArgumentError;
             }
             catch (Exception)
             {
-                return TransportError.ConnectError;
+                return TransportError.ServerConnectError;
             }
         }
     }
