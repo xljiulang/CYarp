@@ -81,6 +81,15 @@ public class CYarpController : ControllerBase
  }
 ```
 
+客户端目前已经适配为[AOT编译](https://github.com/xljiulang/CYarp/blob/master/CYarp.Client/AOT.cs)为C导出的动态共享库，到目前dotnet8.0为止，AOT仅支持各64位的系统和框架，dotnet9.0有希望支持32位的系统和框架。有关AOT编译请详细查阅[native-aot](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows)，以下是编译命令：
+
+| 系统和框架  | 命令                                                        |
+| ----------- | ----------------------------------------------------------- |
+| win-x64     | dotnet publish -c Release /p:PublishAot=true -r win-x64     |
+| linux-x64   | dotnet publish -c Release /p:PublishAot=true -r linux-x64   |
+| linux-arm64 | dotnet publish -c Release /p:PublishAot=true -r linux-arm64 |
+
+
 ### 2 连接协议
 #### 2.1 Client握手协议
 > http/1.1
