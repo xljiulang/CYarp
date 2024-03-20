@@ -20,7 +20,7 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3d
 #### 1.2 开发指南
 > 服务端开发
 
-CYarp设计为asp.netcore的一个http中间件，其依赖于Authentication身份认证中间件，使用如下方法进行注册和中间件的配置。
+`CYarp.Server`设计为asp.netcore的一个http中间件，其依赖于Authentication身份认证中间件，使用如下方法进行注册和中间件的配置。
 
 ```c#
 builder.Services.AddCYarp(cyarp=>
@@ -72,7 +72,7 @@ public class CYarpController : ControllerBase
 
 > 客户端开发
 
-使用`CYary.Client.CYarpClient`很方便完成客户端开发
+使用`CYarp.Client`很方便完成客户端开发
 ```c#
  using var client = new CYarpClient();
  while (true))
