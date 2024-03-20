@@ -1,6 +1,7 @@
 ## CYarp
 基于Yarp的http内网穿透中间件。支持tcp、http/2.0或http/3.0作为http/1.1的传输层
 
+![net](net.png)
 ![cyarp](cyarp.png)
 
 
