@@ -1,6 +1,7 @@
 ﻿using CYarp.Server.Configs;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace CYarp.Server.Clients
     {
         private readonly IHttpForwarder httpForwarder;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
+        private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version=HttpVersion.Version11, VersionPolicy= HttpVersionPolicy.RequestVersionExact };
 
         public string Id { get; }
 
@@ -46,7 +48,7 @@ namespace CYarp.Server.Clients
         {
             var httpClient = this.httpClientLazy.Value;
             var destination = this.Destination.OriginalString;
-            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig ?? ForwarderRequestConfig.Empty, transformer ?? HttpTransformer.Empty);
+            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
         }
 
         public abstract Task WaitForCloseAsync();

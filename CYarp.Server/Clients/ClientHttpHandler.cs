@@ -56,13 +56,13 @@ namespace CYarp.Server.Clients
             return await this.tunnelStreamFactory.CreateAsync(this.client, cancellationToken);
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             request.Headers.Host = null;
             request.Version = HttpVersion.Version11;
             request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-            var response = await base.SendAsync(request, cancellationToken);
-            return response;
+
+            return base.SendAsync(request, cancellationToken);
         }
     }
 }
