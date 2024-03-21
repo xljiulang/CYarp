@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -64,6 +63,7 @@ namespace CYarp.Server.Middlewares
             if (user.Identity?.IsAuthenticated == false)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                this.LogFailureStatus(context, "请求者的身份认证不通过");
                 return;
             }
 
@@ -72,16 +72,16 @@ namespace CYarp.Server.Middlewares
             var clientId = user.FindFirstValue(options.ClientAuthorization.ClientIdClaimType);
             if (string.IsNullOrEmpty(clientId))
             {
-                Log.ClientIdClaimTypeIsRequired(this.logger, options.ClientAuthorization.ClientIdClaimType);
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                this.LogFailureStatus(context, $"用户身份不包含{options.ClientAuthorization.ClientIdClaimType}的ClaimType");
                 return;
             }
 
             // CYarp-Destination头格式验证
             if (Uri.TryCreate(cyarpDestination.FirstOrDefault(), UriKind.Absolute, out var clientDestination) == false)
             {
-                Log.CYarpDestinationHeaderFormatError(this.logger, cyarpDestination);
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                this.LogFailureStatus(context, "请求头CYarp-Destination的值不是Uri格式");
                 return;
             }
 
@@ -89,6 +89,7 @@ namespace CYarp.Server.Middlewares
             if (options.ClientAuthorization.AllowRoles.Length > 0 && options.ClientAuthorization.AllowRoles.Any(user.IsInRole) == false)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                this.LogFailureStatus(context, "请求者的角色验证不通过");
                 return;
             }
 
@@ -109,14 +110,15 @@ namespace CYarp.Server.Middlewares
             }
         }
 
+        private void LogFailureStatus(HttpContext context, string message)
+        {
+            Log.LogFailureStatus(this.logger, context.Connection.Id, context.Response.StatusCode, message);
+        }
+
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Warning, "请求头CYarp-Destination的值不是Uri格式: {destination}")]
-            public static partial void CYarpDestinationHeaderFormatError(ILogger logger, StringValues destination);
-
-
-            [LoggerMessage(LogLevel.Warning, "用户身份不包含ClaimType: {clientIdClaimType}")]
-            public static partial void ClientIdClaimTypeIsRequired(ILogger logger, string clientIdClaimType);
+            [LoggerMessage(LogLevel.Warning, "连接{connectionId}触发{statusCode}状态码: {message}")]
+            public static partial void LogFailureStatus(ILogger logger, string connectionId, int statusCode, string message);
         }
     }
 }
