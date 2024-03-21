@@ -51,24 +51,17 @@ namespace CYarp.Client
         /// <summary>
         /// 验证参数
         /// </summary>
-        /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void Validate()
         {
-            if (this.TargetUri == null)
-            {
-                throw new ArgumentNullException(nameof(this.TargetUri));
-            }
+            ArgumentNullException.ThrowIfNull(this.TargetUri);
+            ArgumentNullException.ThrowIfNull(this.ServerUri);
+            ArgumentException.ThrowIfNullOrEmpty(this.Authorization);
+            ArgumentOutOfRangeException.ThrowIfLessThan(this.ConnectTimeout, TimeSpan.Zero);
 
             if (httpSchemes.Contains(this.TargetUri.Scheme) == false)
             {
                 throw new ArgumentException($"TargetUri scheme must be http or https", nameof(TargetUri));
-            }
-
-            if (this.ServerUri == null)
-            {
-                throw new ArgumentNullException(nameof(ServerUri));
             }
 
             if (httpSchemes.Contains(this.ServerUri.Scheme) == false)
@@ -76,19 +69,9 @@ namespace CYarp.Client
                 throw new ArgumentException("ServerUri scheme must be http or https", nameof(ServerUri));
             }
 
-            if (string.IsNullOrEmpty(Authorization))
-            {
-                throw new ArgumentNullException(nameof(Authorization));
-            }
-
             if (AuthenticationHeaderValue.TryParse(this.Authorization, out _) == false)
             {
                 throw new ArgumentException("Authorization format is incorrect", nameof(Authorization));
-            }
-
-            if (this.ConnectTimeout <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(ConnectTimeout));
             }
         }
     }

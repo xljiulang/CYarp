@@ -49,6 +49,8 @@ namespace CYarp.Server.Clients
 
         public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext httpContext, ForwarderRequestConfig? requestConfig, HttpTransformer? transformer)
         {
+            ObjectDisposedException.ThrowIf(this.disposed, this);
+
             var httpClient = this.httpClientLazy.Value;
             var destination = this.Destination.OriginalString;
             return this.httpForwarder.SendAsync(httpContext, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);

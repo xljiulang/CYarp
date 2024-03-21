@@ -79,6 +79,7 @@ namespace CYarp.Server.Clients
 
         /// <summary>
         /// 客户端断开连接
+        /// 被挤下线的客户端的clientId不会触发此方法
         /// </summary>
         /// <param name="clientId"></param>
         /// <returns></returns>

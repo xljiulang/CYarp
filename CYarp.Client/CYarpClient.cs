@@ -45,6 +45,7 @@ namespace CYarp.Client
         /// <returns></returns>
         public async Task TransportAsync(CYarpClientOptions options, CancellationToken cancellationToken)
         {
+            ObjectDisposedException.ThrowIf(this.disposed, this);
             options.Validate();
 
             using var serverStream = await this.ConnectServerAsync(options, tunnelId: null, cancellationToken);
