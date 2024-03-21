@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup> 
+	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-	</PropertyGroup> 
+		<DocumentationFile>$(TargetPath)\$(AssemblyName).xml</DocumentationFile>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />

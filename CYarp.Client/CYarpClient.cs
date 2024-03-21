@@ -58,7 +58,7 @@ namespace CYarp.Client
                 }
                 else
                 {
-                    this.TransportAsync(options, tunnelId, cancellationToken);
+                    this.TunnelAsync(options, tunnelId, cancellationToken);
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace CYarp.Client
         /// <param name="options"></param>
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
-        private async void TransportAsync(CYarpClientOptions options, string tunnelId, CancellationToken cancellationToken)
+        private async void TunnelAsync(CYarpClientOptions options, string tunnelId, CancellationToken cancellationToken)
         {
             try
             {

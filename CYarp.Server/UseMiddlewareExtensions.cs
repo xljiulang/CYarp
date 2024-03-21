@@ -2,6 +2,9 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// 中间件扩展
+    /// </summary>
     public static class UseMiddlewareExtensions
     {
         /// <summary>

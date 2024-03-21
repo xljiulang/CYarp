@@ -15,18 +15,22 @@ namespace CYarp.Server.Clients
         private readonly ILogger<ClientManager> logger;
         private readonly ConcurrentDictionary<string, IClient> dictionary = new();
 
+        /// <inheritdoc/>
         public int Count => this.dictionary.Count;
 
+        /// <inheritdoc/>
         public ClientManager(ILogger<ClientManager> logger)
         {
             this.logger = logger;
         }
 
+        /// <inheritdoc/>
         public bool TryGetValue(string clientId, [MaybeNullWhen(false)] out IClient client)
         {
             return this.dictionary.TryGetValue(clientId, out client);
         }
 
+        /// <inheritdoc/>
         public async ValueTask<bool> AddAsync(IClient client)
         {
             var clientId = client.Id;
@@ -43,6 +47,7 @@ namespace CYarp.Server.Clients
             return false;
         }
 
+        /// <inheritdoc/>
         public async ValueTask RemoveAsync(IClient client)
         {
             var clientId = client.Id;
@@ -81,6 +86,7 @@ namespace CYarp.Server.Clients
             return ValueTask.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public IEnumerator<IClient> GetEnumerator()
         {
             foreach (var keyValue in this.dictionary)
