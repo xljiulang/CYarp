@@ -34,7 +34,7 @@ namespace CYarp.Client
             bool disposeHandler = true)
         {
             this.httpClient = new HttpMessageInvoker(handler, disposeHandler);
-        }       
+        }
 
         /// <summary>
         /// 连接到CYarp服务器并开始隧道传输
@@ -97,9 +97,7 @@ namespace CYarp.Client
         private unsafe void OnTunnelExceptionCore(CYarpClientOptions options, Exception ex)
         {
             this.OnTunnelException(ex);
-
-            var callBack = options.TunnelErrorCallback;
-            callBack?.Invoke(ex);
+            options.TunnelErrorCallback?.Invoke(ex);
         }
 
         /// <summary>

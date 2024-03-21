@@ -43,6 +43,7 @@ namespace CYarp.Client
             public nint TargetUnixDomainSocket;
             public nint Authorization;
             public int ConnectTimeout;
+            public delegate* unmanaged[Cdecl]<nint, nint, void> TunnelErrorCallback;
         }
 
         /// <summary>
@@ -115,6 +116,18 @@ namespace CYarp.Client
             if (clientOptions->ConnectTimeout > 0)
             {
                 options.ConnectTimeout = TimeSpan.FromSeconds(clientOptions->ConnectTimeout);
+            }
+
+            if (clientOptions->TunnelErrorCallback != default)
+            {
+                options.TunnelErrorCallback = (exception) =>
+                {
+                    var type = Marshal.StringToHGlobalUni(exception.GetType().Name);
+                    var message = Marshal.StringToHGlobalUni(exception.Message);
+                    clientOptions->TunnelErrorCallback(type, message);
+                    Marshal.FreeHGlobal(type);
+                    Marshal.FreeHGlobal(message);
+                };
             }
 
             try

@@ -1,6 +1,11 @@
 #include <stdint.h>
 
 typedef void* PClient;
+typedef void (*TunnelErrorCallback)(
+	// 错误类型
+	char16_t* type, 
+	// 错误消息
+	char16_t* message);
 
 // 传输错误枚举
 enum TransportError
@@ -22,7 +27,7 @@ struct ClientOptions
 	// 支持http和https
 	char16_t* ServerUri;
 	// 目标服务器Uri
-	// 支持http、https
+	// 支持http和https
 	char16_t* TargetUri;
 	// 目标服务器的UnixDomainSocket路径[可选]
 	char16_t* TargetUnixDomainSocket;
@@ -30,6 +35,8 @@ struct ClientOptions
 	char16_t* Authorization;
 	// 与server或target的连接超时时长秒数，0默认为5s
 	int32_t ConnectTimeout;
+	// 隧道传输错误回调
+	TunnelErrorCallback TunnelErrorCallback;
 };
 
 // 创建客户端
