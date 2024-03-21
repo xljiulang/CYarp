@@ -154,7 +154,7 @@ namespace CYarp.Client
                 {
                     return await this.HttpConnectAsync(options, tunnelId, cancellationToken);
                 }
-                catch (HttpRequestException)
+                catch (HttpRequestException ex) when (ex.StatusCode != HttpStatusCode.Unauthorized)
                 {
                     return await this.HttpUpgradesync(options, tunnelId, cancellationToken);
                 }

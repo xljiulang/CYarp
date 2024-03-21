@@ -58,6 +58,14 @@ namespace CYarp.Server.Middlewares
                 return;
             }
 
+            // CYarp-Destination头格式验证
+            if (Uri.TryCreate(cyarpDestination.FirstOrDefault(), UriKind.Absolute, out var clientDestination) == false)
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                this.LogFailureStatus(context, "请求头CYarp-Destination的值不是Uri格式");
+                return;
+            }
+
             // 身份验证
             var user = context.User;
             if (user.Identity?.IsAuthenticated == false)
@@ -72,16 +80,8 @@ namespace CYarp.Server.Middlewares
             var clientId = user.FindFirstValue(options.ClientAuthorization.ClientIdClaimType);
             if (string.IsNullOrEmpty(clientId))
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 this.LogFailureStatus(context, $"用户身份不包含{options.ClientAuthorization.ClientIdClaimType}的ClaimType");
-                return;
-            }
-
-            // CYarp-Destination头格式验证
-            if (Uri.TryCreate(cyarpDestination.FirstOrDefault(), UriKind.Absolute, out var clientDestination) == false)
-            {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                this.LogFailureStatus(context, "请求头CYarp-Destination的值不是Uri格式");
                 return;
             }
 
@@ -92,6 +92,7 @@ namespace CYarp.Server.Middlewares
                 this.LogFailureStatus(context, "请求者的角色验证不通过");
                 return;
             }
+
 
             // TcpKeepAlive
             var socketFeature = context.Features.Get<IConnectionSocketFeature>();
