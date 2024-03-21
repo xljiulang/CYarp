@@ -42,14 +42,9 @@ namespace CYarp.Server.Middlewares
             try
             {
                 var buffer = new byte[8].AsMemory();
-                var token = this.disposeTokenSource.Token;
-                while (true)
+                var disposedToken = this.disposeTokenSource.Token;
+                while (await this.stream.ReadAsync(buffer, disposedToken) > 0)
                 {
-                    var read = await this.stream.ReadAsync(buffer, token);
-                    if (read == 0)
-                    {
-                        break;
-                    }
                 }
             }
             catch (Exception)
