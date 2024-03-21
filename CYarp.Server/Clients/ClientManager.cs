@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
@@ -10,6 +11,7 @@ namespace CYarp.Server.Clients
     /// <summary>
     /// 默认的客户端管理器
     /// </summary>
+    [DebuggerDisplay("Count = {Count}")]
     public partial class ClientManager : IClientManager
     {
         private readonly ILogger<ClientManager> logger;

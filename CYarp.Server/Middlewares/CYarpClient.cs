@@ -1,7 +1,9 @@
 ﻿using CYarp.Server.Clients;
 using CYarp.Server.Configs;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +11,7 @@ using Yarp.ReverseProxy.Forwarder;
 
 namespace CYarp.Server.Middlewares
 {
+    [DebuggerDisplay("Id = {Id}")]
     sealed class CYarpClient : ClientBase
     {
         private readonly Stream stream;
@@ -19,7 +22,8 @@ namespace CYarp.Server.Middlewares
             HttpHandlerConfig httpHandlerConfig,
             TunnelStreamFactory tunnelStreamFactory,
             string clientId,
-            Uri clientDestination) : base(httpForwarder, httpHandlerConfig, tunnelStreamFactory, clientId, clientDestination)
+            Uri clientDestination,
+            ClaimsPrincipal clientUser) : base(httpForwarder, httpHandlerConfig, tunnelStreamFactory, clientId, clientDestination, clientUser)
         {
             this.stream = stream;
         }

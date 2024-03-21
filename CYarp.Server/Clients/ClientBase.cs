@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Yarp.ReverseProxy.Forwarder;
@@ -16,18 +17,21 @@ namespace CYarp.Server.Clients
     {
         private readonly IHttpForwarder httpForwarder;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
-        private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version=HttpVersion.Version11, VersionPolicy= HttpVersionPolicy.RequestVersionExact };
+        private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version = HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
 
         public string Id { get; }
 
         public Uri Destination { get; }
+
+        public ClaimsPrincipal User { get; }
 
         public ClientBase(
             IHttpForwarder httpForwarder,
             HttpHandlerConfig httpHandlerConfig,
             TunnelStreamFactory tunnelStreamFactory,
             string clientId,
-            Uri clientDestination)
+            Uri clientDestination,
+            ClaimsPrincipal clientUser)
         {
             this.httpForwarder = httpForwarder;
             this.httpClientLazy = new Lazy<HttpMessageInvoker>(() =>
@@ -38,6 +42,7 @@ namespace CYarp.Server.Clients
 
             this.Id = clientId;
             this.Destination = clientDestination;
+            this.User = clientUser;
         }
 
 
