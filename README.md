@@ -2,16 +2,15 @@
 基于Yarp的http内网穿透中间件。支持tcp、http/2.0或http/3.0作为http/1.1的传输层
 
 ![net](net.png)
-![cyarp](cyarp.png)
 
 
 ### 1 如何使用
 #### 1.1 Demo项目
 1. 运行CYarp.Hosting
 2. 在PostMan请求到`http://localhost`，此时收到401授权未通过
-3. 添加PostMan的Auth，选择Bearer Token，放如下的请求Token
+3. 添加PostMan的Auth，选择Bearer Token，放如下的测试Token来请求
 
-> 请求Token
+> 测试Token
 
 ```
 eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJNb2JpbGUiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9zaWQiOiJNb2JpbGUwMDEiLCJDbGllbnRJZCI6IkNsaWVudDAwMSIsImlhdCI6MTcxMDgxNjQ1MiwibmJmIjoxNzEwODE2NDUyLCJleHAiOjI3MTA5MDI4NTJ9.aC-9pVDvyhXsUub-wzZVttfc34wMtFrARDlUj3BYNFhy3Axr0U93CV_QFUP-m6DYI6gK0HkxUr6xlkWwItIFzvS95TsoMXOARVXlVQEP18_wQRQ0G3WRMmNJ_uElJ4uIcrha_Dr4e0cp38olHdABQgOXZgUNHFAHCY3rqtn6-gyTaTu6qAgoj2imi4tsOYFF_OPrCNkRoJavubzDTTXRB95cGz5kxzTSDdWCuIaktNsWN7WDK864VKyVgwca6ueQJogidvES_x26TZuLF6VNhYEkM6UjUZtT8WiD3nBhi2_dVS7BODMLfSyiFa68k1NK50DDfnYgiFU6Clb24Ra-2A
@@ -81,7 +80,7 @@ public class CYarpController : ControllerBase
  }
 ```
 
-C和C++客户端，可以将CYarp.Client项目的源代码AOT编译为C导出的动态共享库来使用，[CYarp.Client.Native](https://github.com/xljiulang/CYarp/blob/master/CYarp.Client.Native)项目是C和C++调用Demo。
+C和C++客户端，可以将CYarp.Client项目的源代码AOT编译为C导出的动态共享库来使用，[CYarp.Client.Native](https://github.com/xljiulang/CYarp/blob/master/CYarp.Client.Native)项目是C和C++客户端Demo，需要先运行CYarp.Hosting做为调试的服务端。
 
 以下是CYarp.Client项目[AOT编译](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows)编译为C导出的动态共享库命令：
 
@@ -93,6 +92,8 @@ C和C++客户端，可以将CYarp.Client项目的源代码AOT编译为C导出的
 
 
 ### 2 连接协议
+
+![cyarp](cyarp.png)
 #### 2.1 Client握手协议
 > http/1.1
 
