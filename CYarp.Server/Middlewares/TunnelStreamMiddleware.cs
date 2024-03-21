@@ -1,6 +1,7 @@
 ﻿using CYarp.Server.Clients;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -16,13 +17,17 @@ namespace CYarp.Server.Middlewares
     /// :scheme = https
     /// :path = /{tunnelId}  
     /// </summary>
-    sealed class TunnelStreamMiddleware : IMiddleware
+    sealed partial class TunnelStreamMiddleware : IMiddleware
     {
         private readonly TunnelStreamFactory tunnelStreamFactory;
+        private readonly ILogger<TunnelStreamMiddleware> logger;
 
-        public TunnelStreamMiddleware(TunnelStreamFactory tunnelStreamFactory)
+        public TunnelStreamMiddleware(
+            TunnelStreamFactory tunnelStreamFactory,
+            ILogger<TunnelStreamMiddleware> logger)
         {
             this.tunnelStreamFactory = tunnelStreamFactory;
+            this.logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -53,7 +58,14 @@ namespace CYarp.Server.Middlewares
                 {
                     await tunnelStream.Closed;
                 }
+                Log.LogTunnelClosed(this.logger, tunnelId);
             }
+        }
+
+        static partial class Log
+        {
+            [LoggerMessage(LogLevel.Information, "{tunnelId}的Tunnel已关闭")]
+            public static partial void LogTunnelClosed(ILogger logger, Guid tunnelId);
         }
     }
 }
