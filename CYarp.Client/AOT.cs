@@ -15,21 +15,34 @@ namespace CYarp.Client
         public enum TransportError : int
         {
             /// <summary>
+            /// client句柄无效
+            /// </summary>
+            InvalidHandle = -1,
+
+            /// <summary>
             /// 传输完成，表示与服务器的主连接和传输通道都已关闭
             /// </summary>
             Completed = 0,
+
             /// <summary>
-            /// client句柄无效
+            /// Options值无效
             /// </summary>
-            InvalidHandle = 1,
+            InvalidOptions = 1,
+
             /// <summary>
-            /// Options的一些参数错误
+            /// 连接到服务身份认证不通过
             /// </summary>
-            OptionsArgumentError = 2,
+            ConnectUnauthorized = 2,
+
             /// <summary>
-            /// 建立主连接到服务器异常
+            /// 连接到服务器已超时
             /// </summary>
-            ServerConnectError = 3,
+            ConnectTimedout = 3,
+
+            /// <summary>
+            /// 连接到服务器失败
+            /// </summary>
+            ConnectFailure = 4,
         }
 
         /// <summary>
@@ -98,7 +111,7 @@ namespace CYarp.Client
                 Uri.TryCreate(Marshal.PtrToStringUni(clientOptions->ServerUri), UriKind.Absolute, out var serverUri) == false ||
                 Uri.TryCreate(Marshal.PtrToStringUni(clientOptions->TargetUri), UriKind.Absolute, out var targetUri) == false)
             {
-                return TransportError.OptionsArgumentError;
+                return TransportError.InvalidOptions;
             }
 
             var options = new CYarpClientOptions
@@ -135,13 +148,17 @@ namespace CYarp.Client
                 client.TransportAsync(options, default).Wait();
                 return TransportError.Completed;
             }
-            catch (ArgumentException)
+            catch (AggregateException ex) when (ex.InnerException is CYarpClientException clientException)
             {
-                return TransportError.OptionsArgumentError;
+                return (TransportError)(int)clientException.ErrorCode;
+            }
+            catch (CYarpClientException ex)
+            {
+                return (TransportError)(int)ex.ErrorCode;
             }
             catch (Exception)
             {
-                return TransportError.ServerConnectError;
+                return TransportError.Completed;
             }
         }
     }

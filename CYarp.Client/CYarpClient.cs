@@ -43,11 +43,53 @@ namespace CYarp.Client
         /// <param name="options"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        /// <exception cref="CYarpClientException"></exception>
+        /// <exception cref="ObjectDisposedException"></exception>
+        /// <exception cref="OperationCanceledException"></exception>
         public async Task TransportAsync(CYarpClientOptions options, CancellationToken cancellationToken)
         {
             ObjectDisposedException.ThrowIf(this.disposed, this);
-            options.Validate();
 
+            try
+            {
+                options.Validate();
+            }
+            catch (Exception ex)
+            {
+                throw new CYarpClientException(CYarpErrorCode.InvalidOptions, ex);
+            }
+
+            try
+            {
+                await this.TransportCoreAsync(options, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new CYarpClientException(CYarpErrorCode.ConnectTimedout, ex);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                throw new CYarpClientException(CYarpErrorCode.ConnectUnauthorized, ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new CYarpClientException(CYarpErrorCode.ConnectFailure, ex);
+            }
+        }
+
+        /// <summary>
+        /// 连接到CYarp服务器并开始隧道传输
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="ObjectDisposedException"></exception>
+        /// <returns></returns>
+        private async Task TransportCoreAsync(CYarpClientOptions options, CancellationToken cancellationToken)
+        {
             using var serverStream = await this.ConnectServerAsync(options, tunnelId: null, cancellationToken);
             using var streamReader = new StreamReader(serverStream, leaveOpen: true);
 

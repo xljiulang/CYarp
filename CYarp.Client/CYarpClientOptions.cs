@@ -54,19 +54,19 @@ namespace CYarp.Client
         /// <exception cref="ArgumentException"></exception>
         public void Validate()
         {
-            ArgumentNullException.ThrowIfNull(this.TargetUri);
-            ArgumentNullException.ThrowIfNull(this.ServerUri);
-            ArgumentException.ThrowIfNullOrEmpty(this.Authorization);
-            ArgumentOutOfRangeException.ThrowIfLessThan(this.ConnectTimeout, TimeSpan.Zero);
+            ArgumentNullException.ThrowIfNull(TargetUri);
+            ArgumentNullException.ThrowIfNull(ServerUri);
+            ArgumentException.ThrowIfNullOrEmpty(Authorization);
+            ArgumentOutOfRangeException.ThrowIfLessThan(ConnectTimeout, TimeSpan.Zero);
 
             if (httpSchemes.Contains(this.TargetUri.Scheme) == false)
             {
-                throw new ArgumentException($"TargetUri scheme must be http or https", nameof(TargetUri));
+                throw new ArgumentException($"Scheme must be http or https", nameof(TargetUri));
             }
 
             if (httpSchemes.Contains(this.ServerUri.Scheme) == false)
             {
-                throw new ArgumentException("ServerUri scheme must be http or https", nameof(ServerUri));
+                throw new ArgumentException("Scheme must be http or https", nameof(ServerUri));
             }
 
             if (AuthenticationHeaderValue.TryParse(this.Authorization, out _) == false)

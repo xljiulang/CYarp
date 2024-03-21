@@ -3,21 +3,30 @@
 typedef void* PClient;
 typedef void (*TunnelErrorCallback)(
 	// 错误类型
-	char16_t* type, 
+	char16_t* type,
 	// 错误消息
 	char16_t* message);
 
 // 传输错误枚举
 enum TransportError
 {
+	// client句柄无效
+	InvalidHandle = -1,
+
 	// 传输完成，表示与服务器的主连接和传输通道都已关闭
 	Completed = 0,
-	// client句柄无效
-	InvalidHandle = 1,
-	// Options的一些参数错误
-	OptionsArgumentError = 2,
-	// 建立主连接到服务器异常
-	ServerConnectError = 3,
+
+	// Options值无效
+	InvalidOptions = 1,
+
+	// 连接到服务身份认证不通过
+	ConnectUnauthorized = 2,
+
+	// 连接到服务器已超时
+	ConnectTimedout = 3,
+
+	// 连接到服务器失败
+	ConnectFailure = 4
 };
 
 // 客户端选项
