@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using Yarp.ReverseProxy.Forwarder;
 
@@ -28,26 +27,12 @@ namespace CYarp.Server
         ClaimsPrincipal User { get; }
 
         /// <summary>
-        /// 请求创建tunnel[由框架调用]
-        /// </summary>
-        /// <param name="tunnelId">随机的tunnel标识</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task CreateTunnelAsync(Guid tunnelId, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 转发http请求
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="httpContext"></param>
         /// <param name="requestConfig"></param>
         /// <param name="transformer"></param>
         /// <returns></returns>
-        ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, ForwarderRequestConfig? requestConfig = default, HttpTransformer? transformer = default);
-
-        /// <summary>
-        /// 等待直到关闭[由框架调用]
-        /// </summary>
-        /// <returns></returns>
-        Task WaitForCloseAsync();
+        ValueTask<ForwarderError> ForwardHttpAsync(HttpContext httpContext, ForwarderRequestConfig? requestConfig = default, HttpTransformer? transformer = default);
     }
 }

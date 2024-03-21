@@ -15,6 +15,7 @@ namespace CYarp.Server.Middlewares
     sealed class CYarpClient : ClientBase
     {
         private readonly Stream stream;
+        private readonly CancellationTokenSource disposeTokenSource = new();
 
         public CYarpClient(
             Stream stream,
@@ -41,9 +42,10 @@ namespace CYarp.Server.Middlewares
             try
             {
                 var buffer = new byte[8].AsMemory();
+                var token = this.disposeTokenSource.Token;
                 while (true)
                 {
-                    var read = await this.stream.ReadAsync(buffer);
+                    var read = await this.stream.ReadAsync(buffer, token);
                     if (read == 0)
                     {
                         break;
@@ -55,10 +57,13 @@ namespace CYarp.Server.Middlewares
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
+
+            this.disposeTokenSource.Cancel();
+            this.disposeTokenSource.Dispose();
             this.stream.Dispose();
-            base.Dispose();
         }
     }
 }

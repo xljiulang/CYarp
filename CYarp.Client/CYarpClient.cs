@@ -14,6 +14,7 @@ namespace CYarp.Client
     /// </summary>
     public class CYarpClient : IDisposable
     {
+        private volatile bool disposed = false;
         private readonly HttpMessageInvoker httpClient;
 
         /// <summary>
@@ -238,7 +239,21 @@ namespace CYarp.Client
         /// <summary>
         /// 释放资源
         /// </summary>
-        public virtual void Dispose()
+        public void Dispose()
+        {
+            if (this.disposed == false)
+            {
+                this.disposed = true;
+                this.Dispose(disposing: true);
+            }
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
         {
             this.httpClient.Dispose();
         }

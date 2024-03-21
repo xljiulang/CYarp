@@ -12,12 +12,12 @@ namespace CYarp.Server.Clients
     {
         private readonly HttpHandlerConfig httpHandlerConfig;
         private readonly TunnelStreamFactory tunnelStreamFactory;
-        private readonly IClient client;
+        private readonly ClientBase client;
 
         public ClientHttpHandler(
             HttpHandlerConfig httpHandlerConfig,
             TunnelStreamFactory tunnelStreamFactory,
-            IClient client)
+            ClientBase client)
         {
             this.httpHandlerConfig = httpHandlerConfig;
             this.tunnelStreamFactory = tunnelStreamFactory;

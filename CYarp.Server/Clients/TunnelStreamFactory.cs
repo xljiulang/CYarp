@@ -25,7 +25,7 @@ namespace CYarp.Server.Clients
         /// <param name="client"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<TunnelStream> CreateAsync(IClient client, CancellationToken cancellationToken)
+        public async Task<TunnelStream> CreateAsync(ClientBase client, CancellationToken cancellationToken)
         {
             var tunnelId = Guid.NewGuid();
             var tunnelCompletionSource = new TaskCompletionSource<TunnelStream>();

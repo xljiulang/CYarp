@@ -20,9 +20,9 @@ namespace CYarp.Server.Clients
 
         protected override void Dispose(bool disposing)
         {
-            this.Inner.Dispose();
             base.Dispose(disposing);
 
+            this.Inner.Dispose();
             this.closeTaskCompletionSource.TrySetResult();
         }
 

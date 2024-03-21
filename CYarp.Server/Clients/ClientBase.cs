@@ -15,6 +15,7 @@ namespace CYarp.Server.Clients
     /// </summary>
     abstract class ClientBase : IClient
     {
+        private volatile bool disposed = false;
         private readonly IHttpForwarder httpForwarder;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
         private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version = HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
@@ -46,20 +47,29 @@ namespace CYarp.Server.Clients
         }
 
 
-        public abstract Task CreateTunnelAsync(Guid tunnelId, CancellationToken cancellationToken = default);
-
-
-        public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, ForwarderRequestConfig? requestConfig = default, HttpTransformer? transformer = default)
+        public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext httpContext, ForwarderRequestConfig? requestConfig, HttpTransformer? transformer)
         {
             var httpClient = this.httpClientLazy.Value;
             var destination = this.Destination.OriginalString;
-            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
+            return this.httpForwarder.SendAsync(httpContext, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
         }
+
+        public abstract Task CreateTunnelAsync(Guid tunnelId, CancellationToken cancellationToken);
 
         public abstract Task WaitForCloseAsync();
 
 
-        public virtual void Dispose()
+        public void Dispose()
+        {
+            if (this.disposed == false)
+            {
+                this.disposed = true;
+                this.Dispose(disposing: true);
+            }
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
             if (this.httpClientLazy.IsValueCreated)
             {
