@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -90,22 +92,40 @@ namespace CYarp.Client
         /// <returns></returns>
         private async Task TransportCoreAsync(CYarpClientOptions options, CancellationToken cancellationToken)
         {
-            using var serverStream = await this.ConnectServerAsync(options, tunnelId: null, cancellationToken);
-            using var streamReader = new StreamReader(serverStream, leaveOpen: true);
+            using var signalingStream = await this.ConnectServerAsync(options, tunnelId: null, cancellationToken);
+            using var signalingTokenSource = new CancellationTokenSource();
 
+            try
+            {
+                using var tunnelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, signalingTokenSource.Token);
+                await foreach (var tunnelId in ReadTunnelIdAsync(signalingStream, cancellationToken))
+                {
+                    this.TunnelAsync(options, tunnelId, tunnelTokenSource.Token);
+                }
+            }
+            finally
+            {
+                signalingTokenSource.Cancel();
+            }
+        }
+
+        private static async IAsyncEnumerable<string> ReadTunnelIdAsync(Stream signalingStream, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            using var streamReader = new StreamReader(signalingStream, leaveOpen: true);
             while (streamReader.EndOfStream == false)
             {
                 var tunnelId = await streamReader.ReadLineAsync(cancellationToken);
                 if (string.IsNullOrEmpty(tunnelId))
                 {
-                    break;
+                    yield break;
                 }
                 else
                 {
-                    this.TunnelAsync(options, tunnelId, cancellationToken);
+                    yield return tunnelId;
                 }
             }
         }
+
 
         /// <summary>
         /// 发起隧道传输
@@ -118,10 +138,10 @@ namespace CYarp.Client
             try
             {
                 using var targetStream = await ConnectTargetAsync(options, cancellationToken);
-                using var serverStream = await this.ConnectServerAsync(options, tunnelId, cancellationToken);
+                using var tunnelStream = await this.ConnectServerAsync(options, tunnelId, cancellationToken);
 
-                var task1 = serverStream.CopyToAsync(targetStream, cancellationToken);
-                var task2 = targetStream.CopyToAsync(serverStream, cancellationToken);
+                var task1 = tunnelStream.CopyToAsync(targetStream, cancellationToken);
+                var task2 = targetStream.CopyToAsync(tunnelStream, cancellationToken);
                 await Task.WhenAny(task1, task2);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
