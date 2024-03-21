@@ -48,8 +48,8 @@ namespace CYarp.Server.Middlewares
             else
             {
                 var stream = await cyarpFeature.AcceptAsync();
-                var tunnelStream = new TunnelStream(stream, tunnelId);
-                if (tunnelStreamFactory.SetResult(tunnelStream))
+                using var tunnelStream = new TunnelStream(stream, tunnelId);
+                if (this.tunnelStreamFactory.SetResult(tunnelStream))
                 {
                     await tunnelStream.Closed;
                 }

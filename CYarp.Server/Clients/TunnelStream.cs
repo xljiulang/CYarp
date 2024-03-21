@@ -8,33 +8,28 @@ namespace CYarp.Server.Clients
     {
         private readonly TaskCompletionSource closeTaskCompletionSource = new();
 
-        public Task Closed => closeTaskCompletionSource.Task;
+        public Task Closed => this.closeTaskCompletionSource.Task;
 
         public Guid Id { get; }
 
         public TunnelStream(Stream inner, Guid tunnelId)
             : base(inner)
         {
-            Id = tunnelId;
+            this.Id = tunnelId;
         }
-
-        public override void Close()
-        {
-            Inner.Close();
-            base.Close();
-        }
-
 
         protected override void Dispose(bool disposing)
         {
-            closeTaskCompletionSource.TrySetResult();
+            this.Inner.Dispose();
             base.Dispose(disposing);
+
+            this.closeTaskCompletionSource.TrySetResult();
         }
 
 
         public override string ToString()
         {
-            return Id.ToString();
+            return this.Id.ToString();
         }
     }
 }
