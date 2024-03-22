@@ -1,21 +1,13 @@
 #include <stdint.h>
 
-typedef void* CYarpClient;
-
-typedef void (*CYarpTunnelErrorCallback)(
-	// 错误类型
-	char16_t* type,
-	// 错误消息
-	char16_t* message);
-
-// 传输错误枚举
-enum CYarpTransportError
+// CYarp错误码
+enum CYarpErrorCode
 {
 	// client句柄无效
 	InvalidHandle = -1,
 
-	// 传输完成
-	Completed = 0,
+	// 无错误
+	NoError = 0,
 
 	// 连接到服务器失败
 	ConnectFailure = 1,
@@ -26,6 +18,22 @@ enum CYarpTransportError
 	// 连接到服务身份认证不通过
 	ConnectUnauthorized = 3
 };
+
+// CYarp客户端
+typedef void* CYarpClient;
+
+// 隧道异常回调
+typedef void (*CYarpTunnelErrorCallback)(
+	// 错误类型
+	char16_t* type,
+	// 错误消息
+	char16_t* message);
+
+// 传输完成回调
+typedef void (*CYarpCompletedCallback)(
+	// 传输错误码
+	CYarpErrorCode errorCode);
+
 
 // 客户端选项
 struct CYarpClientOptions
@@ -48,10 +56,23 @@ struct CYarpClientOptions
 
 // 创建客户端
 // 参数不正确时返回NULL
-extern "C" CYarpClient CYarpClientCreate(CYarpClientOptions * options);
+extern "C" CYarpClient CYarpClientCreate(
+	// 选项
+	CYarpClientOptions * options);
 
 // 释放客户端
-extern "C" void CYarpClientFree(CYarpClient client);
+extern "C" void CYarpClientFree(
+	// 客户端
+	CYarpClient client);
 
-// 传输数据
-extern "C" enum CYarpTransportError CYarpClientTransport(CYarpClient client);
+// 同步传输数据
+extern "C" enum CYarpErrorCode CYarpClientTransport(
+	// 客户端
+	CYarpClient client);
+
+// 异步传输数据
+extern "C" enum CYarpErrorCode CYarpClientTransportAsync(
+	// 客户端
+	CYarpClient client,
+	// 传输完成回调，为Null则转换同步调用
+	CYarpCompletedCallback completedCallback);

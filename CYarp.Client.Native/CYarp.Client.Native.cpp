@@ -23,7 +23,7 @@ int main()
 	if (client != NULL)
 	{
 		std::cout << "transporting ...\n";
-		CYarpTransportError error = CYarpClientTransport(client);
+		CYarpErrorCode error = CYarpClientTransport(client);
 
 		std::cout << error;
 		CYarpClientFree(client);

@@ -1,28 +1,29 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace CYarp.Client
 {
     /// <summary>
     /// AOT编译
     /// </summary>
-    unsafe static class AOT
+    static class AOT
     {
         /// <summary>
-        /// 传输错误枚举
+        /// 错误码
         /// </summary>
-        public enum TransportError : int
+        public enum ErrorCode : int
         {
             /// <summary>
-            /// client句柄无效
+            /// 句柄无效
             /// </summary>
             InvalidHandle = -1,
 
             /// <summary>
-            /// 传输完成，表示与服务器的主连接和传输通道都已关闭
+            /// 无错误
             /// </summary>
-            Completed = 0,
+            NoError = 0,
 
             /// <summary>
             /// 连接到服务器失败
@@ -51,7 +52,7 @@ namespace CYarp.Client
             public nint TargetUnixDomainSocket;
             public nint Authorization;
             public int ConnectTimeout;
-            public delegate* unmanaged[Cdecl]<nint, nint, void> TunnelErrorCallback;
+            public unsafe delegate* unmanaged[Cdecl]<nint, nint, void> TunnelErrorCallback;
         }
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace CYarp.Client
         /// </summary>
         /// <returns>客户端句柄</returns>
         [UnmanagedCallersOnly(EntryPoint = "CYarpClientCreate", CallConvs = [typeof(CallConvCdecl)])]
-        public static nint CYarpClientCreate(ClientOptions* clientOptions)
+        public unsafe static nint CYarpClientCreate(ClientOptions* clientOptions)
         {
             if (clientOptions == null ||
                 clientOptions->ServerUri == default ||
@@ -131,35 +132,78 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 传输数据
+        /// 同步传输数据
         /// </summary>
         /// <param name="clientPtr">客户端句柄</param> 
         /// <returns>传输错误枚举</returns>
         [UnmanagedCallersOnly(EntryPoint = "CYarpClientTransport", CallConvs = [typeof(CallConvCdecl)])]
-        public static TransportError CYarpClientTransport(nint clientPtr)
+        public static ErrorCode CYarpClientTransport(nint clientPtr)
+        {
+            return Transport(clientPtr);
+        }
+
+        /// <summary>
+        /// 异步传输数据
+        /// </summary>
+        /// <param name="clientPtr">客户端句柄</param>
+        /// <param name="completedCallback">传输完成回调，null则转同步调用</param>
+        /// <returns>传输错误枚举</returns>
+        [UnmanagedCallersOnly(EntryPoint = "CYarpClientTransportAsync", CallConvs = [typeof(CallConvCdecl)])]
+        public unsafe static ErrorCode CYarpClientTransportAsync(nint clientPtr, delegate* unmanaged[Cdecl]<ErrorCode, void> completedCallback)
+        {
+            if (completedCallback == null)
+            {
+                return Transport(clientPtr);
+            }
+
+            var gcHandle = GCHandle.FromIntPtr(clientPtr);
+            if (gcHandle.IsAllocated == false || gcHandle.Target is not CYarpClient client)
+            {
+                return ErrorCode.InvalidHandle;
+            }
+
+            TransportAsync(client, errorCode => completedCallback(errorCode));
+            return ErrorCode.NoError;
+        }
+
+        /// <summary>
+        /// 同步数据传输
+        /// </summary>
+        /// <param name="clientPtr"></param>
+        /// <returns></returns>
+        private static ErrorCode Transport(nint clientPtr)
         {
             var gcHandle = GCHandle.FromIntPtr(clientPtr);
             if (gcHandle.IsAllocated == false || gcHandle.Target is not CYarpClient client)
             {
-                return TransportError.InvalidHandle;
+                return ErrorCode.InvalidHandle;
             }
 
+            var completionSource = new TaskCompletionSource<ErrorCode>();
+            TransportAsync(client, errorCode => completionSource.TrySetResult(errorCode));
+            return completionSource.Task.Result;
+        }
+
+        /// <summary>
+        /// 传输数据
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <param name="completedCallback">传输完成回调</param>        
+        private static async void TransportAsync(CYarpClient client, Action<ErrorCode> completedCallback)
+        {
             try
             {
-                client.TransportAsync(default).Wait();
-                return TransportError.Completed;
-            }
-            catch (AggregateException ex) when (ex.InnerException is CYarpConnectException connectException)
-            {
-                return (TransportError)(int)connectException.ErrorCode;
+                await client.TransportAsync(default);
+                completedCallback(ErrorCode.NoError);
             }
             catch (CYarpConnectException ex)
             {
-                return (TransportError)(int)ex.ErrorCode;
+                var errorCode = (ErrorCode)(int)ex.ErrorCode;
+                completedCallback(errorCode);
             }
             catch (Exception)
             {
-                return TransportError.Completed;
+                completedCallback(ErrorCode.NoError);
             }
         }
     }
