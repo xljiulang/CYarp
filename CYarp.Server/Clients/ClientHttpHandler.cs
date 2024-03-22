@@ -1,10 +1,12 @@
 ﻿using CYarp.Server.Configs;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace CYarp.Server.Clients
 {
@@ -40,6 +42,7 @@ namespace CYarp.Server.Clients
                 AutomaticDecompression = DecompressionMethods.None,
                 RequestHeaderEncodingSelector = (header, context) => Encoding.UTF8,
                 ResponseHeaderEncodingSelector = (header, context) => Encoding.UTF8,
+                ActivityHeadersPropagator = new ReverseProxyPropagator(DistributedContextPropagator.Current),
             };
 
             if (this.httpTunnelConfig.DangerousAcceptAnyServerCertificate)
