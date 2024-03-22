@@ -19,6 +19,7 @@ namespace CYarp.Client
         private volatile bool disposed = false;
         private readonly CYarpClientOptions options;
         private readonly HttpMessageInvoker httpClient;
+        private readonly CancellationTokenSource disposeTokenSource = new();
 
         /// <summary>
         /// CYarp客户端
@@ -64,6 +65,19 @@ namespace CYarp.Client
         {
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disposeTokenSource.Token);
+            await this.TransportAsyncCore(linkedTokenSource.Token);
+        }
+
+        /// <summary>
+        /// 连接到CYarp服务器并开始隧道传输
+        /// </summary> 
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="CYarpConnectException"></exception> 
+        /// <exception cref="OperationCanceledException"></exception>
+        private async Task TransportAsyncCore(CancellationToken cancellationToken)
+        {
             using var signalingStream = await this.ConnectServerAsync(tunnelId: null, cancellationToken);
             using var signalingTokenSource = new CancellationTokenSource();
 
@@ -141,6 +155,7 @@ namespace CYarp.Client
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <exception cref="CYarpConnectException"></exception>
+        /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
         private async Task<Stream> ConnectTargetAsync(CancellationToken cancellationToken)
         {
@@ -182,6 +197,7 @@ namespace CYarp.Client
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
         /// <exception cref="CYarpConnectException"></exception>
+        /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
         private async Task<CYarpClientStream> ConnectServerAsync(string? tunnelId, CancellationToken cancellationToken)
         {
@@ -306,6 +322,8 @@ namespace CYarp.Client
         protected virtual void Dispose(bool disposing)
         {
             this.httpClient.Dispose();
+            this.disposeTokenSource.Cancel();
+            this.disposeTokenSource.Dispose();
         }
     }
 }

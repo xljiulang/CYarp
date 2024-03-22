@@ -31,6 +31,8 @@ namespace CYarp.Server.Middlewares
 
         public override async Task CreateTunnelAsync(Guid tunnelId, CancellationToken cancellationToken = default)
         {
+            base.ValidateDisposed();
+
             var text = $"{tunnelId}\r\n";
             var buffer = Encoding.UTF8.GetBytes(text);
             await this.stream.WriteAsync(buffer, cancellationToken);

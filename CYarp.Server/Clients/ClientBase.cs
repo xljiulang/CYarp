@@ -49,7 +49,7 @@ namespace CYarp.Server.Clients
 
         public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext httpContext, ForwarderRequestConfig? requestConfig, HttpTransformer? transformer)
         {
-            ObjectDisposedException.ThrowIf(this.disposed, this);
+            this.ValidateDisposed();
 
             var httpClient = this.httpClientLazy.Value;
             var destination = this.Destination.OriginalString;
@@ -60,6 +60,10 @@ namespace CYarp.Server.Clients
 
         public abstract Task WaitForCloseAsync();
 
+        protected void ValidateDisposed()
+        {
+            ObjectDisposedException.ThrowIf(this.disposed, this);
+        }
 
         public void Dispose()
         {
