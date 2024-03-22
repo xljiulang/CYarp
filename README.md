@@ -110,7 +110,8 @@ HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
 ```
 
-接着服务端将在连接后续的Stream里向客户端发送{tunnelId}\r\n的tunnelId值，指示客户端向服务端创建tunnel。
+接着服务端将在连接后续的Stream里向客户端发送`{tunnelId}\r\n`的tunnelId值，指示客户端向服务端创建tunnel。
+服务端和客户端双方都能在后续的Stream向对方发送`PING\r\n`的心跳请求，接收者收到之后要立即回复`PONG\r\n`心跳回应。
 
 > http/2.0
 
@@ -129,7 +130,7 @@ CYarp-Destination = {URI}
 :status = 200
 ```
 
-接着服务端将在连接后续的Stream里向客户端发送{tunnelId}\r\n的tunnelId值，指示客户端向服务端创建tunnel。
+接着服务端将在连接后续的Stream里向客户端发送`{tunnelId}\r\n`的tunnelId值，指示客户端向服务端创建tunnel。服务端和客户端双方都能在后续的Stream向对方发送`PING\r\n`的心跳请求，接收者收到之后要立即回复`PONG\r\n`心跳回应。
 
 
 #### 2.2 Tunnel的创建

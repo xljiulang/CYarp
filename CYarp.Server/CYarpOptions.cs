@@ -5,21 +5,21 @@ namespace CYarp.Server
     /// <summary>
     /// 选项
     /// </summary>
-    public record CYarpOptions
+    public class CYarpOptions
     {
         /// <summary>
-        /// 客户端授权验证配置
+        /// 认证配置
         /// </summary>
-        public AuthorizationConfig ClientAuthorization { get; init; } = new AuthorizationConfig();
+        public AuthorizationConfig Authorization { get; set; } = new AuthorizationConfig();
 
         /// <summary>
-        /// 客户端TcpKeepAlive配置
+        /// 连接配置
         /// </summary>
-        public TcpKeepAliveConfig ClientTcpKeepAlive { get; init; } = new TcpKeepAliveConfig();
+        public ConnectionConfig Connection { get; set; } = new ConnectionConfig();
 
         /// <summary>
-        /// 客户端的HttpHandler配置
+        /// http隧道配置
         /// </summary>
-        public HttpHandlerConfig ClientHttpHandler { get; init; } = new HttpHandlerConfig();
+        public HttpTunnelConfig HttpTunnel { get; set; } = new HttpTunnelConfig();
     }
 }

@@ -49,6 +49,12 @@ namespace CYarp.Client
         public Action<Exception>? TunnelErrorCallback;
 
         /// <summary>
+        /// 心跳包周期
+        /// 默认30s
+        /// </summary>
+        public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
+
+        /// <summary>
         /// 验证参数
         /// </summary>
         /// <exception cref="ArgumentException"></exception>

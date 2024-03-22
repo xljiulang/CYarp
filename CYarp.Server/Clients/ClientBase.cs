@@ -13,7 +13,7 @@ namespace CYarp.Server.Clients
     /// <summary>
     /// 客户端抽象类
     /// </summary>
-    abstract class ClientBase : IClient
+    abstract class ClientBase : IClient, IConnection
     {
         private volatile bool disposed = false;
         private readonly IHttpForwarder httpForwarder;
@@ -28,8 +28,8 @@ namespace CYarp.Server.Clients
 
         public ClientBase(
             IHttpForwarder httpForwarder,
-            HttpHandlerConfig httpHandlerConfig,
-            TunnelStreamFactory tunnelStreamFactory,
+            HttpTunnelConfig httpTunnelConfig,
+            HttpTunnelFactory httpTunnelFactory,
             string clientId,
             Uri clientDestination,
             ClaimsPrincipal clientUser)
@@ -37,7 +37,7 @@ namespace CYarp.Server.Clients
             this.httpForwarder = httpForwarder;
             this.httpClientLazy = new Lazy<HttpMessageInvoker>(() =>
             {
-                var httpHandler = new ClientHttpHandler(httpHandlerConfig, tunnelStreamFactory, this);
+                var httpHandler = new ClientHttpHandler(httpTunnelConfig, httpTunnelFactory, this);
                 return new HttpMessageInvoker(httpHandler);
             });
 
@@ -56,7 +56,7 @@ namespace CYarp.Server.Clients
             return this.httpForwarder.SendAsync(httpContext, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
         }
 
-        public abstract Task CreateTunnelAsync(Guid tunnelId, CancellationToken cancellationToken);
+        public abstract Task CreateHttpTunnelAsync(Guid tunnelId, CancellationToken cancellationToken);
 
         public abstract Task WaitForCloseAsync();
 

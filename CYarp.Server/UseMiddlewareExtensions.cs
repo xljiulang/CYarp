@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             app.UseMiddleware<CYarpMiddleware>();
             app.UseMiddleware<CYarpClientMiddleware>();
-            app.UseMiddleware<TunnelStreamMiddleware>(); 
+            app.UseMiddleware<HttpTunnelMiddleware>(); 
             return app;
         }
     }
