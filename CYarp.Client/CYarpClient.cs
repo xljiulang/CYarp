@@ -21,6 +21,9 @@ namespace CYarp.Client
         private readonly HttpMessageInvoker httpClient;
         private readonly CancellationTokenSource disposeTokenSource = new();
 
+        private static readonly string PING = "PING";
+        private static readonly ReadOnlyMemory<byte> PONG = "PONG\r\n"u8.ToArray();
+
         /// <summary>
         /// CYarp客户端
         /// </summary>
@@ -101,12 +104,16 @@ namespace CYarp.Client
         private static async IAsyncEnumerable<Guid> ReadTunnelIdAsync(Stream signalingStream, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             using var streamReader = new StreamReader(signalingStream, leaveOpen: true);
-            while (streamReader.EndOfStream == false)
+            while (cancellationToken.IsCancellationRequested == false)
             {
                 var text = await streamReader.ReadLineAsync(cancellationToken);
                 if (text == null)
                 {
                     yield break;
+                }
+                else if (text == PING)
+                {
+                    await signalingStream.WriteAsync(PONG, cancellationToken);
                 }
                 else if (Guid.TryParse(text, out var tunnelId))
                 {

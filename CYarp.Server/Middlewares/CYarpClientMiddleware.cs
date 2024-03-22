@@ -1,5 +1,4 @@
 ﻿using CYarp.Server.Clients;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -93,16 +92,9 @@ namespace CYarp.Server.Middlewares
                 return;
             }
 
-
-            // TcpKeepAlive
-            var socketFeature = context.Features.Get<IConnectionSocketFeature>();
-            if (socketFeature != null)
-            {
-                options.ClientTcpKeepAlive.SetTcpKeepAlive(socketFeature.Socket);
-            }
-
             var stream = await cyarpFeature.AcceptAsync();
-            using var cyarpClient = new CYarpClient(stream, this.httpForwarder, options.ClientHttpHandler, tunnelStreamFactory, clientId, clientDestination, clinetUser);
+            var signalingStream = new SignalingStream(stream);
+            using var cyarpClient = new CYarpClient(signalingStream, this.httpForwarder, options.ClientKeepAlive, options.ClientHttpHandler, tunnelStreamFactory, clientId, clientDestination, clinetUser);
 
             if (await this.clientManager.AddAsync(cyarpClient))
             {
