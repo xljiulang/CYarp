@@ -8,18 +8,18 @@ namespace CYarp.Server
     public class CYarpOptions
     {
         /// <summary>
-        /// 客户端授权验证配置
+        /// 授权验证配置
         /// </summary>
-        public AuthorizationConfig ClientAuthorization { get; set; } = new AuthorizationConfig();
+        public AuthorizationConfig Authorization { get; set; } = new AuthorizationConfig();
 
         /// <summary>
-        /// 客户端KeepAlive配置
+        /// 信号隧道配置
         /// </summary>
-        public KeepAliveConfig ClientKeepAlive { get; set; } = new KeepAliveConfig();
+        public SignalTunnelConfig SignalTunnel { get; set; } = new SignalTunnelConfig();
 
         /// <summary>
-        /// 客户端的HttpHandler配置
+        /// http隧道配置
         /// </summary>
-        public HttpHandlerConfig ClientHttpHandler { get; set; } = new HttpHandlerConfig();
+        public HttpTunnelConfig HttpTunnel { get; set; } = new HttpTunnelConfig();
     }
 }

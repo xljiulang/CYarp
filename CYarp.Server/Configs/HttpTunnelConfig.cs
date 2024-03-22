@@ -3,9 +3,9 @@
 namespace CYarp.Server.Configs
 {
     /// <summary>
-    /// httpHandler配置
+    /// http隧道配置
     /// </summary>
-    public class HttpHandlerConfig
+    public class HttpTunnelConfig
     {
         /// <summary>
         /// 与目标服务器的最大连接数

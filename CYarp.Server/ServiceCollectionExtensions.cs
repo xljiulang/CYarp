@@ -18,12 +18,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IServiceCollection AddCYarp(this IServiceCollection services)
         {
-            services.TryAddSingleton<TunnelStreamFactory>();
+            services.TryAddSingleton<HttpTunnelFactory>();
             services.TryAddSingleton<IClientManager, ClientManager>();
 
             services.TryAddSingleton<CYarpMiddleware>();
             services.TryAddSingleton<CYarpClientMiddleware>();
-            services.TryAddSingleton<TunnelStreamMiddleware>();
+            services.TryAddSingleton<HttpTunnelMiddleware>();
 
             return services.AddHttpForwarder();
         }

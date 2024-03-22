@@ -4,7 +4,10 @@ using System.Threading.Tasks;
 
 namespace CYarp.Server.Clients
 {
-    sealed class TunnelStream : DelegatingStream
+    /// <summary>
+    /// http隧道
+    /// </summary>
+    sealed class HttpTunnel : DelegatingStream
     {
         private readonly TaskCompletionSource closeTaskCompletionSource = new();
 
@@ -12,7 +15,7 @@ namespace CYarp.Server.Clients
 
         public Guid Id { get; }
 
-        public TunnelStream(Stream inner, Guid tunnelId)
+        public HttpTunnel(Stream inner, Guid tunnelId)
             : base(inner)
         {
             this.Id = tunnelId;

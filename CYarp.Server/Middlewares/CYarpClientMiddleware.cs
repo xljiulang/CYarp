@@ -27,7 +27,7 @@ namespace CYarp.Server.Middlewares
     {
         private static readonly string cyarpDestinationHeader = "CYarp-Destination";
         private readonly IHttpForwarder httpForwarder;
-        private readonly TunnelStreamFactory tunnelStreamFactory;
+        private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly IClientManager clientManager;
         private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
         private readonly ILogger<CYarpClientMiddleware> logger;
@@ -35,13 +35,13 @@ namespace CYarp.Server.Middlewares
 
         public CYarpClientMiddleware(
             IHttpForwarder httpForwarder,
-            TunnelStreamFactory tunnelStreamFactory,
+            HttpTunnelFactory httpTunnelFactory,
             IClientManager clientManager,
             IOptionsMonitor<CYarpOptions> yarpOptions,
             ILogger<CYarpClientMiddleware> logger)
         {
             this.httpForwarder = httpForwarder;
-            this.tunnelStreamFactory = tunnelStreamFactory;
+            this.httpTunnelFactory = httpTunnelFactory;
             this.clientManager = clientManager;
             this.yarpOptions = yarpOptions;
             this.logger = logger;
@@ -76,16 +76,16 @@ namespace CYarp.Server.Middlewares
 
             // clientId参数验证
             var options = yarpOptions.CurrentValue;
-            var clientId = clinetUser.FindFirstValue(options.ClientAuthorization.ClientIdClaimType);
+            var clientId = clinetUser.FindFirstValue(options.Authorization.ClientIdClaimType);
             if (string.IsNullOrEmpty(clientId))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                this.LogFailureStatus(context, $"用户身份不包含{options.ClientAuthorization.ClientIdClaimType}的ClaimType");
+                this.LogFailureStatus(context, $"用户身份不包含{options.Authorization.ClientIdClaimType}的ClaimType");
                 return;
             }
 
             // 角色授权验证
-            if (options.ClientAuthorization.AllowRoles.Length > 0 && options.ClientAuthorization.AllowRoles.Any(clinetUser.IsInRole) == false)
+            if (options.Authorization.AllowRoles.Length > 0 && options.Authorization.AllowRoles.Any(clinetUser.IsInRole) == false)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 this.LogFailureStatus(context, "请求者的角色验证不通过");
@@ -93,8 +93,8 @@ namespace CYarp.Server.Middlewares
             }
 
             var stream = await cyarpFeature.AcceptAsync();
-            var signalingStream = new SignalingStream(stream);
-            using var cyarpClient = new CYarpClient(signalingStream, this.httpForwarder, options.ClientKeepAlive, options.ClientHttpHandler, tunnelStreamFactory, clientId, clientDestination, clinetUser);
+            var signalTunnel = new SignalTunnel(stream);
+            using var cyarpClient = new CYarpClient(signalTunnel, this.httpForwarder, options.SignalTunnel, options.HttpTunnel, httpTunnelFactory, clientId, clientDestination, clinetUser);
 
             if (await this.clientManager.AddAsync(cyarpClient))
             {

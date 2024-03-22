@@ -17,16 +17,16 @@ namespace CYarp.Server.Middlewares
     /// :scheme = https
     /// :path = /{tunnelId}  
     /// </summary>
-    sealed partial class TunnelStreamMiddleware : IMiddleware
+    sealed partial class HttpTunnelMiddleware : IMiddleware
     {
-        private readonly TunnelStreamFactory tunnelStreamFactory;
-        private readonly ILogger<TunnelStreamMiddleware> logger;
+        private readonly HttpTunnelFactory httpTunnelFactory;
+        private readonly ILogger<HttpTunnelMiddleware> logger;
 
-        public TunnelStreamMiddleware(
-            TunnelStreamFactory tunnelStreamFactory,
-            ILogger<TunnelStreamMiddleware> logger)
+        public HttpTunnelMiddleware(
+            HttpTunnelFactory httpTunnelFactory,
+            ILogger<HttpTunnelMiddleware> logger)
         {
-            this.tunnelStreamFactory = tunnelStreamFactory;
+            this.httpTunnelFactory = httpTunnelFactory;
             this.logger = logger;
         }
 
@@ -46,17 +46,17 @@ namespace CYarp.Server.Middlewares
                 return;
             }
 
-            if (this.tunnelStreamFactory.Contains(tunnelId) == false)
+            if (this.httpTunnelFactory.Contains(tunnelId) == false)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
             }
             else
             {
                 var stream = await cyarpFeature.AcceptAsync();
-                using var tunnelStream = new TunnelStream(stream, tunnelId);
-                if (this.tunnelStreamFactory.SetResult(tunnelStream))
+                using var httpTunnel = new HttpTunnel(stream, tunnelId);
+                if (this.httpTunnelFactory.SetResult(httpTunnel))
                 {
-                    await tunnelStream.Closed;
+                    await httpTunnel.Closed;
                 }
                 Log.LogTunnelClosed(this.logger, tunnelId);
             }

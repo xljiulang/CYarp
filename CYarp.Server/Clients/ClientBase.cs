@@ -28,8 +28,8 @@ namespace CYarp.Server.Clients
 
         public ClientBase(
             IHttpForwarder httpForwarder,
-            HttpHandlerConfig httpHandlerConfig,
-            TunnelStreamFactory tunnelStreamFactory,
+            HttpTunnelConfig httpTunnelConfig,
+            HttpTunnelFactory httpTunnelFactory,
             string clientId,
             Uri clientDestination,
             ClaimsPrincipal clientUser)
@@ -37,7 +37,7 @@ namespace CYarp.Server.Clients
             this.httpForwarder = httpForwarder;
             this.httpClientLazy = new Lazy<HttpMessageInvoker>(() =>
             {
-                var httpHandler = new ClientHttpHandler(httpHandlerConfig, tunnelStreamFactory, this);
+                var httpHandler = new ClientHttpHandler(httpTunnelConfig, httpTunnelFactory, this);
                 return new HttpMessageInvoker(httpHandler);
             });
 

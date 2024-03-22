@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// TunnelStream工厂
+    /// HttpTunnel工厂
     /// </summary> 
-    sealed partial class TunnelStreamFactory
+    sealed partial class HttpTunnelFactory
     {
-        private readonly ILogger<TunnelStreamFactory> logger;
-        private readonly ConcurrentDictionary<Guid, TaskCompletionSource<TunnelStream>> tunnelStreamCompletionSources = new();
+        private readonly ILogger<HttpTunnelFactory> logger;
+        private readonly ConcurrentDictionary<Guid, TaskCompletionSource<HttpTunnel>> httpTunnelCompletionSources = new();
 
-        public TunnelStreamFactory(ILogger<TunnelStreamFactory> logger)
+        public HttpTunnelFactory(ILogger<HttpTunnelFactory> logger)
         {
             this.logger = logger;
         }
@@ -25,19 +25,19 @@ namespace CYarp.Server.Clients
         /// <param name="client"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<TunnelStream> CreateAsync(ClientBase client, CancellationToken cancellationToken)
+        public async Task<HttpTunnel> CreateAsync(ClientBase client, CancellationToken cancellationToken)
         {
             var tunnelId = Guid.NewGuid();
-            var tunnelCompletionSource = new TaskCompletionSource<TunnelStream>();
-            this.tunnelStreamCompletionSources.TryAdd(tunnelId, tunnelCompletionSource);
+            var tunnelCompletionSource = new TaskCompletionSource<HttpTunnel>();
+            this.httpTunnelCompletionSources.TryAdd(tunnelId, tunnelCompletionSource);
 
             try
             {
                 await client.CreateTunnelAsync(tunnelId, cancellationToken);
-                var tunnelStream = await tunnelCompletionSource.Task.WaitAsync(cancellationToken);
+                var httpTunnel = await tunnelCompletionSource.Task.WaitAsync(cancellationToken);
 
                 Log.LogTunnelCreated(this.logger, client.Id, tunnelId);
-                return tunnelStream;
+                return httpTunnel;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)
             {
@@ -46,22 +46,22 @@ namespace CYarp.Server.Clients
             }
             finally
             {
-                this.tunnelStreamCompletionSources.TryRemove(tunnelId, out _);
+                this.httpTunnelCompletionSources.TryRemove(tunnelId, out _);
             }
         }
 
         public bool Contains(Guid tunnelId)
         {
-            return this.tunnelStreamCompletionSources.ContainsKey(tunnelId);
+            return this.httpTunnelCompletionSources.ContainsKey(tunnelId);
         }
 
         /// <summary>
         /// 设置TunnelStream
         /// </summary> 
-        /// <param name="tunnelStream"></param>
-        public bool SetResult(TunnelStream tunnelStream)
+        /// <param name="httpTunnel"></param>
+        public bool SetResult(HttpTunnel httpTunnel)
         {
-            return this.tunnelStreamCompletionSources.TryRemove(tunnelStream.Id, out var tunnelAwaiter) && tunnelAwaiter.TrySetResult(tunnelStream);
+            return this.httpTunnelCompletionSources.TryRemove(httpTunnel.Id, out var tunnelAwaiter) && tunnelAwaiter.TrySetResult(httpTunnel);
         }
 
         static partial class Log
