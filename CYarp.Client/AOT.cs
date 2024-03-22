@@ -25,24 +25,19 @@ namespace CYarp.Client
             Completed = 0,
 
             /// <summary>
-            /// Options值无效
+            /// 连接到服务器失败
             /// </summary>
-            InvalidOptions = 1,
-
-            /// <summary>
-            /// 连接到服务身份认证不通过
-            /// </summary>
-            ConnectUnauthorized = 2,
+            ConnectFailure = 1,
 
             /// <summary>
             /// 连接到服务器已超时
             /// </summary>
-            ConnectTimedout = 3,
+            ConnectTimedout = 2,
 
             /// <summary>
-            /// 连接到服务器失败
+            /// 连接到服务身份认证不通过
             /// </summary>
-            ConnectFailure = 4,
+            ConnectUnauthorized = 3,
         }
 
         /// <summary>
@@ -63,47 +58,9 @@ namespace CYarp.Client
         /// 创建客户端
         /// </summary>
         /// <returns>客户端句柄</returns>
-        [UnmanagedCallersOnly(EntryPoint = "CreateClient", CallConvs = [typeof(CallConvCdecl)])]
-        public static nint CreateClient()
+        [UnmanagedCallersOnly(EntryPoint = "CYarpClientCreate", CallConvs = [typeof(CallConvCdecl)])]
+        public static nint CYarpClientCreate(ClientOptions* clientOptions)
         {
-            var client = new CYarpClient();
-            var gcHandle = GCHandle.Alloc(client);
-            return GCHandle.ToIntPtr(gcHandle);
-        }
-
-        /// <summary>
-        /// 释放客户端
-        /// </summary>
-        /// <param name="clientPtr">客户端句柄</param>
-        [UnmanagedCallersOnly(EntryPoint = "FreeClient", CallConvs = [typeof(CallConvCdecl)])]
-        public static void FreeClient(nint clientPtr)
-        {
-            var gcHandle = GCHandle.FromIntPtr(clientPtr);
-            if (gcHandle.IsAllocated)
-            {
-                if (gcHandle.Target is CYarpClient client)
-                {
-                    client.Dispose();
-                }
-                gcHandle.Free();
-            }
-        }
-
-        /// <summary>
-        /// 传输数据
-        /// </summary>
-        /// <param name="clientPtr">客户端句柄</param>
-        /// <param name="clientOptions">选项句柄</param>
-        /// <returns>传输错误枚举</returns>
-        [UnmanagedCallersOnly(EntryPoint = "Transport", CallConvs = [typeof(CallConvCdecl)])]
-        public static TransportError Transport(nint clientPtr, ClientOptions* clientOptions)
-        {
-            var gcHandle = GCHandle.FromIntPtr(clientPtr);
-            if (gcHandle.IsAllocated == false || gcHandle.Target is not CYarpClient client)
-            {
-                return TransportError.InvalidHandle;
-            }
-
             if (clientOptions == null ||
                 clientOptions->ServerUri == default ||
                 clientOptions->TargetUri == default ||
@@ -111,7 +68,7 @@ namespace CYarp.Client
                 Uri.TryCreate(Marshal.PtrToStringUni(clientOptions->ServerUri), UriKind.Absolute, out var serverUri) == false ||
                 Uri.TryCreate(Marshal.PtrToStringUni(clientOptions->TargetUri), UriKind.Absolute, out var targetUri) == false)
             {
-                return TransportError.InvalidOptions;
+                return nint.Zero;
             }
 
             var options = new CYarpClientOptions
@@ -145,14 +102,58 @@ namespace CYarp.Client
 
             try
             {
-                client.TransportAsync(options, default).Wait();
+                var client = new CYarpClient(options);
+                var gcHandle = GCHandle.Alloc(client);
+                return GCHandle.ToIntPtr(gcHandle);
+            }
+            catch (Exception)
+            {
+                return nint.Zero;
+            }
+        }
+
+        /// <summary>
+        /// 释放客户端
+        /// </summary>
+        /// <param name="clientPtr">客户端句柄</param>
+        [UnmanagedCallersOnly(EntryPoint = "CYarpClientFree", CallConvs = [typeof(CallConvCdecl)])]
+        public static void CYarpClientFree(nint clientPtr)
+        {
+            var gcHandle = GCHandle.FromIntPtr(clientPtr);
+            if (gcHandle.IsAllocated)
+            {
+                if (gcHandle.Target is CYarpClient client)
+                {
+                    client.Dispose();
+                }
+                gcHandle.Free();
+            }
+        }
+
+        /// <summary>
+        /// 传输数据
+        /// </summary>
+        /// <param name="clientPtr">客户端句柄</param> 
+        /// <returns>传输错误枚举</returns>
+        [UnmanagedCallersOnly(EntryPoint = "CYarpClientTransport", CallConvs = [typeof(CallConvCdecl)])]
+        public static TransportError CYarpClientTransport(nint clientPtr)
+        {
+            var gcHandle = GCHandle.FromIntPtr(clientPtr);
+            if (gcHandle.IsAllocated == false || gcHandle.Target is not CYarpClient client)
+            {
+                return TransportError.InvalidHandle;
+            }
+
+            try
+            {
+                client.TransportAsync(default).Wait();
                 return TransportError.Completed;
             }
-            catch (AggregateException ex) when (ex.InnerException is CYarpClientException clientException)
+            catch (AggregateException ex) when (ex.InnerException is CYarpConnectException connectException)
             {
-                return (TransportError)(int)clientException.ErrorCode;
+                return (TransportError)(int)connectException.ErrorCode;
             }
-            catch (CYarpClientException ex)
+            catch (CYarpConnectException ex)
             {
                 return (TransportError)(int)ex.ErrorCode;
             }

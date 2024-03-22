@@ -73,11 +73,9 @@ public class CYarpController : ControllerBase
 
 使用`CYarp.Client`包很方便完成.NET客户端开发
 ```c#
- using var client = new CYarpClient();
- while (true))
- {
-     await client.TransportAsync(this.clientOptions.CurrentValue, stoppingToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
- }
+var options = this.clientOptions.CurrentValue;
+using var client = new CYarpClient(options);
+await client.TransportAsync(stoppingToken);
 ```
 
 C和C++客户端，可以将CYarp.Client项目的源代码AOT编译为C导出的动态共享库来使用，[CYarp.Client.Native](https://github.com/xljiulang/CYarp/blob/master/CYarp.Client.Native)项目是C和C++客户端Demo，需要先运行CYarp.Hosting做为调试的服务端。

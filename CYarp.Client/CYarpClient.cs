@@ -17,82 +17,54 @@ namespace CYarp.Client
     public class CYarpClient : IDisposable
     {
         private volatile bool disposed = false;
+        private readonly CYarpClientOptions options;
         private readonly HttpMessageInvoker httpClient;
 
         /// <summary>
         /// CYarp客户端
-        /// </summary> 
-        public CYarpClient()
-            : this(new HttpClientHandler())
+        /// </summary>
+        /// <param name="options"></param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public CYarpClient(CYarpClientOptions options)
+            : this(options, new HttpClientHandler())
         {
         }
 
         /// <summary>
         /// CYarp客户端
-        /// </summary> 
+        /// </summary>
+        /// <param name="options"></param> 
         /// <param name="handler"></param>
         /// <param name="disposeHandler"></param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public CYarpClient(
+            CYarpClientOptions options,
             HttpMessageHandler handler,
             bool disposeHandler = true)
         {
+            ArgumentNullException.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(handler);
+            options.Validate();
+
+            this.options = options;
             this.httpClient = new HttpMessageInvoker(handler, disposeHandler);
         }
 
         /// <summary>
         /// 连接到CYarp服务器并开始隧道传输
-        /// </summary>
-        /// <param name="options"></param>
+        /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        /// <exception cref="CYarpClientException"></exception>
+        /// <exception cref="CYarpConnectException"></exception>
         /// <exception cref="ObjectDisposedException"></exception>
         /// <exception cref="OperationCanceledException"></exception>
-        public async Task TransportAsync(CYarpClientOptions options, CancellationToken cancellationToken)
+        public async Task TransportAsync(CancellationToken cancellationToken)
         {
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
-            try
-            {
-                options.Validate();
-            }
-            catch (Exception ex)
-            {
-                throw new CYarpClientException(CYarpErrorCode.InvalidOptions, ex);
-            }
-
-            try
-            {
-                await this.TransportCoreAsync(options, cancellationToken);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (OperationCanceledException ex)
-            {
-                throw new CYarpClientException(CYarpErrorCode.ConnectTimedout, ex);
-            }
-            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                throw new CYarpClientException(CYarpErrorCode.ConnectUnauthorized, ex);
-            }
-            catch (HttpRequestException ex)
-            {
-                throw new CYarpClientException(CYarpErrorCode.ConnectFailure, ex);
-            }
-        }
-
-        /// <summary>
-        /// 连接到CYarp服务器并开始隧道传输
-        /// </summary>
-        /// <param name="options"></param>
-        /// <param name="cancellationToken"></param>
-        /// <exception cref="ObjectDisposedException"></exception>
-        /// <returns></returns>
-        private async Task TransportCoreAsync(CYarpClientOptions options, CancellationToken cancellationToken)
-        {
-            using var signalingStream = await this.ConnectServerAsync(options, tunnelId: null, cancellationToken);
+            using var signalingStream = await this.ConnectServerAsync(tunnelId: null, cancellationToken);
             using var signalingTokenSource = new CancellationTokenSource();
 
             try
@@ -100,8 +72,11 @@ namespace CYarp.Client
                 using var tunnelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, signalingTokenSource.Token);
                 await foreach (var tunnelId in ReadTunnelIdAsync(signalingStream, cancellationToken))
                 {
-                    this.TunnelAsync(options, tunnelId, tunnelTokenSource.Token);
+                    this.TunnelAsync(tunnelId, tunnelTokenSource.Token);
                 }
+            }
+            catch (Exception)
+            {
             }
             finally
             {
@@ -129,16 +104,15 @@ namespace CYarp.Client
 
         /// <summary>
         /// 发起隧道传输
-        /// </summary>
-        /// <param name="options"></param>
+        /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
-        private async void TunnelAsync(CYarpClientOptions options, string tunnelId, CancellationToken cancellationToken)
+        private async void TunnelAsync(string tunnelId, CancellationToken cancellationToken)
         {
             try
             {
-                using var targetStream = await ConnectTargetAsync(options, cancellationToken);
-                using var tunnelStream = await this.ConnectServerAsync(options, tunnelId, cancellationToken);
+                using var targetStream = await this.ConnectTargetAsync(cancellationToken);
+                using var tunnelStream = await this.ConnectServerAsync(tunnelId, cancellationToken);
 
                 var task1 = tunnelStream.CopyToAsync(targetStream, cancellationToken);
                 var task2 = targetStream.CopyToAsync(tunnelStream, cancellationToken);
@@ -149,19 +123,8 @@ namespace CYarp.Client
             }
             catch (Exception ex)
             {
-                this.OnTunnelExceptionCore(options, ex);
+                this.OnTunnelException(ex);
             }
-        }
-
-        /// <summary>
-        /// 隧道异常时
-        /// </summary>
-        /// <param name="options"></param>
-        /// <param name="ex"></param>
-        private unsafe void OnTunnelExceptionCore(CYarpClientOptions options, Exception ex)
-        {
-            this.OnTunnelException(ex);
-            options.TunnelErrorCallback?.Invoke(ex);
         }
 
         /// <summary>
@@ -170,19 +133,20 @@ namespace CYarp.Client
         /// <param name="ex"></param>
         protected virtual void OnTunnelException(Exception ex)
         {
+            this.options.TunnelErrorCallback?.Invoke(ex);
         }
 
         /// <summary>
         /// 连接到目的地
-        /// </summary>
-        /// <param name="options"></param>
+        /// </summary> 
         /// <param name="cancellationToken"></param>
+        /// <exception cref="CYarpConnectException"></exception>
         /// <returns></returns>
-        private static async Task<Stream> ConnectTargetAsync(CYarpClientOptions options, CancellationToken cancellationToken)
+        private async Task<Stream> ConnectTargetAsync(CancellationToken cancellationToken)
         {
-            EndPoint endPoint = string.IsNullOrEmpty(options.TargetUnixDomainSocket)
-                ? new DnsEndPoint(options.TargetUri.Host, options.TargetUri.Port)
-                : new UnixDomainSocketEndPoint(options.TargetUnixDomainSocket);
+            EndPoint endPoint = string.IsNullOrEmpty(this.options.TargetUnixDomainSocket)
+                ? new DnsEndPoint(this.options.TargetUri.Host, this.options.TargetUri.Port)
+                : new UnixDomainSocketEndPoint(this.options.TargetUnixDomainSocket);
 
             var socket = endPoint is DnsEndPoint
                 ? new Socket(SocketType.Stream, ProtocolType.Tcp)
@@ -190,55 +154,82 @@ namespace CYarp.Client
 
             try
             {
-                using var timeoutTokenSource = new CancellationTokenSource(options.ConnectTimeout);
+                using var timeoutTokenSource = new CancellationTokenSource(this.options.ConnectTimeout);
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
                 await socket.ConnectAsync(endPoint, linkedTokenSource.Token);
                 return new NetworkStream(socket);
             }
-            catch (Exception)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 socket.Dispose();
                 throw;
+            }
+            catch (OperationCanceledException ex)
+            {
+                socket.Dispose();
+                throw new CYarpConnectException(CYarpConnectError.Timedout, ex);
+            }
+            catch (Exception ex)
+            {
+                socket.Dispose();
+                throw new CYarpConnectException(CYarpConnectError.Failure, ex);
             }
         }
 
         /// <summary>
         /// 创建与CYarp服务器的连接
-        /// </summary>
-        /// <param name="options"></param>
+        /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
+        /// <exception cref="CYarpConnectException"></exception>
         /// <returns></returns>
-        private async Task<CYarpClientStream> ConnectServerAsync(CYarpClientOptions options, string? tunnelId, CancellationToken cancellationToken)
+        private async Task<CYarpClientStream> ConnectServerAsync(string? tunnelId, CancellationToken cancellationToken)
         {
-            var serverUri = options.ServerUri;
-            if (serverUri.Scheme == Uri.UriSchemeHttps)
+            try
             {
-                try
+                if (this.options.ServerUri.Scheme == Uri.UriSchemeHttps)
                 {
-                    return await this.HttpConnectAsync(options, tunnelId, cancellationToken);
+                    try
+                    {
+                        return await this.HttpConnectAsync(tunnelId, cancellationToken);
+                    }
+                    catch (HttpRequestException ex) when (ex.StatusCode != HttpStatusCode.Unauthorized)
+                    {
+                        return await this.HttpUpgradesync(tunnelId, cancellationToken);
+                    }
                 }
-                catch (HttpRequestException ex) when (ex.StatusCode != HttpStatusCode.Unauthorized)
+                else
                 {
-                    return await this.HttpUpgradesync(options, tunnelId, cancellationToken);
+                    return await this.HttpUpgradesync(tunnelId, cancellationToken);
                 }
             }
-            else
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                return await this.HttpUpgradesync(options, tunnelId, cancellationToken);
+                throw;
+            }
+            catch (OperationCanceledException ex)
+            {
+                throw new CYarpConnectException(CYarpConnectError.Timedout, ex);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                throw new CYarpConnectException(CYarpConnectError.Unauthorized, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new CYarpConnectException(CYarpConnectError.Failure, ex);
             }
         }
 
         /// <summary>
         /// 使用http/2.0的Connect扩展协议升级连接为长连接
         /// </summary>
-        /// <param name="options"></param>
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task<CYarpClientStream> HttpConnectAsync(CYarpClientOptions options, string? tunnelId, CancellationToken cancellationToken)
+        private async Task<CYarpClientStream> HttpConnectAsync(string? tunnelId, CancellationToken cancellationToken)
         {
-            var serverUri = new Uri(options.ServerUri, $"/{tunnelId}");
+            var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
             var request = new HttpRequestMessage(HttpMethod.Connect, serverUri);
             request.Headers.Protocol = "CYarp";
             request.Version = HttpVersion.Version20;
@@ -246,10 +237,10 @@ namespace CYarp.Client
 
             if (string.IsNullOrEmpty(tunnelId))
             {
-                SetAuthorization(request, options);
+                this.SetAuthorization(request);
             }
 
-            using var timeoutTokenSource = new CancellationTokenSource(options.ConnectTimeout);
+            using var timeoutTokenSource = new CancellationTokenSource(this.options.ConnectTimeout);
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
 
             var httpResponse = await this.httpClient.SendAsync(request, linkedTokenSource.Token);
@@ -259,15 +250,14 @@ namespace CYarp.Client
 
         /// <summary>
         /// 使用http/1.1的Upgrade扩展协议升级连接为长连接
-        /// </summary>
-        /// <param name="options"></param>
+        /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="HttpRequestException"></exception>
-        private async Task<CYarpClientStream> HttpUpgradesync(CYarpClientOptions options, string? tunnelId, CancellationToken cancellationToken)
+        private async Task<CYarpClientStream> HttpUpgradesync(string? tunnelId, CancellationToken cancellationToken)
         {
-            var serverUri = new Uri(options.ServerUri, $"/{tunnelId}");
+            var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
             var request = new HttpRequestMessage(HttpMethod.Get, serverUri);
             request.Headers.Connection.TryParseAdd("Upgrade");
             request.Headers.Upgrade.TryParseAdd("CYarp");
@@ -276,10 +266,10 @@ namespace CYarp.Client
 
             if (string.IsNullOrEmpty(tunnelId))
             {
-                SetAuthorization(request, options);
+                this.SetAuthorization(request);
             }
 
-            using var timeoutTokenSource = new CancellationTokenSource(options.ConnectTimeout);
+            using var timeoutTokenSource = new CancellationTokenSource(this.options.ConnectTimeout);
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
 
             var httpResponse = await this.httpClient.SendAsync(request, linkedTokenSource.Token);
@@ -292,11 +282,11 @@ namespace CYarp.Client
             return new CYarpClientStream(stream, httpResponse.Version);
         }
 
-        private static void SetAuthorization(HttpRequestMessage request, CYarpClientOptions options)
+        private void SetAuthorization(HttpRequestMessage request)
         {
-            var destination = options.TargetUri.OriginalString;
+            var destination = this.options.TargetUri.OriginalString;
             request.Headers.TryAddWithoutValidation("CYarp-Destination", destination);
-            request.Headers.Authorization = AuthenticationHeaderValue.Parse(options.Authorization);
+            request.Headers.Authorization = AuthenticationHeaderValue.Parse(this.options.Authorization);
         }
 
         /// <summary>
