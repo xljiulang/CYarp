@@ -21,8 +21,9 @@ namespace CYarp.Client
         private readonly HttpMessageInvoker httpClient;
         private readonly CancellationTokenSource disposeTokenSource = new();
 
-        private static readonly string PING = "PING";
-        private static readonly ReadOnlyMemory<byte> PONG = "PONG\r\n"u8.ToArray();
+        private static readonly string Ping = "PING";
+        private static readonly ReadOnlyMemory<byte> PingLine = "Ping\r\n"u8.ToArray();
+        private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
         /// <summary>
         /// CYarp客户端
@@ -112,9 +113,9 @@ namespace CYarp.Client
                 {
                     yield break;
                 }
-                else if (text == PING)
+                else if (text == Ping)
                 {
-                    await signalTunnel.WriteAsync(PONG, cancellationToken);
+                    await signalTunnel.WriteAsync(PongLine, cancellationToken);
                 }
                 else if (Guid.TryParse(text, out var tunnelId))
                 {
