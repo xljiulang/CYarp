@@ -1,5 +1,6 @@
 ﻿using CYarp.Server.Clients;
 using CYarp.Server.Configs;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -12,11 +13,12 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarp.Server.Middlewares
 {
     [DebuggerDisplay("Id = {Id}")]
-    sealed class CYarpClient : ClientBase
+    sealed partial class CYarpClient : ClientBase
     {
         private readonly CYarpConnection connection;
-        private readonly ConnectionConfig connectionConfig;
+        private readonly TimeSpan keepAliveTimeout;
         private readonly Timer? keepAliveTimer;
+        private readonly ILogger logger;
         private readonly CancellationTokenSource disposeTokenSource = new();
 
         private static readonly int bufferSize = 8;
@@ -32,15 +34,21 @@ namespace CYarp.Server.Middlewares
             HttpTunnelFactory httpTunnelFactory,
             string clientId,
             Uri clientDestination,
-            ClaimsPrincipal clientUser) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination, clientUser)
+            ClaimsPrincipal clientUser,
+            ILogger logger) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination, clientUser)
         {
             this.connection = connection;
-            this.connectionConfig = connectionConfig;
+            this.logger = logger;
 
-            var interval = connectionConfig.KeepAliveInterval;
-            if (interval > TimeSpan.Zero)
+            var keepAliveInterval = connectionConfig.KeepAliveInterval;
+            if (connectionConfig.KeepAlive && keepAliveInterval > TimeSpan.Zero)
             {
-                this.keepAliveTimer = new Timer(this.KeepAliveTimerTick, null, interval, interval);
+                this.keepAliveTimeout = keepAliveInterval.Add(TimeSpan.FromSeconds(5d));
+                this.keepAliveTimer = new Timer(this.KeepAliveTimerTick, null, keepAliveInterval, keepAliveInterval);
+            }
+            else
+            {
+                this.keepAliveTimeout = Timeout.InfiniteTimeSpan;
             }
         }
 
@@ -53,6 +61,7 @@ namespace CYarp.Server.Middlewares
             try
             {
                 await this.connection.WriteAsync(PingLine);
+                Log.LogPing(this.logger, this.Id);
             }
             catch (Exception)
             {
@@ -86,7 +95,7 @@ namespace CYarp.Server.Middlewares
             using var textReader = new StreamReader(this.connection, Encoding.UTF8, false, bufferSize, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
             {
-                using var timeoutTokenSource = new CancellationTokenSource(this.connectionConfig.GetTimeout());
+                using var timeoutTokenSource = new CancellationTokenSource(this.keepAliveTimeout);
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
                 var text = await textReader.ReadLineAsync(linkedTokenSource.Token);
 
@@ -96,6 +105,7 @@ namespace CYarp.Server.Middlewares
                 }
                 else if (text == Ping)
                 {
+                    Log.LogPong(this.logger, this.Id);
                     await this.connection.WriteAsync(PongLine, cancellationToken);
                 }
             }
@@ -109,6 +119,20 @@ namespace CYarp.Server.Middlewares
             this.disposeTokenSource.Dispose();
             this.connection.Dispose();
             this.keepAliveTimer?.Dispose();
+
+            Log.LogClosed(this.logger, this.Id);
+        }
+
+        static partial class Log
+        {
+            [LoggerMessage(LogLevel.Debug, "连接{clienId}发出PING心跳")]
+            public static partial void LogPing(ILogger logger, string clienId);
+
+            [LoggerMessage(LogLevel.Debug, "连接{clienId}回复Pong心跳")]
+            public static partial void LogPong(ILogger logger, string clienId);
+
+            [LoggerMessage(LogLevel.Debug, "连接{clienId}已关闭")]
+            public static partial void LogClosed(ILogger logger, string clienId);
         }
     }
 }

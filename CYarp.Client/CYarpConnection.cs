@@ -13,8 +13,8 @@ namespace CYarp.Client
     sealed class CYarpConnection : IDisposable
     {
         private readonly Connection connection;
-        private readonly TimeSpan timeout;
         private readonly Timer? keepAliveTimer;
+        private readonly TimeSpan keepAliveTimeout;
         private readonly CancellationTokenSource disposeTokenSource = new();
 
         private static readonly string Ping = "PING";
@@ -24,13 +24,15 @@ namespace CYarp.Client
         public CYarpConnection(Stream stream, TimeSpan keepAliveInterval)
         {
             this.connection = new Connection(stream);
-            this.timeout = keepAliveInterval > TimeSpan.Zero
-                ? keepAliveInterval.Add(TimeSpan.FromSeconds(5d))
-                : Timeout.InfiniteTimeSpan;
 
             if (keepAliveInterval > TimeSpan.Zero)
             {
+                this.keepAliveTimeout = keepAliveInterval.Add(TimeSpan.FromSeconds(5d));
                 this.keepAliveTimer = new Timer(this.KeepAliveTimerTick, null, keepAliveInterval, keepAliveInterval);
+            }
+            else
+            {
+                this.keepAliveTimeout = Timeout.InfiniteTimeSpan;
             }
         }
 
@@ -64,7 +66,7 @@ namespace CYarp.Client
             using var textReader = new StreamReader(connection, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
             {
-                using var timeoutTokenSource = new CancellationTokenSource(this.timeout);
+                using var timeoutTokenSource = new CancellationTokenSource(this.keepAliveTimeout);
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
                 var text = await textReader.ReadLineAsync(linkedTokenSource.Token);
 

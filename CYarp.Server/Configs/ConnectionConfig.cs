@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 
 namespace CYarp.Server.Configs
 {
@@ -8,23 +7,16 @@ namespace CYarp.Server.Configs
     /// </summary>
     public class ConnectionConfig
     {
-        private static readonly TimeSpan delay = TimeSpan.FromSeconds(5d);
+        /// <summary>
+        /// 是否启用 KeepAlive 功能
+        /// 默认true
+        /// </summary>
+        public bool KeepAlive { get; set; } = true;
 
         /// <summary>
         /// 心跳包周期
-        /// 默认10s
+        /// 默认50s
         /// </summary>
-        public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(10d);
-
-        /// <summary>
-        /// 获取等待超时时长
-        /// </summary>
-        /// <returns></returns>
-        public TimeSpan GetTimeout()
-        {
-            return this.KeepAliveInterval <= TimeSpan.Zero
-                ? Timeout.InfiniteTimeSpan
-                : this.KeepAliveInterval.Add(delay);
-        }
+        public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(50d);
     }
 }

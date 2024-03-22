@@ -94,7 +94,7 @@ namespace CYarp.Server.Middlewares
 
             var stream = await cyarpFeature.AcceptAsync();
             var connection = new CYarpConnection(stream);
-            using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientDestination, clinetUser);
+            using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientDestination, clinetUser, this.logger);
 
             if (await this.clientManager.AddAsync(cyarpClient))
             {

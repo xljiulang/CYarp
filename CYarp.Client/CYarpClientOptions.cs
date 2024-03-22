@@ -50,9 +50,9 @@ namespace CYarp.Client
 
         /// <summary>
         /// 心跳包周期
-        /// 默认15s
+        /// 默认30s
         /// </summary>
-        public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(15d);
+        public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 
         /// <summary>
         /// 验证参数
