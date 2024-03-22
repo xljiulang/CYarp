@@ -5,16 +5,18 @@ using System.Threading.Tasks;
 
 namespace CYarp.Client
 {
-    sealed class CYarpClientStream : DelegatingStream
+    /// <summary>
+    /// http隧道
+    /// </summary>
+    sealed class HttpTunnel : DelegatingStream
     {
-        public Version Version { get; }
+        private readonly bool ownsInner;
 
-        public CYarpClientStream(Stream inner, Version version)
+        public HttpTunnel(Stream inner, bool ownsInner = true)
             : base(inner)
         {
-            this.Version = version;
+            this.ownsInner = ownsInner;
         }
-
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
@@ -26,7 +28,10 @@ namespace CYarp.Client
         {
             base.Dispose(disposing);
 
-            this.Inner.Dispose();
+            if (this.ownsInner)
+            {
+                this.Inner.Dispose();
+            }
         }
     }
 }

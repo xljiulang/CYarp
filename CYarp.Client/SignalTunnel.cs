@@ -3,10 +3,10 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYarp.Server.Middlewares
+namespace CYarp.Client
 {
     /// <summary>
-    /// 信令隧道
+    /// 信号隧道
     /// </summary>
     sealed class SignalTunnel : DelegatingStream
     {
