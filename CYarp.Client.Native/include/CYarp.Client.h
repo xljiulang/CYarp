@@ -29,9 +29,9 @@ typedef void (*CYarpTunnelErrorCallback)(
 	// 错误消息
 	char16_t* message);
 
-// 传输完成回调
+// 完成回调
 typedef void (*CYarpCompletedCallback)(
-	// 传输错误码
+	// 错误码
 	CYarpErrorCode errorCode);
 
 
@@ -50,7 +50,7 @@ struct CYarpClientOptions
 	char16_t* Authorization;
 	// 与server或target的连接超时时长秒数，0默认为5s
 	int32_t ConnectTimeout;
-	// 隧道传输错误回调
+	// 隧道传输错误回调[可选]
 	CYarpTunnelErrorCallback TunnelErrorCallback;
 };
 
