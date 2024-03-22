@@ -28,6 +28,11 @@ namespace CYarp.Server.Clients
 
         public string Protocol { get; }
 
+        public IPEndPoint? RemoteEndpoint { get; }
+
+        public DateTimeOffset CreationTime { get; } = DateTimeOffset.Now;
+
+
         public ClientBase(
             IHttpForwarder httpForwarder,
             HttpTunnelConfig httpTunnelConfig,
@@ -35,7 +40,8 @@ namespace CYarp.Server.Clients
             string clientId,
             Uri clientDestination,
             ClaimsPrincipal clientUser,
-            string clientProtocol)
+            string clientProtocol,
+            IPEndPoint? remoteEndPoint)
         {
             this.httpForwarder = httpForwarder;
             this.httpClientLazy = new Lazy<HttpMessageInvoker>(() =>
@@ -46,8 +52,9 @@ namespace CYarp.Server.Clients
 
             this.Id = clientId;
             this.Destination = clientDestination;
-            this.Protocol = clientProtocol;
             this.User = clientUser;
+            this.Protocol = clientProtocol;
+            this.RemoteEndpoint = remoteEndPoint;
         }
 
 

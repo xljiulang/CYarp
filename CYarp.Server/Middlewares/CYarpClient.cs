@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
@@ -36,7 +37,8 @@ namespace CYarp.Server.Middlewares
             Uri clientDestination,
             ClaimsPrincipal clientUser,
             string clientProtocol,
-            ILogger logger) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination,  clientUser, clientProtocol)
+            IPEndPoint? remoteEndPoint,
+            ILogger logger) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination, clientUser, clientProtocol, remoteEndPoint)
         {
             this.connection = connection;
             this.logger = logger;
