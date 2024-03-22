@@ -12,7 +12,7 @@ using Yarp.ReverseProxy.Forwarder;
 
 namespace CYarp.Server.Middlewares
 {
-    [DebuggerDisplay("Id = {Id}")]
+    [DebuggerDisplay("Id = {Id}, Protocol = {Protocol}")]
     sealed partial class CYarpClient : ClientBase
     {
         private readonly CYarpConnection connection;
@@ -35,7 +35,8 @@ namespace CYarp.Server.Middlewares
             string clientId,
             Uri clientDestination,
             ClaimsPrincipal clientUser,
-            ILogger logger) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination, clientUser)
+            string clientProtocol,
+            ILogger logger) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination,  clientUser, clientProtocol)
         {
             this.connection = connection;
             this.logger = logger;
@@ -80,10 +81,14 @@ namespace CYarp.Server.Middlewares
 
         public override async Task WaitForCloseAsync()
         {
+            var cancellationToken = this.disposeTokenSource.Token;
             try
             {
-                var cancellationToken = this.disposeTokenSource.Token;
                 await this.WaitForCloseCoreAsync(cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)
+            {
+                Log.LogTimeout(this.logger, this.Id);
             }
             catch (Exception)
             {
@@ -92,7 +97,7 @@ namespace CYarp.Server.Middlewares
 
         private async Task WaitForCloseCoreAsync(CancellationToken cancellationToken)
         {
-            using var textReader = new StreamReader(this.connection, Encoding.UTF8, false, bufferSize, leaveOpen: true);
+            using var textReader = new StreamReader(this.connection, bufferSize: bufferSize, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
             {
                 using var timeoutTokenSource = new CancellationTokenSource(this.keepAliveTimeout);
@@ -125,13 +130,16 @@ namespace CYarp.Server.Middlewares
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Debug, "连接{clienId}发出PING心跳")]
+            [LoggerMessage(LogLevel.Debug, "[{clienId}] 发出PING心跳")]
             public static partial void LogPing(ILogger logger, string clienId);
 
-            [LoggerMessage(LogLevel.Debug, "连接{clienId}回复Pong心跳")]
+            [LoggerMessage(LogLevel.Debug, "[{clienId}] 回复Pong心跳")]
             public static partial void LogPong(ILogger logger, string clienId);
 
-            [LoggerMessage(LogLevel.Debug, "连接{clienId}已关闭")]
+            [LoggerMessage(LogLevel.Debug, "[{clienId}] 心跳检测超时")]
+            public static partial void LogTimeout(ILogger logger, string clienId);
+
+            [LoggerMessage(LogLevel.Debug, "[{clienId}] 连接已关闭")]
             public static partial void LogClosed(ILogger logger, string clienId);
         }
     }

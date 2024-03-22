@@ -82,10 +82,10 @@ namespace CYarp.Client
 
             try
             {
-                using var httpTunnelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionTokenSource.Token);
+                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionTokenSource.Token);
                 await foreach (var tunnelId in connection.ReadTunnelIdAsync(cancellationToken))
                 {
-                    this.DuplexTransportAsync(tunnelId, httpTunnelTokenSource.Token);
+                    this.DuplexTransportAsync(tunnelId, linkedTokenSource.Token);
                 }
             }
             catch (Exception)

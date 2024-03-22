@@ -30,7 +30,7 @@ namespace CYarp.Server.Middlewares
         private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly IClientManager clientManager;
         private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
-        private readonly ILogger<CYarpClientMiddleware> logger;
+        private readonly ILogger<CYarpClient> logger;
 
 
         public CYarpClientMiddleware(
@@ -38,7 +38,7 @@ namespace CYarp.Server.Middlewares
             HttpTunnelFactory httpTunnelFactory,
             IClientManager clientManager,
             IOptionsMonitor<CYarpOptions> yarpOptions,
-            ILogger<CYarpClientMiddleware> logger)
+            ILogger<CYarpClient> logger)
         {
             this.httpForwarder = httpForwarder;
             this.httpTunnelFactory = httpTunnelFactory;
@@ -94,7 +94,8 @@ namespace CYarp.Server.Middlewares
 
             var stream = await cyarpFeature.AcceptAsync();
             var connection = new CYarpConnection(stream);
-            using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientDestination, clinetUser, this.logger);
+            var clientProtocol = context.Request.Protocol;
+            using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientDestination, clinetUser, clientProtocol, this.logger);
 
             if (await this.clientManager.AddAsync(cyarpClient))
             {

@@ -17,14 +17,14 @@ namespace CYarp.Server.Middlewares
     /// :scheme = https
     /// :path = /{tunnelId}  
     /// </summary>
-    sealed partial class HttpTunnelMiddleware : IMiddleware
+    sealed class HttpTunnelMiddleware : IMiddleware
     {
         private readonly HttpTunnelFactory httpTunnelFactory;
-        private readonly ILogger<HttpTunnelMiddleware> logger;
+        private readonly ILogger<HttpTunnel> logger;
 
         public HttpTunnelMiddleware(
             HttpTunnelFactory httpTunnelFactory,
-            ILogger<HttpTunnelMiddleware> logger)
+            ILogger<HttpTunnel> logger)
         {
             this.httpTunnelFactory = httpTunnelFactory;
             this.logger = logger;
@@ -48,24 +48,22 @@ namespace CYarp.Server.Middlewares
 
             if (this.httpTunnelFactory.Contains(tunnelId) == false)
             {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.StatusCode = StatusCodes.Status408RequestTimeout;
             }
             else
             {
                 var stream = await cyarpFeature.AcceptAsync();
-                using var httpTunnel = new HttpTunnel(stream, tunnelId);
+                var httpTunnel = new HttpTunnel(stream, tunnelId, context.Request.Protocol, this.logger);
+
                 if (this.httpTunnelFactory.SetResult(httpTunnel))
                 {
                     await httpTunnel.Closed;
                 }
-                Log.LogTunnelClosed(this.logger, tunnelId);
+                else
+                {
+                    httpTunnel.Dispose();
+                }
             }
-        }
-
-        static partial class Log
-        {
-            [LoggerMessage(LogLevel.Information, "{tunnelId}的Tunnel已关闭")]
-            public static partial void LogTunnelClosed(ILogger logger, Guid tunnelId);
         }
     }
 }

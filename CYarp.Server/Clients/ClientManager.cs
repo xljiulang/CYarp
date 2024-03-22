@@ -43,6 +43,7 @@ namespace CYarp.Server.Clients
 
             if (this.dictionary.TryAdd(clientId, client))
             {
+                Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);
                 await this.HandleConnectedAsync(clientId);
                 return true;
             }
@@ -57,6 +58,7 @@ namespace CYarp.Server.Clients
             {
                 if (ReferenceEquals(existClient, client))
                 {
+                    Log.LogDisconnected(this.logger, clientId, client.Protocol, this.Count);
                     await this.HandleDisconnectedAsync(clientId);
                 }
                 else
@@ -73,7 +75,6 @@ namespace CYarp.Server.Clients
         /// <returns></returns>
         protected virtual ValueTask HandleConnectedAsync(string clientId)
         {
-            Log.LogConnected(this.logger, clientId, this.Count);
             return ValueTask.CompletedTask;
         }
 
@@ -85,7 +86,6 @@ namespace CYarp.Server.Clients
         /// <returns></returns>
         protected virtual ValueTask HandleDisconnectedAsync(string clientId)
         {
-            Log.LogDisconnected(this.logger, clientId, this.Count);
             return ValueTask.CompletedTask;
         }
 
@@ -105,11 +105,11 @@ namespace CYarp.Server.Clients
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 长连接成功，当前客户端数为 {count}")]
-            public static partial void LogConnected(ILogger logger, string clientId, int count);
+            [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，当前客户端数为 {count}")]
+            public static partial void LogConnected(ILogger logger, string clientId, string protocol, int count);
 
-            [LoggerMessage(LogLevel.Warning, "[{clientId}] 长断开连接，当前客户端数为 {count}")]
-            public static partial void LogDisconnected(ILogger logger, string clientId, int count);
+            [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长断开连接，当前客户端数为 {count}")]
+            public static partial void LogDisconnected(ILogger logger, string clientId, string protocol, int count);
         }
     }
 }

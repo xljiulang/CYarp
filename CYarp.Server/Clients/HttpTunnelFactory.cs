@@ -36,7 +36,7 @@ namespace CYarp.Server.Clients
                 await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
                 var httpTunnel = await tunnelCompletionSource.Task.WaitAsync(cancellationToken);
 
-                Log.LogTunnelCreated(this.logger, connection.Id, tunnelId);
+                Log.LogTunnelCreated(this.logger, connection.Id, httpTunnel.Protocol, httpTunnel.Id);
                 return httpTunnel;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)
@@ -66,10 +66,10 @@ namespace CYarp.Server.Clients
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 创建了{tunnelId}的Tunnel")]
-            public static partial void LogTunnelCreated(ILogger logger, string clientId, Guid tunnelId);
+            [LoggerMessage(LogLevel.Information, "[{clientId}] 创建{protocol}隧道{tunnelId}成功")]
+            public static partial void LogTunnelCreated(ILogger logger, string clientId, string protocol, Guid tunnelId);
 
-            [LoggerMessage(LogLevel.Error, "[{clientId}] 创建{tunnelId}的Tunnel超时")]
+            [LoggerMessage(LogLevel.Error, "[{clientId}] 创建Http隧道{tunnelId}超时")]
             public static partial void LogTunnelCreateTimeout(ILogger logger, string clientId, Guid tunnelId);
         }
     }

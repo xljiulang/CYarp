@@ -26,13 +26,16 @@ namespace CYarp.Server.Clients
 
         public ClaimsPrincipal User { get; }
 
+        public string Protocol { get; }
+
         public ClientBase(
             IHttpForwarder httpForwarder,
             HttpTunnelConfig httpTunnelConfig,
             HttpTunnelFactory httpTunnelFactory,
             string clientId,
             Uri clientDestination,
-            ClaimsPrincipal clientUser)
+            ClaimsPrincipal clientUser,
+            string clientProtocol)
         {
             this.httpForwarder = httpForwarder;
             this.httpClientLazy = new Lazy<HttpMessageInvoker>(() =>
@@ -43,6 +46,7 @@ namespace CYarp.Server.Clients
 
             this.Id = clientId;
             this.Destination = clientDestination;
+            this.Protocol = clientProtocol;
             this.User = clientUser;
         }
 

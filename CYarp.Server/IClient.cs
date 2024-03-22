@@ -19,12 +19,17 @@ namespace CYarp.Server
         /// <summary>
         /// 获取客户端连接的目标http服务器地址
         /// </summary>
-        Uri Destination { get; }
+        Uri Destination { get; }       
 
         /// <summary>
         /// 获取关联的用户信息
         /// </summary>
         ClaimsPrincipal User { get; }
+
+        /// <summary>
+        /// 获取连接协议
+        /// </summary>
+        string Protocol { get; }
 
         /// <summary>
         /// 转发http请求
