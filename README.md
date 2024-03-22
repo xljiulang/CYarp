@@ -8,7 +8,7 @@
 #### 1.1 Demo项目
 1. 运行CYarp.Hosting
 2. 在PostMan请求到`http://localhost`，此时收到401授权未通过
-3. 添加PostMan的Auth，选择Bearer Token，放如下的测试Token来请求
+3. 添加PostMan的Auth，选择Bearer Token，使用如下的测试Token来请求
 
 > 测试Token
 
@@ -19,7 +19,7 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3d
 #### 1.2 开发指南
 > 服务端开发
 
-`CYarp.Server`设计为asp.netcore的一个http中间件，其依赖于Authentication身份认证中间件，使用如下方法进行注册和中间件的配置。
+`CYarp.Server`包设计为asp.net core的一个http中间件，其依赖于Authentication身份认证中间件，使用如下方法进行注册和中间件的配置。
 
 ```c#
 builder.Services.AddCYarp(cyarp=>
@@ -37,7 +37,7 @@ app.UseCYarp();
 ...
 ```
 
-最后在Controller、minapi的处理者或中间件中处理http转发
+最后在Controller、minapi的处理者或最后一个中间件中处理http转发
 ```c#
 // 请求者的授权验证
 [Authorize(Roles = "Mobile")]
@@ -71,7 +71,7 @@ public class CYarpController : ControllerBase
 
 > 客户端开发
 
-使用`CYarp.Client`包很方便完成.NET客户端开发
+使用`CYarp.Client`包，很方便完成.NET客户端开发
 ```c#
 var options = this.clientOptions.CurrentValue;
 using var client = new CYarpClient(options);
@@ -89,71 +89,83 @@ C和C++客户端，可以将CYarp.Client项目的源代码AOT编译为C导出的
 | linux-arm64 | dotnet publish -c Release /p:PublishAot=true -r linux-arm64 |
 
 
-### 2 连接协议
+### 2 CYarp协议
 
 ![cyarp](cyarp.png)
-#### 2.1 Client握手协议
+#### 2.1 建立长连接
 > http/1.1
 
-客户端发起如下请求
+Client发起如下请求
 ```
 Get / HTTP/1.1
 Connection: Upgrade
 Upgrade: CYarp
-Authorization：{客户端身份}
-CYarp-Destination: {URI}
+Authorization：{客户端身份信息}
+CYarp-Destination: {httpServer的访问URI}
 ```
 
-服务端验证通过则响应101状态码
+Server验证通过则响应101状态码
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
 ```
 
-接着服务端将在连接后续的Stream里向客户端发送`{tunnelId}\r\n`的tunnelId值，指示客户端向服务端创建tunnel。
-服务端和客户端双方都能在后续的Stream向对方发送`PING\r\n`的心跳请求，接收者收到之后要立即回复`PONG\r\n`心跳回应。
+此时基于tcp的长连接已完成，接着在长连接后续的Stream要实现如下功能
 
-> http/2.0
+| 发起方 | 内容           | 含义                               | 接收方操作     |
+| ------ | -------------- | ---------------------------------- | -------------- |
+| Client | PING\r\n       | 侦测服务端存活                     | PONG\r\n       |
+| Server | PING\r\n       | 侦测客户端存活                     | PONG\r\n       |
+| Server | {TunnelId}\r\n | 让客户端向服务端创建新的HttpTunnel | 创建HttpTunnel |
+  
 
-客户端发起如下请求
+> http/2.0或http/3.0
+
+Client发起如下请求
 ```
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
 :path = /
-Authorization = {客户端身份}
-CYarp-Destination = {URI}
+Authorization = {客户端身份信息}
+CYarp-Destination = {httpServer的访问URI}
 ```
 
-服务端验证通过则响应202状态码
+Server验证通过则响应200状态码
 ```
 :status = 200
 ```
 
-接着服务端将在连接后续的Stream里向客户端发送`{tunnelId}\r\n`的tunnelId值，指示客户端向服务端创建tunnel。服务端和客户端双方都能在后续的Stream向对方发送`PING\r\n`的心跳请求，接收者收到之后要立即回复`PONG\r\n`心跳回应。
+此时基于http/2.0或http/3.0的长连接已完成，接着在长连接后续的Stream要实现如下功能
 
+| 发起方 | 内容           | 含义                               | 接收方操作     |
+| ------ | -------------- | ---------------------------------- | -------------- |
+| Client | PING\r\n       | 侦测服务端存活                     | PONG\r\n       |
+| Server | PING\r\n       | 侦测客户端存活                     | PONG\r\n       |
+| Server | {TunnelId}\r\n | 让客户端向服务端创建新的HttpTunnel | 创建HttpTunnel |
+  
 
-#### 2.2 Tunnel的创建
+#### 2.2 HttpTunnel的创建
 > http/1.1
 
-客户端发起如下请求
+Client发起如下请求
 ```
 Get /{tunnelId} HTTP/1.1
 Connection: Upgrade
 Upgrade: CYarp
 ```
 
-服务端验证通过则响应101状态码
+Server验证通过则响应101状态码
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
 ```
 
-接着服务端将在连接后续的Stream里向客户端发送http/1.1的请求和接收客户端的http响应。
+此时基于tcp的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送http/1.1的请求和接收客户端的http1.1响应。
 
-> http/2.0
+> http/2.0或http/3.0
 
-客户端发起如下请求
+Client发起如下请求
 ```
 :method = CONNECT
 :protocol = CYarp
@@ -161,16 +173,19 @@ Connection: Upgrade
 :path = /{tunnelId}
 ```
 
-服务端验证通过则响应200状态码
+Server验证通过则响应200状态码
 ```
 :status = 200
 ```
 
-接着服务端将在连接后续的Stream里向客户端发送http/1.1的请求和接收客户端的http响应。
+此时基于http/2.0或http/3.0的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送http/1.1的请求和接收客户端的http1.1响应。
 
 ### 3 安全传输
-当服务端为https时，以下部分为tls安全传输
-1. Client握手协议和其连接
-2. Tunnel的创建和其连接
+当Server方使用https时，以下部分为tls安全传输
+1. 长连接建立过程和长连接的后续Stream
+2. HttpTunnel的创建过程和其后续Stream
 
-如果目标服务(Destination)也为https，则整个管道表现为tls in tls。
+如果目标服务httpServer的访问URI也是https，则HttpTunnel里面的流量表现为tls in tls。
+
+### 4 业务安全
+CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core平台的身份认证中间件，而http转发部分(例如`CYarp.Hosting.CYarpController`)是由开发者自行开发来决定是否要转发，涉及的授权验证逻辑由开发者自行验证。
