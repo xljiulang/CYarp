@@ -195,13 +195,10 @@ namespace CYarp.Client
                     }
                     catch (HttpRequestException ex) when (ex.StatusCode != HttpStatusCode.Unauthorized)
                     {
-                        return await this.HttpUpgradesync(tunnelId, cancellationToken);
+                        // 非Unauthorized状态时，继续尝试http/1.1的Upgrade协议
                     }
                 }
-                else
-                {
-                    return await this.HttpUpgradesync(tunnelId, cancellationToken);
-                }
+                return await this.HttpUpgradesync(tunnelId, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
