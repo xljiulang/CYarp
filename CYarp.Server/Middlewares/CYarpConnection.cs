@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// 信令隧道
+    /// CYarp的连接
     /// </summary>
-    sealed class SignalTunnel : DelegatingStream
+    sealed class CYarpConnection : DelegatingStream
     {
         private readonly SemaphoreSlim semaphoreSlim = new(1, 1);
         private readonly bool ownsInner;
 
-        public SignalTunnel(Stream inner, bool ownsInner = true)
+        public CYarpConnection(Stream inner, bool ownsInner = true)
             : base(inner)
         {
             this.ownsInner = ownsInner;

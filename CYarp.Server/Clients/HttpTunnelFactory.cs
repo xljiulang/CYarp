@@ -20,12 +20,12 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 创建TunnelStream
+        /// 创建HttpTunnel
         /// </summary>
-        /// <param name="client"></param>
+        /// <param name="connection"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<HttpTunnel> CreateAsync(ClientBase client, CancellationToken cancellationToken)
+        public async Task<HttpTunnel> CreateAsync(IConnection connection, CancellationToken cancellationToken)
         {
             var tunnelId = Guid.NewGuid();
             var tunnelCompletionSource = new TaskCompletionSource<HttpTunnel>();
@@ -33,15 +33,15 @@ namespace CYarp.Server.Clients
 
             try
             {
-                await client.CreateTunnelAsync(tunnelId, cancellationToken);
+                await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
                 var httpTunnel = await tunnelCompletionSource.Task.WaitAsync(cancellationToken);
 
-                Log.LogTunnelCreated(this.logger, client.Id, tunnelId);
+                Log.LogTunnelCreated(this.logger, connection.Id, tunnelId);
                 return httpTunnel;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)
             {
-                Log.LogTunnelCreateTimeout(this.logger, client.Id, tunnelId);
+                Log.LogTunnelCreateTimeout(this.logger, connection.Id, tunnelId);
                 throw;
             }
             finally

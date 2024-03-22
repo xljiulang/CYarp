@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,10 +18,6 @@ namespace CYarp.Client
         private readonly CYarpClientOptions options;
         private readonly HttpMessageInvoker httpClient;
         private readonly CancellationTokenSource disposeTokenSource = new();
-
-        private static readonly string Ping = "PING";
-        private static readonly ReadOnlyMemory<byte> PingLine = "Ping\r\n"u8.ToArray();
-        private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
         /// <summary>
         /// CYarp客户端
@@ -82,14 +76,14 @@ namespace CYarp.Client
         /// <exception cref="OperationCanceledException"></exception>
         private async Task TransportAsyncCore(CancellationToken cancellationToken)
         {
-            var sninalStream = await this.ConnectServerAsync(tunnelId: null, cancellationToken); ;
-            using var signalTunnel = new SignalTunnel(sninalStream);
-            using var signalTunnelTokenSource = new CancellationTokenSource();
+            var stream = await this.ConnectServerAsync(tunnelId: null, cancellationToken);
+            using var connection = new CYarpConnection(stream, this.options.KeepAliveInterval);
+            using var connectionTokenSource = new CancellationTokenSource();
 
             try
             {
-                using var httpTunnelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, signalTunnelTokenSource.Token);
-                await foreach (var tunnelId in ReadTunnelIdAsync(signalTunnel, cancellationToken))
+                using var httpTunnelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionTokenSource.Token);
+                await foreach (var tunnelId in connection.ReadTunnelIdAsync(cancellationToken))
                 {
                     this.DuplexTransportAsync(tunnelId, httpTunnelTokenSource.Token);
                 }
@@ -99,31 +93,9 @@ namespace CYarp.Client
             }
             finally
             {
-                signalTunnelTokenSource.Cancel();
+                connectionTokenSource.Cancel();
             }
         }
-
-        private static async IAsyncEnumerable<Guid> ReadTunnelIdAsync(SignalTunnel signalTunnel, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            using var streamReader = new StreamReader(signalTunnel, leaveOpen: true);
-            while (cancellationToken.IsCancellationRequested == false)
-            {
-                var text = await streamReader.ReadLineAsync(cancellationToken);
-                if (text == null)
-                {
-                    yield break;
-                }
-                else if (text == Ping)
-                {
-                    await signalTunnel.WriteAsync(PongLine, cancellationToken);
-                }
-                else if (Guid.TryParse(text, out var tunnelId))
-                {
-                    yield return tunnelId;
-                }
-            }
-        }
-
 
         /// <summary>
         /// 双向传输绑定

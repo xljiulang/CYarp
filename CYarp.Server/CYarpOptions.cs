@@ -8,14 +8,14 @@ namespace CYarp.Server
     public class CYarpOptions
     {
         /// <summary>
-        /// 授权验证配置
+        /// 认证配置
         /// </summary>
         public AuthorizationConfig Authorization { get; set; } = new AuthorizationConfig();
 
         /// <summary>
-        /// 信号隧道配置
+        /// 连接配置
         /// </summary>
-        public SignalTunnelConfig SignalTunnel { get; set; } = new SignalTunnelConfig();
+        public ConnectionConfig Connection { get; set; } = new ConnectionConfig();
 
         /// <summary>
         /// http隧道配置

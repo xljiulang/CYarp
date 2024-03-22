@@ -4,9 +4,9 @@ using System.Threading;
 namespace CYarp.Server.Configs
 {
     /// <summary>
-    /// 信号通道配置
+    /// 连接配置
     /// </summary>
-    public class SignalTunnelConfig
+    public class ConnectionConfig
     {
         private static readonly TimeSpan delay = TimeSpan.FromSeconds(5d);
 

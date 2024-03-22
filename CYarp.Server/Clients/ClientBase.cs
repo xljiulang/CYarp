@@ -13,7 +13,7 @@ namespace CYarp.Server.Clients
     /// <summary>
     /// 客户端抽象类
     /// </summary>
-    abstract class ClientBase : IClient
+    abstract class ClientBase : IClient, IConnection
     {
         private volatile bool disposed = false;
         private readonly IHttpForwarder httpForwarder;
@@ -56,7 +56,7 @@ namespace CYarp.Server.Clients
             return this.httpForwarder.SendAsync(httpContext, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
         }
 
-        public abstract Task CreateTunnelAsync(Guid tunnelId, CancellationToken cancellationToken);
+        public abstract Task CreateHttpTunnelAsync(Guid tunnelId, CancellationToken cancellationToken);
 
         public abstract Task WaitForCloseAsync();
 

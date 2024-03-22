@@ -14,8 +14,8 @@ namespace CYarp.Server.Middlewares
     [DebuggerDisplay("Id = {Id}")]
     sealed class CYarpClient : ClientBase
     {
-        private readonly SignalTunnel signalTunnel;
-        private readonly SignalTunnelConfig signalTunnelConfig;
+        private readonly CYarpConnection connection;
+        private readonly ConnectionConfig connectionConfig;
         private readonly Timer? keepAliveTimer;
         private readonly CancellationTokenSource disposeTokenSource = new();
 
@@ -25,19 +25,19 @@ namespace CYarp.Server.Middlewares
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
         public CYarpClient(
-            SignalTunnel signalTunnel,
+            CYarpConnection connection,
+            ConnectionConfig connectionConfig,
             IHttpForwarder httpForwarder,
-            SignalTunnelConfig signalTunnelConfig,
             HttpTunnelConfig httpTunnelConfig,
             HttpTunnelFactory httpTunnelFactory,
             string clientId,
             Uri clientDestination,
             ClaimsPrincipal clientUser) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination, clientUser)
         {
-            this.signalTunnel = signalTunnel;
-            this.signalTunnelConfig = signalTunnelConfig;
+            this.connection = connection;
+            this.connectionConfig = connectionConfig;
 
-            var interval = signalTunnelConfig.KeepAliveInterval;
+            var interval = connectionConfig.KeepAliveInterval;
             if (interval > TimeSpan.Zero)
             {
                 this.keepAliveTimer = new Timer(this.KeepAliveTimerTick, null, interval, interval);
@@ -52,7 +52,7 @@ namespace CYarp.Server.Middlewares
         {
             try
             {
-                await this.signalTunnel.WriteAsync(PingLine);
+                await this.connection.WriteAsync(PingLine);
             }
             catch (Exception)
             {
@@ -60,13 +60,13 @@ namespace CYarp.Server.Middlewares
             }
         }
 
-        public override async Task CreateTunnelAsync(Guid tunnelId, CancellationToken cancellationToken = default)
+        public override async Task CreateHttpTunnelAsync(Guid tunnelId, CancellationToken cancellationToken = default)
         {
             base.ValidateDisposed();
 
-            var tunnelText = $"{tunnelId}\r\n";
-            var buffer = Encoding.UTF8.GetBytes(tunnelText);
-            await this.signalTunnel.WriteAsync(buffer, cancellationToken);
+            var tunnelIdLine = $"{tunnelId}\r\n";
+            var buffer = Encoding.UTF8.GetBytes(tunnelIdLine);
+            await this.connection.WriteAsync(buffer, cancellationToken);
         }
 
         public override async Task WaitForCloseAsync()
@@ -83,12 +83,12 @@ namespace CYarp.Server.Middlewares
 
         private async Task WaitForCloseCoreAsync(CancellationToken cancellationToken)
         {
-            using var reader = new StreamReader(this.signalTunnel, Encoding.UTF8, false, bufferSize, leaveOpen: true);
+            using var textReader = new StreamReader(this.connection, Encoding.UTF8, false, bufferSize, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
             {
-                using var timeoutTokenSource = new CancellationTokenSource(this.signalTunnelConfig.GetTimeout());
+                using var timeoutTokenSource = new CancellationTokenSource(this.connectionConfig.GetTimeout());
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
-                var text = await reader.ReadLineAsync(linkedTokenSource.Token);
+                var text = await textReader.ReadLineAsync(linkedTokenSource.Token);
 
                 if (text == null)
                 {
@@ -96,11 +96,10 @@ namespace CYarp.Server.Middlewares
                 }
                 else if (text == Ping)
                 {
-                    await this.signalTunnel.WriteAsync(PongLine, cancellationToken);
+                    await this.connection.WriteAsync(PongLine, cancellationToken);
                 }
             }
         }
-
 
         protected override void Dispose(bool disposing)
         {
@@ -108,7 +107,7 @@ namespace CYarp.Server.Middlewares
 
             this.disposeTokenSource.Cancel();
             this.disposeTokenSource.Dispose();
-            this.signalTunnel.Dispose();
+            this.connection.Dispose();
             this.keepAliveTimer?.Dispose();
         }
     }

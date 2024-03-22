@@ -12,16 +12,16 @@ namespace CYarp.Server.Clients
     {
         private readonly HttpTunnelConfig httpTunnelConfig;
         private readonly HttpTunnelFactory httpTunnelFactory;
-        private readonly ClientBase client;
+        private readonly IConnection connection;
 
         public ClientHttpHandler(
             HttpTunnelConfig httpTunnelConfig,
             HttpTunnelFactory httpTunnelFactory,
-            ClientBase client)
+            IConnection connection)
         {
             this.httpTunnelConfig = httpTunnelConfig;
             this.httpTunnelFactory = httpTunnelFactory;
-            this.client = client;
+            this.connection = connection;
 
             this.InnerHandler = CreatePrimitiveHandler();
         }
@@ -53,7 +53,7 @@ namespace CYarp.Server.Clients
 
         private async ValueTask<Stream> ConnectAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
         {
-            return await this.httpTunnelFactory.CreateAsync(this.client, cancellationToken);
+            return await this.httpTunnelFactory.CreateAsync(this.connection, cancellationToken);
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
