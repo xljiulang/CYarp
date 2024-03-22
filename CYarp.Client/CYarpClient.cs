@@ -98,17 +98,17 @@ namespace CYarp.Client
             }
         }
 
-        private static async IAsyncEnumerable<string> ReadTunnelIdAsync(Stream signalingStream, [EnumeratorCancellation] CancellationToken cancellationToken)
+        private static async IAsyncEnumerable<Guid> ReadTunnelIdAsync(Stream signalingStream, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             using var streamReader = new StreamReader(signalingStream, leaveOpen: true);
             while (streamReader.EndOfStream == false)
             {
-                var tunnelId = await streamReader.ReadLineAsync(cancellationToken);
-                if (string.IsNullOrEmpty(tunnelId))
+                var text = await streamReader.ReadLineAsync(cancellationToken);
+                if (text == null)
                 {
                     yield break;
                 }
-                else
+                else if (Guid.TryParse(text, out var tunnelId))
                 {
                     yield return tunnelId;
                 }
@@ -121,7 +121,7 @@ namespace CYarp.Client
         /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
-        private async void TunnelAsync(string tunnelId, CancellationToken cancellationToken)
+        private async void TunnelAsync(Guid tunnelId, CancellationToken cancellationToken)
         {
             try
             {
@@ -199,7 +199,7 @@ namespace CYarp.Client
         /// <exception cref="CYarpConnectException"></exception>
         /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
-        private async Task<CYarpClientStream> ConnectServerAsync(string? tunnelId, CancellationToken cancellationToken)
+        private async Task<CYarpClientStream> ConnectServerAsync(Guid? tunnelId, CancellationToken cancellationToken)
         {
             try
             {
@@ -240,7 +240,7 @@ namespace CYarp.Client
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task<CYarpClientStream> HttpConnectAsync(string? tunnelId, CancellationToken cancellationToken)
+        private async Task<CYarpClientStream> HttpConnectAsync(Guid? tunnelId, CancellationToken cancellationToken)
         {
             var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
             var request = new HttpRequestMessage(HttpMethod.Connect, serverUri);
@@ -248,7 +248,7 @@ namespace CYarp.Client
             request.Version = HttpVersion.Version20;
             request.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
 
-            if (string.IsNullOrEmpty(tunnelId))
+            if (tunnelId == null)
             {
                 this.SetAuthorization(request);
             }
@@ -268,7 +268,7 @@ namespace CYarp.Client
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="HttpRequestException"></exception>
-        private async Task<CYarpClientStream> HttpUpgradesync(string? tunnelId, CancellationToken cancellationToken)
+        private async Task<CYarpClientStream> HttpUpgradesync(Guid? tunnelId, CancellationToken cancellationToken)
         {
             var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
             var request = new HttpRequestMessage(HttpMethod.Get, serverUri);
@@ -277,7 +277,7 @@ namespace CYarp.Client
             request.Version = HttpVersion.Version11;
             request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
-            if (string.IsNullOrEmpty(tunnelId))
+            if (tunnelId == null)
             {
                 this.SetAuthorization(request);
             }
