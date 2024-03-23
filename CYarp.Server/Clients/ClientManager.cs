@@ -43,8 +43,8 @@ namespace CYarp.Server.Clients
 
             if (this.dictionary.TryAdd(clientId, client))
             {
-                Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);
                 await this.HandleConnectedAsync(clientId);
+                Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);               
                 return true;
             }
             return false;
@@ -57,14 +57,14 @@ namespace CYarp.Server.Clients
             if (this.dictionary.TryRemove(clientId, out var existClient))
             {
                 if (ReferenceEquals(existClient, client))
-                {
-                    Log.LogDisconnected(this.logger, clientId, client.Protocol, this.Count);
+                {                 
                     await this.HandleDisconnectedAsync(clientId);
                 }
                 else
                 {
                     this.dictionary.TryAdd(clientId, existClient);
                 }
+                Log.LogDisconnected(this.logger, clientId, client.Protocol, this.Count);
             }
         }
 

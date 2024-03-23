@@ -16,8 +16,7 @@ namespace CYarp.Hosting
             var builder = WebApplication.CreateBuilder(args);
 
             // 注册CYarp服务端组件
-            builder.Services.AddCYarp();
-            builder.Services.Configure<CYarpOptions>(builder.Configuration.GetSection(nameof(CYarpOptions)));
+            builder.Services.AddCYarp(builder.Configuration.GetSection(nameof(CYarpOptions)));
 
             // 注册CYarp客户端组件
             // 这是demo为了方便，把服务端与客户端都集成在一个Hosting里

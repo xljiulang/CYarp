@@ -45,9 +45,9 @@ namespace CYarp.Server
         /// <summary>
         /// 转发http请求
         /// </summary>
-        /// <param name="httpContext"></param>
-        /// <param name="requestConfig"></param>
-        /// <param name="transformer"></param>
+        /// <param name="httpContext">http上下文</param>
+        /// <param name="requestConfig">转发请求配置</param>
+        /// <param name="transformer">http内容转换器</param>
         /// <returns></returns>
         ValueTask<ForwarderError> ForwardHttpAsync(HttpContext httpContext, ForwarderRequestConfig? requestConfig = default, HttpTransformer? transformer = default);
     }

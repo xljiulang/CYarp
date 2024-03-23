@@ -22,7 +22,7 @@ namespace CYarp.Client
         /// <summary>
         /// CYarp客户端
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="options">客户端选项</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public CYarpClient(CYarpClientOptions options)
@@ -33,8 +33,8 @@ namespace CYarp.Client
         /// <summary>
         /// CYarp客户端
         /// </summary>
-        /// <param name="options"></param> 
-        /// <param name="handler"></param>
+        /// <param name="options">客户端选项</param> 
+        /// <param name="handler">httpHandler</param>
         /// <param name="disposeHandler"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>

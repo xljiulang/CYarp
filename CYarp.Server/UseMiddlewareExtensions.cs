@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Builder
     public static class UseMiddlewareExtensions
     {
         /// <summary>
-        /// 使用CYarp的Client管理中间件
-        /// 自动接收Client并添加或移除到IClientManager
-        /// 此中间件需放到UseAuthentication之后
+        /// 使用CYarp中间件
+        /// 自动接收IClient并添加或移除到IClientManager
+        /// 需要放到app.UseAuthentication()之后
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             app.UseMiddleware<CYarpMiddleware>();
             app.UseMiddleware<CYarpClientMiddleware>();
-            app.UseMiddleware<HttpTunnelMiddleware>(); 
+            app.UseMiddleware<HttpTunnelMiddleware>();
             return app;
         }
     }
