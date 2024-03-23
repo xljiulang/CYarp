@@ -37,7 +37,7 @@ app.UseCYarp();
 ...
 ```
 
-最后在Controller、minapi的处理者或最后一个中间件中处理http转发
+最后在Controller、endpoint处理者或者最后一个中间件中处理http转发
 ```c#
 // 请求者的授权验证
 [Authorize(Roles = "Mobile")]
@@ -80,7 +80,7 @@ await client.TransportAsync(stoppingToken);
 
 C和C++客户端，可以将CYarp.Client项目的源代码AOT编译为C导出的动态共享库来使用，[CYarp.Client.Native](https://github.com/xljiulang/CYarp/blob/master/CYarp.Client.Native)项目是C和C++客户端Demo，需要先运行CYarp.Hosting做为调试的服务端。
 
-以下是CYarp.Client项目[AOT编译](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows)编译为C导出的动态共享库命令：
+以下是CYarp.Client项目[AOT编译](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows)为C导出的动态共享库命令：
 
 | 系统和框架  | 命令                                                        |
 | ----------- | ----------------------------------------------------------- |
@@ -112,11 +112,11 @@ Connection: Upgrade
 
 此时基于tcp的长连接已完成，接着在长连接后续的Stream要实现如下功能
 
-| 发起方 | 内容           | 含义                               | 接收方操作     |
-| ------ | -------------- | ---------------------------------- | -------------- |
-| Client | PING\r\n       | 侦测服务端存活                     | PONG\r\n       |
-| Server | PING\r\n       | 侦测客户端存活                     | PONG\r\n       |
-| Server | {TunnelId}\r\n | 让客户端向服务端创建新的HttpTunnel | 创建HttpTunnel |
+| 发起方 | 内容                 | 含义                               | 接收方操作                     |
+| ------ | -------------------- | ---------------------------------- | ------------------------------ |
+| Client | 发送`PING\r\n`       | 侦测Server存活                     | 回复`PONG\r\n`                 |
+| Server | 发送`PING\r\n`       | 侦测Client存活                     | 回复`PONG\r\n`                 |
+| Server | 发送`{tunnelId}\r\n` | 让Client向Server创建新的HttpTunnel | 使用`{tunnelId}`创建HttpTunnel |
   
 
 > http/2.0或http/3.0
@@ -138,11 +138,11 @@ Server验证通过则响应200状态码
 
 此时基于http/2.0或http/3.0的长连接已完成，接着在长连接后续的Stream要实现如下功能
 
-| 发起方 | 内容           | 含义                               | 接收方操作     |
-| ------ | -------------- | ---------------------------------- | -------------- |
-| Client | PING\r\n       | 侦测服务端存活                     | PONG\r\n       |
-| Server | PING\r\n       | 侦测客户端存活                     | PONG\r\n       |
-| Server | {TunnelId}\r\n | 让客户端向服务端创建新的HttpTunnel | 创建HttpTunnel |
+| 发起方 | 内容                 | 含义                               | 接收方操作                     |
+| ------ | -------------------- | ---------------------------------- | ------------------------------ |
+| Client | 发送`PING\r\n`       | 侦测Server存活                     | 回复`PONG\r\n`                 |
+| Server | 发送`PING\r\n`       | 侦测Client存活                     | 回复`PONG\r\n`                 |
+| Server | 发送`{tunnelId}\r\n` | 让Client向Server创建新的HttpTunnel | 使用`{tunnelId}`创建HttpTunnel |
   
 
 #### 2.2 HttpTunnel的创建
