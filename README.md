@@ -1,8 +1,7 @@
 ## CYarp
-基于Yarp的http内网穿透中间件。支持tcp、http/2.0或http/3.0作为http/1.1的传输层
+基于Yarp的一对多http内网穿透组件，支持tcp或http/2.0作为http/1.1的传输层
 
 ![net](net.png)
-
 
 ### 1 如何使用
 #### 1.1 Demo项目
@@ -119,9 +118,9 @@ Connection: Upgrade
 | Server | 发送`{tunnelId}\r\n` | 让Client向Server创建新的HttpTunnel | 使用`{tunnelId}`创建HttpTunnel |
   
 
-> http/2.0或http/3.0
+> http/2.0
 
-Client发起如下请求
+Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc8441#section-4)
 ```
 :method = CONNECT
 :protocol = CYarp
@@ -136,7 +135,7 @@ Server验证通过则响应200状态码
 :status = 200
 ```
 
-此时基于http/2.0或http/3.0的长连接已完成，接着在长连接后续的Stream要实现如下功能
+此时基于http/2.0的长连接已完成，接着在长连接后续的Stream要实现如下功能
 
 | 发起方 | 内容                 | 含义                               | 接收方操作                     |
 | ------ | -------------------- | ---------------------------------- | ------------------------------ |
@@ -163,9 +162,9 @@ Connection: Upgrade
 
 此时基于tcp的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送http/1.1的请求和接收客户端的http1.1响应。
 
-> http/2.0或http/3.0
+> http/2.0
 
-Client发起如下请求
+Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc8441#section-4)
 ```
 :method = CONNECT
 :protocol = CYarp
@@ -178,7 +177,7 @@ Server验证通过则响应200状态码
 :status = 200
 ```
 
-此时基于http/2.0或http/3.0的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送http/1.1的请求和接收客户端的http1.1响应。
+此时基于http/2.0的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送http/1.1的请求和接收客户端的http1.1响应。
 
 ### 3 安全传输
 当Server方使用https时，以下部分为tls安全传输

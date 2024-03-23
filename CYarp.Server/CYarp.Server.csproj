@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<DocumentationFile>$(TargetPath)\$(AssemblyName).xml</DocumentationFile>
-		<Description>基于Yarp的http内网穿透中间件，支持tcp、http/2.0或http/3.0作为http/1.1的传输层</Description> 
+		<Description>一对多的http内网穿透服务中间件，支持tcp或http/2.0作为http/1.1的传输层</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -5,7 +5,7 @@
 		<IsAotCompatible>true</IsAotCompatible>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<DocumentationFile>$(TargetPath)\$(AssemblyName).xml</DocumentationFile>
-		<Description>CYarp的http内网穿透客户端，支持tcp、http/2.0或http/3.0作为http/1.1的传输层</Description>
+		<Description>CYarp内网穿透客户端库，支持tcp或http/2.0作为http/1.1的传输层</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(PublishAot)'=='true'">

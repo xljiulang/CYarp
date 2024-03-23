@@ -3,8 +3,10 @@ using CYarp.Server;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
+using System;
 using System.IO;
 
 namespace CYarp.Hosting
@@ -31,6 +33,11 @@ namespace CYarp.Hosting
             builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme).Configure<IOptions<JwtTokenOptions>>((jwt, jwtTokenOptions) =>
             {
                 jwt.TokenValidationParameters = jwtTokenOptions.Value.GetParameters();
+            });
+
+            builder.Host.ConfigureHostOptions(host =>
+            {
+                host.ShutdownTimeout = TimeSpan.FromSeconds(1d);
             });
 
             // serilog
