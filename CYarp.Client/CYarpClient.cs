@@ -64,7 +64,7 @@ namespace CYarp.Client
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
             var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disposeTokenSource.Token);
-            await this.TransportAsyncCore(linkedTokenSource.Token);
+            await this.TransportCoreAsync(linkedTokenSource.Token);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace CYarp.Client
         /// <returns></returns>
         /// <exception cref="CYarpConnectException"></exception> 
         /// <exception cref="OperationCanceledException"></exception>
-        private async Task TransportAsyncCore(CancellationToken cancellationToken)
+        private async Task TransportCoreAsync(CancellationToken cancellationToken)
         {
             var stream = await this.ConnectServerAsync(tunnelId: null, cancellationToken);
             using var connection = new CYarpConnection(stream, this.options.KeepAliveInterval);
@@ -85,7 +85,7 @@ namespace CYarp.Client
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionTokenSource.Token);
                 await foreach (var tunnelId in connection.ReadTunnelIdAsync(cancellationToken))
                 {
-                    this.DuplexTransportAsync(tunnelId, linkedTokenSource.Token);
+                    this.BindTunnelIOAsync(tunnelId, linkedTokenSource.Token);
                 }
             }
             catch (Exception)
@@ -98,11 +98,11 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 双向传输绑定
+        /// 绑定tunnel的IO
         /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
-        private async void DuplexTransportAsync(Guid tunnelId, CancellationToken cancellationToken)
+        private async void BindTunnelIOAsync(Guid tunnelId, CancellationToken cancellationToken)
         {
             try
             {
@@ -274,7 +274,7 @@ namespace CYarp.Client
 
         private void SetAuthorization(HttpRequestMessage request)
         {
-            var destination = this.options.TargetUri.OriginalString;
+            var destination = this.options.TargetUri.ToString();
             request.Headers.TryAddWithoutValidation("CYarp-Destination", destination);
             request.Headers.Authorization = AuthenticationHeaderValue.Parse(this.options.Authorization);
         }
