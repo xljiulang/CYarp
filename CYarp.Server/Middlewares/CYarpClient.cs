@@ -86,7 +86,7 @@ namespace CYarp.Server.Middlewares
             var cancellationToken = this.disposeTokenSource.Token;
             try
             {
-                await this.WaitForCloseCoreAsync(cancellationToken);
+                await this.WaitForCloseAsync(cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)
             {
@@ -97,14 +97,15 @@ namespace CYarp.Server.Middlewares
             }
         }
 
-        private async Task WaitForCloseCoreAsync(CancellationToken cancellationToken)
+        private async Task WaitForCloseAsync(CancellationToken cancellationToken)
         {
             using var textReader = new StreamReader(this.connection, bufferSize: bufferSize, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
             {
-                using var timeoutTokenSource = new CancellationTokenSource(this.keepAliveTimeout);
-                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
-                var text = await textReader.ReadLineAsync(linkedTokenSource.Token);
+                var textTask = textReader.ReadLineAsync(cancellationToken);
+                var text = this.keepAliveTimeout <= TimeSpan.Zero
+                    ? await textTask
+                    : await textTask.AsTask().WaitAsync(this.keepAliveTimeout, cancellationToken);
 
                 if (text == null)
                 {

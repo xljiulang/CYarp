@@ -15,7 +15,6 @@ namespace CYarp.Client
         private readonly Connection connection;
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
-        private readonly CancellationTokenSource disposeTokenSource = new();
 
         private static readonly string Ping = "PING";
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
@@ -54,21 +53,13 @@ namespace CYarp.Client
 
         public async IAsyncEnumerable<Guid> ReadTunnelIdAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disposeTokenSource.Token);
-            await foreach (var tunnelId in this.ReadTunnelIdCoreAsync(linkedTokenSource.Token))
-            {
-                yield return tunnelId;
-            }
-        }
-
-        private async IAsyncEnumerable<Guid> ReadTunnelIdCoreAsync([EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            using var textReader = new StreamReader(connection, leaveOpen: true);
+            using var textReader = new StreamReader(this.connection, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
             {
-                using var timeoutTokenSource = new CancellationTokenSource(this.keepAliveTimeout);
-                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
-                var text = await textReader.ReadLineAsync(linkedTokenSource.Token);
+                var textTask = textReader.ReadLineAsync(cancellationToken);
+                var text = this.keepAliveTimeout <= TimeSpan.Zero
+                    ? await textTask
+                    : await textTask.AsTask().WaitAsync(this.keepAliveTimeout, cancellationToken);
 
                 if (text == null)
                 {
@@ -76,7 +67,7 @@ namespace CYarp.Client
                 }
                 else if (text == Ping)
                 {
-                    await connection.WriteAsync(PongLine, cancellationToken);
+                    await this.connection.WriteAsync(PongLine, cancellationToken);
                 }
                 else if (Guid.TryParse(text, out var tunnelId))
                 {
@@ -87,8 +78,6 @@ namespace CYarp.Client
 
         public void Dispose()
         {
-            this.disposeTokenSource.Cancel();
-            this.disposeTokenSource.Dispose();
             this.connection.Dispose();
             this.keepAliveTimer?.Dispose();
         }
