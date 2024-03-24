@@ -1,6 +1,14 @@
 ## CYarp
-基于Yarp的一对多http内网穿透组件，支持tcp或http/2.0作为http/1.1的传输层
+基于Yarp的一对多http内网穿透组件，支持tcp或http/2.0作为http/1.1的传输层。
 
+**功能特性**
+1. 使用高性能的[kestrel](https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-8.0)做服务器
+2. 使用高性能的[YARP](https://github.com/microsoft/reverse-proxy)做http转发
+3. 设计为asp.netcore的中间件，集成简单
+4. 开放的服务端与客户端交互协议
+5. 提供了.NET、C/C++客户端库
+
+**网络架构**
 ![net](net.png)
 
 ### 1 如何使用
