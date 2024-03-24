@@ -187,4 +187,4 @@ Server验证通过则响应200状态码
 如果目标服务httpServer的访问URI也是https，则HttpTunnel里面的流量表现为tls in tls。
 
 ### 4 业务安全
-CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core平台的身份认证中间件，而http转发部分(例如`CYarp.Hosting.CYarpController`)是由开发者自行开发来决定是否要转发，涉及的授权验证逻辑由开发者自行验证。
+CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core平台的身份认证中间件，而http转发部分(例如`Host\CYarpServer.CYarpController`)是由开发者自行开发来决定是否要转发，涉及的授权验证逻辑由开发者自行验证。
