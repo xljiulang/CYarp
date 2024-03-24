@@ -1,5 +1,5 @@
 ## CYarpServer
-CYarp服务器的demo，使用jwt来验证Client和http请求都的身份
+CYarp服务器的demo，使用jwt来验证Client的连接和http请求
 
 ### Token生成
 可以进入[bejson/jwt](https://www.bejson.com/jwt/)来生成RS256的JwtToken
