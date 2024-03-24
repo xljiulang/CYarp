@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace CYarp.Hosting
+namespace CYarpServer
 {
     /// <summary>
     /// 表示token选项

@@ -5,7 +5,7 @@
 
 ### 1 如何使用
 #### 1.1 Demo项目
-1. 运行CYarp.Hosting
+1. 运行Host/CYarpServer和Host/CYarpClient
 2. 在PostMan请求到`http://localhost`，此时收到401授权未通过
 3. 添加PostMan的Auth，选择Bearer Token，使用如下的测试Token来请求
 
@@ -77,7 +77,7 @@ using var client = new CYarpClient(options);
 await client.TransportAsync(stoppingToken);
 ```
 
-C和C++客户端，可以将CYarp.Client项目的源代码AOT编译为C导出的动态共享库来使用，[CYarp.Client.Native](https://github.com/xljiulang/CYarp/blob/master/CYarp.Client.Native)项目是C和C++客户端Demo，需要先运行CYarp.Hosting做为调试的服务端。
+C和C++客户端，可以将CYarp.Client项目的源代码AOT编译为C导出的动态共享库来使用，[Host/CYarpClient.Native](https://github.com/xljiulang/CYarp/blob/master/Host/CYarpClient.Native)项目是C和C++客户端Demo，需要先运行Host/CYarpServer做为调试的服务端。
 
 以下是CYarp.Client项目[AOT编译](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows)为C导出的动态共享库命令：
 

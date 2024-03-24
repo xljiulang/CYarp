@@ -1,5 +1,5 @@
-## CYarp.Hosting
-同时集成服务端与客户端了的demo
+## CYarpServer
+CYarp服务器
 
 ### Token生成
 可以进入[bejson/jwt](https://www.bejson.com/jwt/)来生成RS256的JwtToken

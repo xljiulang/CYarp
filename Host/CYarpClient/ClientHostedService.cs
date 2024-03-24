@@ -6,16 +6,16 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYarp.Hosting
+namespace CYarpServer
 {
-    sealed class CYarpClientHostedService : BackgroundService
+    sealed class ClientHostedService : BackgroundService
     {
         private readonly IOptionsMonitor<CYarpClientOptions> clientOptions;
-        private readonly ILogger<CYarpClientHostedService> logger;
+        private readonly ILogger<ClientHostedService> logger;
 
-        public CYarpClientHostedService(
+        public ClientHostedService(
             IOptionsMonitor<CYarpClientOptions> clientOptions,
-            ILogger<CYarpClientHostedService> logger)
+            ILogger<ClientHostedService> logger)
         {
             this.clientOptions = clientOptions;
             this.logger = logger;
@@ -28,7 +28,7 @@ namespace CYarp.Hosting
                 try
                 {
                     var options = this.clientOptions.CurrentValue;
-                    using var client = new CYarpClient(options);
+                    using var client = new CYarp.Client.CYarpClient(options);
                     await client.TransportAsync(stoppingToken);
 
                     this.logger.LogInformation($"传输已被关闭，5秒后重新连接");

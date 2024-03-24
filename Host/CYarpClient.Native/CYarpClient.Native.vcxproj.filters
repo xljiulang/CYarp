@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CYarp.Client.Native.cpp">
+    <ClCompile Include="CYarpClientNative.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

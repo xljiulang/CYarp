@@ -1,4 +1,3 @@
-using CYarp.Client;
 using CYarp.Server;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -9,7 +8,7 @@ using Serilog;
 using System;
 using System.IO;
 
-namespace CYarp.Hosting
+namespace CYarpServer
 {
     public class Program
     {
@@ -19,12 +18,7 @@ namespace CYarp.Hosting
 
             // 注册CYarp服务端组件
             builder.Services.AddCYarp(builder.Configuration.GetSection(nameof(CYarpOptions)));
-
-            // 注册CYarp客户端组件
-            // 这是demo为了方便，把服务端与客户端都集成在一个Hosting里
-            builder.Services.AddHostedService<CYarpClientHostedService>();
-            builder.Services.Configure<CYarpClientOptions>(builder.Configuration.GetSection(nameof(CYarpClientOptions)));
-
+           
             // asp.net的jwt认证、控制器等
             builder.Services.AddControllers();
             builder.Services.AddAuthorization();

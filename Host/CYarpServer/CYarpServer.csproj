@@ -2,8 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+		<Nullable>enable</Nullable> 
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,9 +14,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CYarp.Client\CYarp.Client.csproj" />
-		<ProjectReference Include="..\CYarp.Server\CYarp.Server.csproj" />
-	</ItemGroup>
+	  <ProjectReference Include="..\..\CYarp.Server\CYarp.Server.csproj" />
+	</ItemGroup> 
 
 	<ItemGroup>
 		<None Update="jwt-keys\*.pem">

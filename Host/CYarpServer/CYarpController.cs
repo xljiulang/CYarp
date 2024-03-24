@@ -6,7 +6,7 @@ using Microsoft.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace CYarp.Hosting
+namespace CYarpServer
 {
     [Authorize(Roles = "Mobile")]
     public class CYarpController : ControllerBase
