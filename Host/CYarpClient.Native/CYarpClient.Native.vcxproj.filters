@@ -19,7 +19,4 @@
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\CYarpClient\README.md" />
-  </ItemGroup>
 </Project>
