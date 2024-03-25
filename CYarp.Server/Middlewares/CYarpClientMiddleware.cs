@@ -30,7 +30,7 @@ namespace CYarp.Server.Middlewares
         private readonly IClientManager clientManager;
         private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
         private readonly ILogger<CYarpClient> logger;
-        private const string CyarpDestinationHeader = "CYarp-Destination";
+        private const string CYarpTargetUriHeader = "CYarp-TargetUri";
 
         public CYarpClientMiddleware(
             IHttpForwarder httpForwarder,
@@ -50,17 +50,17 @@ namespace CYarp.Server.Middlewares
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false ||
-                context.Request.Headers.TryGetValue(CyarpDestinationHeader, out var cyarpDestination) == false)
+                context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
             {
                 await next(context);
                 return;
             }
 
-            // CYarp-Destination头格式验证
-            if (Uri.TryCreate(cyarpDestination, UriKind.Absolute, out var clientDestination) == false)
+            // CYarp-TargetUri头格式验证
+            if (Uri.TryCreate(targetUri, UriKind.Absolute, out var clientTargetUri) == false)
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                this.LogFailureStatus(context, $"请求头{CyarpDestinationHeader}的值不是Uri格式");
+                this.LogFailureStatus(context, $"请求头{CYarpTargetUriHeader}的值不是Uri格式");
                 return;
             }
 
@@ -93,7 +93,7 @@ namespace CYarp.Server.Middlewares
 
             var stream = await cyarpFeature.AcceptAsync();
             var connection = new CYarpConnection(stream);
-            using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientDestination, context, this.logger);
+            using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientTargetUri, context, this.logger);
 
             if (await this.clientManager.AddAsync(cyarpClient))
             {

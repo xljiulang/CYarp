@@ -18,9 +18,9 @@ namespace CYarp.Server
         string Id { get; }
 
         /// <summary>
-        /// 获取客户端连接的目标http服务器地址
+        /// 获取转发的目标Uri
         /// </summary>
-        Uri Destination { get; }
+        Uri TargetUri { get; }
 
         /// <summary>
         /// 获取关联的用户信息

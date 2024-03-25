@@ -129,7 +129,7 @@ Get / HTTP/1.1
 Connection: Upgrade
 Upgrade: CYarp
 Authorization：{客户端身份信息}
-CYarp-Destination: {httpServer的访问URI}
+CYarp-TargetUri: {目标httpServer的访问Uri}
 ```
 
 Server验证通过则响应101状态码
@@ -156,7 +156,7 @@ Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc844
 :scheme = https
 :path = /
 Authorization = {客户端身份信息}
-CYarp-Destination = {httpServer的访问URI}
+CYarp-TargetUri = {目标httpServer的访问Uri}
 ```
 
 Server验证通过则响应200状态码
@@ -213,7 +213,7 @@ Server验证通过则响应200状态码
 1. 长连接建立过程和长连接的后续Stream
 2. HttpTunnel的创建过程和其后续Stream
 
-如果目标服务httpServer的访问URI也是https，则HttpTunnel里面的流量表现为tls in tls。
+如果目标服务httpServer的TargetUri也是https，则HttpTunnel里面的流量表现为tls in tls。
 
 ### 4 业务安全
 CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core平台的身份认证中间件，而http转发部分(例如`Host\CYarpServer.CYarpController`)是由开发者自行开发来决定是否要转发，涉及的授权验证逻辑由开发者自行验证。

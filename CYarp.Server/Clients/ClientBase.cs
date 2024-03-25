@@ -23,7 +23,7 @@ namespace CYarp.Server.Clients
 
         public string Id { get; }
 
-        public Uri Destination { get; }
+        public Uri TargetUri { get; }
 
         public ClaimsPrincipal User => this.httpContext.User;
 
@@ -46,7 +46,7 @@ namespace CYarp.Server.Clients
             HttpTunnelConfig httpTunnelConfig,
             HttpTunnelFactory httpTunnelFactory,
             string clientId,
-            Uri clientDestination,
+            Uri clientTargetUri,
             HttpContext httpContext)
         {
             this.httpForwarder = httpForwarder;
@@ -57,7 +57,7 @@ namespace CYarp.Server.Clients
             });
 
             this.Id = clientId;
-            this.Destination = clientDestination;
+            this.TargetUri = clientTargetUri;
             this.httpContext = httpContext;
         }
 
@@ -67,7 +67,7 @@ namespace CYarp.Server.Clients
             this.ValidateDisposed();
 
             var httpClient = this.httpClientLazy.Value;
-            var destination = this.Destination.OriginalString;
+            var destination = this.TargetUri.OriginalString;
             return this.httpForwarder.SendAsync(httpContext, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
         }
 

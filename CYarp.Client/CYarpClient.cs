@@ -274,8 +274,8 @@ namespace CYarp.Client
 
         private void SetAuthorization(HttpRequestMessage request)
         {
-            var destination = this.options.TargetUri.ToString();
-            request.Headers.TryAddWithoutValidation("CYarp-Destination", destination);
+            var targetUri = this.options.TargetUri.ToString();
+            request.Headers.TryAddWithoutValidation("CYarp-TargetUri", targetUri);
             request.Headers.Authorization = AuthenticationHeaderValue.Parse(this.options.Authorization);
         }
 
