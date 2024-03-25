@@ -8,7 +8,7 @@ namespace CYarp.Server.Configs
     public class AuthorizationConfig
     {
         /// <summary>
-        /// 允许的角色
+        /// 允许的角色，无角色表示不验证角色
         /// 角色的CiaimType为http://schemas.microsoft.com/ws/2008/06/identity/claims/role
         /// </summary>
         public string[] AllowRoles { get; set; } = Array.Empty<string>();

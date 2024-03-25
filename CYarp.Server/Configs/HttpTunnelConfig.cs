@@ -8,19 +8,19 @@ namespace CYarp.Server.Configs
     public class HttpTunnelConfig
     {
         /// <summary>
-        /// 与目标服务器的最大连接数
+        /// 每个客户端的最大http隧道数量
         /// 默认为10
         /// </summary>
-        public int MaxConnectionsPerServer { get; set; } = 10;
+        public int MaxTunnelsPerClient { get; set; } = 10;
 
         /// <summary>
-        /// 连接超时时长
+        /// http隧道创建的超时时长
         /// 默认10s
         /// </summary>
-        public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(10d);
+        public TimeSpan CreationTimeout { get; set; } = TimeSpan.FromSeconds(10d);
 
         /// <summary>
-        /// 接受不安装的服务器证书
+        /// 接受不安全的的目标服务器证书
         /// 默认为true
         /// </summary>
         public bool DangerousAcceptAnyServerCertificate { get; set; } = true;

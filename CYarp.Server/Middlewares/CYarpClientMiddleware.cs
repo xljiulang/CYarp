@@ -26,13 +26,12 @@ namespace CYarp.Server.Middlewares
     /// </summary>
     sealed partial class CYarpClientMiddleware : IMiddleware
     {
-        private static readonly string cyarpDestinationHeader = "CYarp-Destination";
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly IClientManager clientManager;
         private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
         private readonly ILogger<CYarpClient> logger;
-
+        private const string CyarpDestinationHeader = "CYarp-Destination";
 
         public CYarpClientMiddleware(
             IHttpForwarder httpForwarder,
@@ -52,7 +51,7 @@ namespace CYarp.Server.Middlewares
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false ||
-                context.Request.Headers.TryGetValue(cyarpDestinationHeader, out var cyarpDestination) == false)
+                context.Request.Headers.TryGetValue(CyarpDestinationHeader, out var cyarpDestination) == false)
             {
                 await next(context);
                 return;
@@ -62,7 +61,7 @@ namespace CYarp.Server.Middlewares
             if (Uri.TryCreate(cyarpDestination, UriKind.Absolute, out var clientDestination) == false)
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                this.LogFailureStatus(context, "请求头CYarp-Destination的值不是Uri格式");
+                this.LogFailureStatus(context, $"请求头{CyarpDestinationHeader}的值不是Uri格式");
                 return;
             }
 
