@@ -64,8 +64,8 @@ namespace CYarp.Server.Clients
 
             if (this.dictionary.TryAdd(clientId, client))
             {
-                await this.HandleConnectedAsync(clientId);
                 Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);
+                await this.HandleConnectedAsync(client);
                 return true;
             }
             return false;
@@ -79,33 +79,33 @@ namespace CYarp.Server.Clients
             {
                 if (ReferenceEquals(existClient, client))
                 {
-                    await this.HandleDisconnectedAsync(clientId);
+                    Log.LogDisconnected(this.logger, clientId, client.Protocol, this.Count);
+                    await this.HandleDisconnectedAsync(client);
                 }
                 else
                 {
                     this.dictionary.TryAdd(clientId, existClient);
                 }
-                Log.LogDisconnected(this.logger, clientId, client.Protocol, this.Count);
             }
         }
 
         /// <summary>
-        /// 客户端连接成功
+        /// 处理客户端连接成功
         /// </summary>
-        /// <param name="clientId"></param>
+        /// <param name="client">客户端</param>
         /// <returns></returns>
-        protected virtual ValueTask HandleConnectedAsync(string clientId)
+        protected virtual ValueTask HandleConnectedAsync(IClient client)
         {
             return ValueTask.CompletedTask;
         }
 
         /// <summary>
-        /// 客户端断开连接
-        /// 被挤下线的客户端的clientId不会触发此方法
+        /// 处理客户端连接断开
+        /// 被挤下线的客户端实例不会触发此方法
         /// </summary>
-        /// <param name="clientId"></param>
+        /// <param name="client">客户端</param>
         /// <returns></returns>
-        protected virtual ValueTask HandleDisconnectedAsync(string clientId)
+        protected virtual ValueTask HandleDisconnectedAsync(IClient client)
         {
             return ValueTask.CompletedTask;
         }
@@ -129,7 +129,7 @@ namespace CYarp.Server.Clients
             [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，当前客户端数为 {count}")]
             public static partial void LogConnected(ILogger logger, string clientId, string protocol, int count);
 
-            [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长断开连接，当前客户端数为 {count}")]
+            [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长连接断开，当前客户端数为 {count}")]
             public static partial void LogDisconnected(ILogger logger, string clientId, string protocol, int count);
         }
     }

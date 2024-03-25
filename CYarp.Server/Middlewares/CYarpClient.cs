@@ -1,11 +1,10 @@
 ﻿using CYarp.Server.Clients;
 using CYarp.Server.Configs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
-using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,10 +34,8 @@ namespace CYarp.Server.Middlewares
             HttpTunnelFactory httpTunnelFactory,
             string clientId,
             Uri clientDestination,
-            ClaimsPrincipal clientUser,
-            string clientProtocol,
-            IPEndPoint? remoteEndPoint,
-            ILogger logger) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination, clientUser, clientProtocol, remoteEndPoint)
+            HttpContext httpContext,
+            ILogger logger) : base(httpForwarder, httpTunnelConfig, httpTunnelFactory, clientId, clientDestination, httpContext)
         {
             this.connection = connection;
             this.logger = logger;

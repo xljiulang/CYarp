@@ -17,6 +17,7 @@ namespace CYarp.Server.Clients
     {
         private volatile bool disposed = false;
         private readonly IHttpForwarder httpForwarder;
+        private readonly HttpContext httpContext;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
         private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version = HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
 
@@ -24,11 +25,18 @@ namespace CYarp.Server.Clients
 
         public Uri Destination { get; }
 
-        public ClaimsPrincipal User { get; }
+        public ClaimsPrincipal User => this.httpContext.User;
 
-        public string Protocol { get; }
+        public string Protocol => this.httpContext.Request.Protocol;
 
-        public IPEndPoint? RemoteEndpoint { get; }
+        public IPEndPoint? RemoteEndpoint
+        {
+            get
+            {
+                var connection = this.httpContext.Connection;
+                return connection.RemoteIpAddress == null ? null : new IPEndPoint(connection.RemoteIpAddress, connection.RemotePort);
+            }
+        }
 
         public DateTimeOffset CreationTime { get; } = DateTimeOffset.Now;
 
@@ -39,9 +47,7 @@ namespace CYarp.Server.Clients
             HttpTunnelFactory httpTunnelFactory,
             string clientId,
             Uri clientDestination,
-            ClaimsPrincipal clientUser,
-            string clientProtocol,
-            IPEndPoint? remoteEndPoint)
+            HttpContext httpContext)
         {
             this.httpForwarder = httpForwarder;
             this.httpClientLazy = new Lazy<HttpMessageInvoker>(() =>
@@ -52,9 +58,7 @@ namespace CYarp.Server.Clients
 
             this.Id = clientId;
             this.Destination = clientDestination;
-            this.User = clientUser;
-            this.Protocol = clientProtocol;
-            this.RemoteEndpoint = remoteEndPoint;
+            this.httpContext = httpContext;
         }
 
 
