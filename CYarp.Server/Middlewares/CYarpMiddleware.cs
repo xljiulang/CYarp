@@ -24,21 +24,14 @@ namespace CYarp.Server.Middlewares
 
         private class CYarpFeature : ICYarpFeature
         {
-            private static readonly StringValues cyarp = new("CYarp");
-            private readonly StringValues upgradeHeader;
+            private const string Cyarp = "CYarp";
             private readonly IHttpUpgradeFeature upgradeFeature;
             private readonly IHttpExtendedConnectFeature? connectFeature;
             private readonly IHttpRequestTimeoutFeature? requestTimeoutFeature;
 
-            public bool IsCYarpRequest
-            {
-                get
-                {
-                    return (this.upgradeFeature.IsUpgradableRequest && this.upgradeHeader == cyarp) ||
-                        (this.connectFeature != null && connectFeature.IsExtendedConnect && connectFeature.Protocol == cyarp);
-                }
-            }
+            private readonly bool cyarpRequest;
 
+            public bool IsCYarpRequest => this.cyarpRequest;
 
             public CYarpFeature(
                 StringValues upgradeHeader,
@@ -46,21 +39,28 @@ namespace CYarp.Server.Middlewares
                 IHttpExtendedConnectFeature? connectFeature,
                 IHttpRequestTimeoutFeature? requestTimeoutFeature)
             {
-                this.upgradeHeader = upgradeHeader;
                 this.upgradeFeature = upgradeFeature;
                 this.connectFeature = connectFeature;
                 this.requestTimeoutFeature = requestTimeoutFeature;
+
+                this.cyarpRequest = (upgradeFeature.IsUpgradableRequest && string.Equals(Cyarp, upgradeHeader, StringComparison.InvariantCultureIgnoreCase)) ||
+                    (connectFeature != null && connectFeature.IsExtendedConnect && string.Equals(Cyarp, connectFeature.Protocol, StringComparison.InvariantCultureIgnoreCase));
             }
 
             public async Task<Stream> AcceptAsync()
             {
-                if (this.upgradeFeature.IsUpgradableRequest && this.upgradeHeader == cyarp)
+                if (this.cyarpRequest == false)
+                {
+                    throw new InvalidOperationException("Not a CYarp request");
+                }
+
+                if (this.upgradeFeature.IsUpgradableRequest)
                 {
                     this.requestTimeoutFeature?.DisableTimeout();
                     return await this.upgradeFeature.UpgradeAsync();
                 }
 
-                if (this.connectFeature != null && this.connectFeature.IsExtendedConnect && this.connectFeature.Protocol == cyarp)
+                if (this.connectFeature != null)
                 {
                     this.requestTimeoutFeature?.DisableTimeout();
                     return await this.connectFeature.AcceptAsync();

@@ -59,7 +59,7 @@ namespace CYarp.Server.Middlewares
             }
 
             // CYarp-Destination头格式验证
-            if (Uri.TryCreate(cyarpDestination.FirstOrDefault(), UriKind.Absolute, out var clientDestination) == false)
+            if (Uri.TryCreate(cyarpDestination, UriKind.Absolute, out var clientDestination) == false)
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 this.LogFailureStatus(context, "请求头CYarp-Destination的值不是Uri格式");
