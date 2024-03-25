@@ -133,10 +133,10 @@ namespace CYarp.Server.Middlewares
             [LoggerMessage(LogLevel.Debug, "[{clienId}] 发出PING心跳")]
             public static partial void LogPing(ILogger logger, string clienId);
 
-            [LoggerMessage(LogLevel.Debug, "[{clienId}] 回复Pong心跳")]
+            [LoggerMessage(LogLevel.Debug, "[{clienId}] 回复PONG心跳")]
             public static partial void LogPong(ILogger logger, string clienId);
 
-            [LoggerMessage(LogLevel.Debug, "[{clienId}] 心跳检测超时")]
+            [LoggerMessage(LogLevel.Debug, "[{clienId}] PING-PONG检测超时")]
             public static partial void LogTimeout(ILogger logger, string clienId);
 
             [LoggerMessage(LogLevel.Debug, "[{clienId}] 连接已关闭")]
