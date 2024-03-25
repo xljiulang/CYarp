@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,14 +15,34 @@ namespace CYarp.Server.Clients
     [DebuggerDisplay("Count = {Count}")]
     public partial class ClientManager : IClientManager
     {
-        private readonly ILogger<ClientManager> logger;
+        private readonly ILogger logger;
         private readonly ConcurrentDictionary<string, IClient> dictionary = new();
 
         /// <inheritdoc/>
         public int Count => this.dictionary.Count;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// 客户端管理器
+        /// </summary> 
+        public ClientManager()
+            : this((ILogger)NullLogger<ClientManager>.Instance)
+        {
+        }
+
+        /// <summary>
+        /// 客户端管理器
+        /// </summary>
+        /// <param name="logger">日志</param>
         public ClientManager(ILogger<ClientManager> logger)
+              : this((ILogger)logger)
+        {
+        }
+
+        /// <summary>
+        /// 客户端管理器
+        /// </summary>
+        /// <param name="logger">日志</param>
+        protected ClientManager(ILogger logger)
         {
             this.logger = logger;
         }
@@ -44,7 +65,7 @@ namespace CYarp.Server.Clients
             if (this.dictionary.TryAdd(clientId, client))
             {
                 await this.HandleConnectedAsync(clientId);
-                Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);               
+                Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);
                 return true;
             }
             return false;
@@ -57,7 +78,7 @@ namespace CYarp.Server.Clients
             if (this.dictionary.TryRemove(clientId, out var existClient))
             {
                 if (ReferenceEquals(existClient, client))
-                {                 
+                {
                     await this.HandleDisconnectedAsync(clientId);
                 }
                 else
