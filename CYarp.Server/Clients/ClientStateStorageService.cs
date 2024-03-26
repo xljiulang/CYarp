@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,8 +28,11 @@ namespace CYarp.Server.Clients
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await this.ResetClientStatesAsync(stoppingToken);
-            await this.ConsumeClientStatesAsync(stoppingToken);
+            if (this.stateStorages.Any())
+            {
+                await this.ResetClientStatesAsync(stoppingToken);
+                await this.ConsumeClientStatesAsync(stoppingToken);
+            }
         }
 
         /// <summary>
