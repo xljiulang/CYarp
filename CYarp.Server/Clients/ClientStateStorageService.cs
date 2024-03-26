@@ -27,7 +27,7 @@ namespace CYarp.Server.Clients
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await this.ClearClientStatesAsync(stoppingToken);
+            await this.ResetClientStatesAsync(stoppingToken);
             await this.ConsumeClientStatesAsync(stoppingToken);
         }
 
@@ -36,7 +36,7 @@ namespace CYarp.Server.Clients
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task ClearClientStatesAsync(CancellationToken cancellationToken)
+        private async Task ResetClientStatesAsync(CancellationToken cancellationToken)
         {
             var node = this.cyarpOptions.CurrentValue.Node;
             foreach (var storage in this.stateStorages)
