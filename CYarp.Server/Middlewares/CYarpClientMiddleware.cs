@@ -27,7 +27,7 @@ namespace CYarp.Server.Middlewares
     {
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpTunnelFactory httpTunnelFactory;
-        private readonly IClientManager clientManager;
+        private readonly ClientManager clientManager;
         private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
         private readonly ILogger<CYarpClient> logger;
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
@@ -35,7 +35,7 @@ namespace CYarp.Server.Middlewares
         public CYarpClientMiddleware(
             IHttpForwarder httpForwarder,
             HttpTunnelFactory httpTunnelFactory,
-            IClientManager clientManager,
+            ClientManager clientManager,
             IOptionsMonitor<CYarpOptions> yarpOptions,
             ILogger<CYarpClient> logger)
         {
@@ -95,10 +95,10 @@ namespace CYarp.Server.Middlewares
             var connection = new CYarpConnection(stream);
             using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientTargetUri, context, this.logger);
 
-            if (await this.clientManager.AddAsync(cyarpClient))
+            if (await this.clientManager.AddAsync(cyarpClient, default))
             {
                 await cyarpClient.WaitForCloseAsync();
-                await this.clientManager.RemoveAsync(cyarpClient);
+                await this.clientManager.RemoveAsync(cyarpClient, default);
             }
         }
 

@@ -16,15 +16,15 @@ namespace CYarpServer
         /// <summary>
         /// 处理cyarp
         /// 核心操作是从请求上下文获取clientId
-        /// 然后使用clientId从clientManager获取client来转发http
+        /// 然后使用clientId从IClientViewer服务获取IClient来转发http
         /// </summary>
-        /// <param name="clientManager"></param>
+        /// <param name="clientViewer">IClient的查看器</param>
         /// <returns></returns>
         [Route("/{**cyarp}")]
-        public async Task InvokeAsync([FromServices] IClientManager clientManager)
+        public async Task InvokeAsync([FromServices] IClientViewer clientViewer)
         {
             var clientId = this.User.FindFirstValue(clientIdClaimType);
-            if (clientId != null && clientManager.TryGetValue(clientId, out var client))
+            if (clientId != null && clientViewer.TryGetValue(clientId, out var client))
             {
                 this.Request.Headers.Remove(HeaderNames.Authorization);
                 await client.ForwardHttpAsync(this.HttpContext);

@@ -1,49 +1,36 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 默认的客户端管理器
+    /// 客户端管理器
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
-    public partial class ClientManager : IClientManager
+    sealed partial class ClientManager : IClientViewer
     {
-        private readonly ILogger logger;
         private readonly ConcurrentDictionary<string, IClient> dictionary = new();
+        private readonly IEnumerable<IClientStateStorage> stateStorages;
+        private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
+        private readonly ILogger logger;
 
         /// <inheritdoc/>
         public int Count => this.dictionary.Count;
 
-        /// <summary>
-        /// 客户端管理器
-        /// </summary> 
-        public ClientManager()
-            : this((ILogger)NullLogger<ClientManager>.Instance)
+        public ClientManager(
+            IEnumerable<IClientStateStorage> stateStorages,
+            IOptionsMonitor<CYarpOptions> cyarpOptions,
+            ILogger<ClientManager> logger)
         {
-        }
-
-        /// <summary>
-        /// 客户端管理器
-        /// </summary>
-        /// <param name="logger">日志</param>
-        public ClientManager(ILogger<ClientManager> logger)
-              : this((ILogger)logger)
-        {
-        }
-
-        /// <summary>
-        /// 客户端管理器
-        /// </summary>
-        /// <param name="logger">日志</param>
-        protected ClientManager(ILogger logger)
-        {
+            this.stateStorages = stateStorages;
+            this.cyarpOptions = cyarpOptions;
             this.logger = logger;
         }
 
@@ -53,8 +40,13 @@ namespace CYarp.Server.Clients
             return this.dictionary.TryGetValue(clientId, out client);
         }
 
-        /// <inheritdoc/>
-        public async ValueTask<bool> AddAsync(IClient client)
+        /// <summary>
+        /// 添加客户端实例
+        /// </summary>
+        /// <param name="client">客户端实例</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async ValueTask<bool> AddAsync(IClient client, CancellationToken cancellationToken)
         {
             var clientId = client.Id;
             if (this.dictionary.TryRemove(clientId, out var existClient))
@@ -65,14 +57,19 @@ namespace CYarp.Server.Clients
             if (this.dictionary.TryAdd(clientId, client))
             {
                 Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);
-                await this.HandleConnectedAsync(client);
+                await this.HandleClientStateAsync(client, connected: true, cancellationToken);
                 return true;
             }
             return false;
         }
 
-        /// <inheritdoc/>
-        public async ValueTask RemoveAsync(IClient client)
+        /// <summary>
+        /// 移除客户端实例
+        /// </summary>
+        /// <param name="client">客户端实例</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async ValueTask RemoveAsync(IClient client, CancellationToken cancellationToken)
         {
             var clientId = client.Id;
             if (this.dictionary.TryRemove(clientId, out var existClient))
@@ -80,7 +77,7 @@ namespace CYarp.Server.Clients
                 if (ReferenceEquals(existClient, client))
                 {
                     Log.LogDisconnected(this.logger, clientId, client.Protocol, this.Count);
-                    await this.HandleDisconnectedAsync(client);
+                    await this.HandleClientStateAsync(client, connected: false, cancellationToken);
                 }
                 else
                 {
@@ -89,25 +86,19 @@ namespace CYarp.Server.Clients
             }
         }
 
-        /// <summary>
-        /// 处理客户端连接成功
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <returns></returns>
-        protected virtual ValueTask HandleConnectedAsync(IClient client)
+        private async ValueTask HandleClientStateAsync(IClient client, bool connected, CancellationToken cancellationToken)
         {
-            return ValueTask.CompletedTask;
-        }
+            var clientState = new ClientState
+            {
+                Node = this.cyarpOptions.CurrentValue.Node,
+                Client = client,
+                IsConnected = connected
+            };
 
-        /// <summary>
-        /// 处理客户端连接断开
-        /// 被挤下线的客户端实例不会触发此方法
-        /// </summary>
-        /// <param name="client">客户端</param>
-        /// <returns></returns>
-        protected virtual ValueTask HandleDisconnectedAsync(IClient client)
-        {
-            return ValueTask.CompletedTask;
+            foreach (var storage in this.stateStorages)
+            {
+                await storage.WriteClientStateAsync(clientState, cancellationToken);
+            }
         }
 
         /// <inheritdoc/>

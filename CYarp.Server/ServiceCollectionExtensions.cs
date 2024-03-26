@@ -4,6 +4,7 @@ using CYarp.Server.Middlewares;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -14,13 +15,15 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// 注册CYarp相关服务
+        /// 提供IClientViewer服务来查看IClient
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
         public static ICYarpBuilder AddCYarp(this IServiceCollection services)
         {
+            services.TryAddSingleton<ClientManager>();
+            services.TryAddSingleton<IClientViewer>(serviceProvder => serviceProvder.GetRequiredService<ClientManager>());
             services.TryAddSingleton<HttpTunnelFactory>();
-            services.TryAddSingleton<IClientManager, ClientManager>();
 
             services.TryAddSingleton<CYarpMiddleware>();
             services.TryAddSingleton<CYarpClientMiddleware>();
@@ -54,6 +57,18 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// 添加一个IClient的状态存储器
+        /// </summary>
+        /// <typeparam name="TStorage">状态存储器的类型</typeparam>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static ICYarpBuilder AddClientStateStorage<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStorage>(this ICYarpBuilder builder)
+            where TStorage : class, IClientStateStorage
+        {
+            builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IClientStateStorage, TStorage>());
+            return builder;
+        }
 
         private class CYarpBuilder(IServiceCollection services) : ICYarpBuilder
         {

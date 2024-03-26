@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         /// <summary>
         /// 使用CYarp中间件
-        /// 自动接收IClient并添加或移除到IClientManager
+        /// 自动管理IClient的连接
         /// 需要放到app.UseAuthentication()之后
         /// </summary>
         /// <param name="app"></param>
