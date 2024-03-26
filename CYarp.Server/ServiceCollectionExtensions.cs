@@ -21,8 +21,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static ICYarpBuilder AddCYarp(this IServiceCollection services)
         {
+            services.TryAddSingleton<ClientStateChannel>();
+            services.AddHostedService<ClientStateStorageService>();
+
             services.TryAddSingleton<ClientManager>();
             services.TryAddSingleton<IClientViewer>(serviceProvder => serviceProvder.GetRequiredService<ClientManager>());
+
             services.TryAddSingleton<HttpTunnelFactory>();
 
             services.TryAddSingleton<CYarpMiddleware>();

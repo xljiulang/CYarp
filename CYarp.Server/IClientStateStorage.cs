@@ -9,6 +9,14 @@ namespace CYarp.Server
     public interface IClientStateStorage
     {
         /// <summary>
+        /// 重置节点的客户端状态
+        /// </summary>
+        /// <param name="node">节点名称(CYarpOptions.Node)</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task ResetClientStatesAsync(string node, CancellationToken cancellationToken);
+
+        /// <summary>
         /// 写入客户端状态
         /// </summary>
         /// <param name="clientState">客户端状态</param>

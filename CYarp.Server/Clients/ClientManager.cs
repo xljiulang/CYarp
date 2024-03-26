@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,20 +16,17 @@ namespace CYarp.Server.Clients
     sealed partial class ClientManager : IClientViewer
     {
         private readonly ConcurrentDictionary<string, IClient> dictionary = new();
-        private readonly IEnumerable<IClientStateStorage> stateStorages;
-        private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
+        private readonly ClientStateChannel clientStateChannel;
         private readonly ILogger logger;
 
         /// <inheritdoc/>
         public int Count => this.dictionary.Count;
 
         public ClientManager(
-            IEnumerable<IClientStateStorage> stateStorages,
-            IOptionsMonitor<CYarpOptions> cyarpOptions,
+            ClientStateChannel clientStateChannel,
             ILogger<ClientManager> logger)
         {
-            this.stateStorages = stateStorages;
-            this.cyarpOptions = cyarpOptions;
+            this.clientStateChannel = clientStateChannel;
             this.logger = logger;
         }
 
@@ -57,7 +53,7 @@ namespace CYarp.Server.Clients
             if (this.dictionary.TryAdd(clientId, client))
             {
                 Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);
-                await this.HandleClientStateAsync(client, connected: true, cancellationToken);
+                await this.clientStateChannel.WriteAsync(client, connected: true, cancellationToken);
                 return true;
             }
             return false;
@@ -77,7 +73,7 @@ namespace CYarp.Server.Clients
                 if (ReferenceEquals(existClient, client))
                 {
                     Log.LogDisconnected(this.logger, clientId, client.Protocol, this.Count);
-                    await this.HandleClientStateAsync(client, connected: false, cancellationToken);
+                    await this.clientStateChannel.WriteAsync(client, connected: false, cancellationToken);
                 }
                 else
                 {
@@ -86,20 +82,6 @@ namespace CYarp.Server.Clients
             }
         }
 
-        private async ValueTask HandleClientStateAsync(IClient client, bool connected, CancellationToken cancellationToken)
-        {
-            var clientState = new ClientState
-            {
-                Node = this.cyarpOptions.CurrentValue.Node,
-                Client = client,
-                IsConnected = connected
-            };
-
-            foreach (var storage in this.stateStorages)
-            {
-                await storage.WriteClientStateAsync(clientState, cancellationToken);
-            }
-        }
 
         /// <inheritdoc/>
         public IEnumerator<IClient> GetEnumerator()
