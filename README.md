@@ -227,7 +227,7 @@ SLB层需要开启基于IP地址的TCP会话保持，即来自同一IP地址的�
 
 **CYarp.Server层**
 
-CYarp.Server服务器需要基于redis等实现IClientStateStorager服务，即以IClient的Id值做为RedisKey、Node值做RedisValue持久化。当存在SLB时，这些CYarp.Server服务不再要求有从公网访问的要求。
+CYarp.Server服务器需要基于redis等实现`IClientStateStorage`服务，即以IClient的Id值做为RedisKey、Node值做RedisValue持久化。当存在SLB时，这些CYarp.Server服务不再要求有从公网访问的要求。
 
 **http网关层**
 
