@@ -24,7 +24,7 @@ namespace CYarp.Server
         ValueTask RemoveAsync(IClient client);
 
         /// <summary>
-        /// 使用client尝试获取客户端实例
+        /// 使用clientId尝试获取客户端实例
         /// </summary>
         /// <param name="clientId">客户端id</param>
         /// <param name="client">客户端实例</param>

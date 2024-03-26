@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Host", "Host", "{543DF450-E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CYarpServer", "Host\CYarpServer\CYarpServer.csproj", "{5C1264AA-FB1D-455A-85FE-CD57F95AED85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CYarpClient", "Host\CYarpClient\CYarpClient.csproj", "{B5CF1B29-70A2-47B3-9CC7-4D13B841D581}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CYarpClient", "Host\CYarpClient\CYarpClient.csproj", "{B5CF1B29-70A2-47B3-9CC7-4D13B841D581}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CYarpClient.Native", "Host\CYarpClient.Native\CYarpClient.Native.vcxproj", "{06B58580-93DB-4B75-B5FA-CB1EF3AE9633}"
 EndProject

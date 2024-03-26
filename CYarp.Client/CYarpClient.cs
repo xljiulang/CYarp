@@ -14,7 +14,6 @@ namespace CYarp.Client
     /// </summary>
     public class CYarpClient : IDisposable
     {
-        private volatile bool disposed = false;
         private readonly CYarpClientOptions options;
         private readonly HttpMessageInvoker httpClient;
         private readonly CancellationTokenSource disposeTokenSource = new();
@@ -61,7 +60,7 @@ namespace CYarp.Client
         /// <exception cref="OperationCanceledException"></exception>
         public async Task TransportAsync(CancellationToken cancellationToken)
         {
-            ObjectDisposedException.ThrowIf(this.disposed, this);
+            ObjectDisposedException.ThrowIf(this.disposeTokenSource.IsCancellationRequested, this);
 
             var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disposeTokenSource.Token);
             await this.TransportCoreAsync(linkedTokenSource.Token);
@@ -284,9 +283,9 @@ namespace CYarp.Client
         /// </summary>
         public void Dispose()
         {
-            if (this.disposed == false)
+            if (this.disposeTokenSource.IsCancellationRequested == false)
             {
-                this.disposed = true;
+                this.disposeTokenSource.Cancel();
                 this.Dispose(disposing: true);
             }
             GC.SuppressFinalize(this);
@@ -299,7 +298,6 @@ namespace CYarp.Client
         protected virtual void Dispose(bool disposing)
         {
             this.httpClient.Dispose();
-            this.disposeTokenSource.Cancel();
             this.disposeTokenSource.Dispose();
         }
     }
