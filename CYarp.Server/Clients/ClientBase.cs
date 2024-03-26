@@ -15,10 +15,10 @@ namespace CYarp.Server.Clients
     /// </summary>
     abstract class ClientBase : IClient, IConnection
     {
-        private volatile bool disposed = false;
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpContext httpContext;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
+        private readonly CancellationTokenSource disposeTokenSource = new();
         private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version = HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
 
         public string Id { get; }
@@ -64,7 +64,7 @@ namespace CYarp.Server.Clients
 
         public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext httpContext, ForwarderRequestConfig? requestConfig, HttpTransformer? transformer)
         {
-            this.ValidateDisposed();
+            ObjectDisposedException.ThrowIf(this.disposeTokenSource.IsCancellationRequested, this);
 
             var httpClient = this.httpClientLazy.Value;
             var destination = this.TargetUri.OriginalString;
@@ -73,18 +73,31 @@ namespace CYarp.Server.Clients
 
         public abstract Task CreateHttpTunnelAsync(Guid tunnelId, CancellationToken cancellationToken);
 
-        public abstract Task WaitForCloseAsync();
-
-        protected void ValidateDisposed()
+        public async Task WaitForCloseAsync()
         {
-            ObjectDisposedException.ThrowIf(this.disposed, this);
+            try
+            {
+                var cancellationToken = this.disposeTokenSource.Token;
+                await this.HandleConnectionAsync(cancellationToken);
+            }
+            catch (Exception)
+            {
+            }
         }
+
+        /// <summary>
+        /// 处理连接
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected abstract Task HandleConnectionAsync(CancellationToken cancellationToken);
+
 
         public void Dispose()
         {
-            if (this.disposed == false)
+            if (this.disposeTokenSource.IsCancellationRequested == false)
             {
-                this.disposed = true;
+                this.disposeTokenSource.Cancel();
                 this.Dispose(disposing: true);
             }
             GC.SuppressFinalize(this);
@@ -92,6 +105,7 @@ namespace CYarp.Server.Clients
 
         protected virtual void Dispose(bool disposing)
         {
+            this.disposeTokenSource.Dispose();
             if (this.httpClientLazy.IsValueCreated)
             {
                 this.httpClientLazy.Value.Dispose();

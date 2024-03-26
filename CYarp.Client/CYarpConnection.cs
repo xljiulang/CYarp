@@ -26,7 +26,7 @@ namespace CYarp.Client
 
             if (keepAliveInterval > TimeSpan.Zero)
             {
-                this.keepAliveTimeout = keepAliveInterval.Add(TimeSpan.FromSeconds(5d));
+                this.keepAliveTimeout = keepAliveInterval.Add(TimeSpan.FromSeconds(10d));
                 this.keepAliveTimer = new Timer(this.KeepAliveTimerTick, null, keepAliveInterval, keepAliveInterval);
             }
             else

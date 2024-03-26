@@ -3,6 +3,7 @@ using CYarp.Server.Configs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -16,10 +17,9 @@ namespace CYarp.Server.Middlewares
     sealed partial class CYarpClient : ClientBase
     {
         private readonly CYarpConnection connection;
-        private readonly TimeSpan keepAliveTimeout;
         private readonly Timer? keepAliveTimer;
+        private readonly TimeSpan keepAliveTimeout;
         private readonly ILogger logger;
-        private readonly CancellationTokenSource disposeTokenSource = new();
 
         private static readonly int bufferSize = 8;
         private static readonly string Ping = "PING";
@@ -43,7 +43,7 @@ namespace CYarp.Server.Middlewares
             var keepAliveInterval = connectionConfig.KeepAliveInterval;
             if (connectionConfig.KeepAlive && keepAliveInterval > TimeSpan.Zero)
             {
-                this.keepAliveTimeout = keepAliveInterval.Add(TimeSpan.FromSeconds(5d));
+                this.keepAliveTimeout = keepAliveInterval.Add(TimeSpan.FromSeconds(10d));
                 this.keepAliveTimer = new Timer(this.KeepAliveTimerTick, null, keepAliveInterval, keepAliveInterval);
             }
             else
@@ -71,30 +71,17 @@ namespace CYarp.Server.Middlewares
 
         public override async Task CreateHttpTunnelAsync(Guid tunnelId, CancellationToken cancellationToken = default)
         {
-            base.ValidateDisposed();
-
+            const int size = 64;
             var tunnelIdLine = $"{tunnelId}\r\n";
-            var buffer = Encoding.UTF8.GetBytes(tunnelIdLine);
+
+            using var owner = MemoryPool<byte>.Shared.Rent(size);
+            var length = Encoding.ASCII.GetBytes(tunnelIdLine, owner.Memory.Span);
+
+            var buffer = owner.Memory[..length];
             await this.connection.WriteAsync(buffer, cancellationToken);
         }
 
-        public override async Task WaitForCloseAsync()
-        {
-            var cancellationToken = this.disposeTokenSource.Token;
-            try
-            {
-                await this.WaitForCloseAsync(cancellationToken);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)
-            {
-                Log.LogTimeout(this.logger, this.Id);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        private async Task WaitForCloseAsync(CancellationToken cancellationToken)
+        protected override async Task HandleConnectionAsync(CancellationToken cancellationToken)
         {
             using var textReader = new StreamReader(this.connection, bufferSize: bufferSize, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
@@ -120,8 +107,6 @@ namespace CYarp.Server.Middlewares
         {
             base.Dispose(disposing);
 
-            this.disposeTokenSource.Cancel();
-            this.disposeTokenSource.Dispose();
             this.connection.Dispose();
             this.keepAliveTimer?.Dispose();
 
@@ -135,9 +120,6 @@ namespace CYarp.Server.Middlewares
 
             [LoggerMessage(LogLevel.Debug, "[{clienId}] 回复PONG心跳")]
             public static partial void LogPong(ILogger logger, string clienId);
-
-            [LoggerMessage(LogLevel.Debug, "[{clienId}] PING-PONG检测超时")]
-            public static partial void LogTimeout(ILogger logger, string clienId);
 
             [LoggerMessage(LogLevel.Debug, "[{clienId}] 连接已关闭")]
             public static partial void LogClosed(ILogger logger, string clienId);

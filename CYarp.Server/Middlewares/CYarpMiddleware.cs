@@ -24,7 +24,7 @@ namespace CYarp.Server.Middlewares
 
         private class CYarpFeature : ICYarpFeature
         {
-            private const string Cyarp = "CYarp";
+            private const string CYarp = "CYarp";
             private readonly IHttpUpgradeFeature upgradeFeature;
             private readonly IHttpExtendedConnectFeature? connectFeature;
             private readonly IHttpRequestTimeoutFeature? requestTimeoutFeature;
@@ -43,8 +43,8 @@ namespace CYarp.Server.Middlewares
                 this.connectFeature = connectFeature;
                 this.requestTimeoutFeature = requestTimeoutFeature;
 
-                this.cyarpRequest = (upgradeFeature.IsUpgradableRequest && string.Equals(Cyarp, upgradeHeader, StringComparison.InvariantCultureIgnoreCase)) ||
-                    (connectFeature != null && connectFeature.IsExtendedConnect && string.Equals(Cyarp, connectFeature.Protocol, StringComparison.InvariantCultureIgnoreCase));
+                this.cyarpRequest = (upgradeFeature.IsUpgradableRequest && string.Equals(CYarp, upgradeHeader, StringComparison.InvariantCultureIgnoreCase)) ||
+                    (connectFeature != null && connectFeature.IsExtendedConnect && string.Equals(CYarp, connectFeature.Protocol, StringComparison.InvariantCultureIgnoreCase));
             }
 
             public async Task<Stream> AcceptAsync()
