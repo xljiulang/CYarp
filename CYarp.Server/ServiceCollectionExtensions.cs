@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
     {
         /// <summary>
         /// 注册CYarp相关服务
+        /// 提供IClientViewer服务来查看IClient
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
