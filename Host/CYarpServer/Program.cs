@@ -17,8 +17,8 @@ namespace CYarpServer
             var builder = WebApplication.CreateBuilder(args);
 
             // 注册CYarp服务端组件
-            builder.Services.AddCYarp(builder.Configuration.GetSection(nameof(CYarpOptions)));
-           
+            builder.Services.AddCYarp().Configure(builder.Configuration.GetSection(nameof(CYarpOptions)));
+
             // asp.net的jwt认证、控制器等
             builder.Services.AddControllers();
             builder.Services.AddAuthorization();

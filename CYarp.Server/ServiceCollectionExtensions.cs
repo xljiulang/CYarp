@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddCYarp(this IServiceCollection services)
+        public static ICYarpBuilder AddCYarp(this IServiceCollection services)
         {
             services.TryAddSingleton<HttpTunnelFactory>();
             services.TryAddSingleton<IClientManager, ClientManager>();
@@ -26,29 +26,38 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<CYarpClientMiddleware>();
             services.TryAddSingleton<HttpTunnelMiddleware>();
 
-            return services.AddHttpForwarder();
+            services.AddHttpForwarder();
+            return new CYarpBuilder(services);
         }
 
         /// <summary>
-        /// 注册CYarp相关服务并配置CYarpOptions
+        /// 配置CYarpOptions
         /// </summary>
-        /// <param name="services"></param>
+        /// <param name="builder"></param>
         /// <param name="configureOptions">CYarpOptions的配置</param>
         /// <returns></returns>
-        public static IServiceCollection AddCYarp(this IServiceCollection services, Action<CYarpOptions> configureOptions)
+        public static ICYarpBuilder Configure(this ICYarpBuilder builder, Action<CYarpOptions> configureOptions)
         {
-            return services.AddCYarp().Configure(configureOptions);
+            builder.Services.Configure(configureOptions);
+            return builder;
         }
 
         /// <summary>
-        /// 注册CYarp相关服务并配置CYarpOptions的绑定
+        /// 配置CYarpOptions的绑定
         /// </summary>
-        /// <param name="services"></param>
+        /// <param name="builder"></param>
         /// <param name="configureBinder">CYarpOptions的配置绑定</param>
         /// <returns></returns>
-        public static IServiceCollection AddCYarp(this IServiceCollection services, IConfiguration configureBinder)
+        public static ICYarpBuilder Configure(this ICYarpBuilder builder, IConfiguration configureBinder)
         {
-            return services.AddCYarp().Configure<CYarpOptions>(configureBinder);
+            builder.Services.Configure<CYarpOptions>(configureBinder);
+            return builder;
+        }
+
+
+        private class CYarpBuilder(IServiceCollection services) : ICYarpBuilder
+        {
+            public IServiceCollection Services { get; } = services;
         }
     }
 }
