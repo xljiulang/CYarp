@@ -8,6 +8,11 @@ namespace CYarp.Server
     public class CYarpOptions
     {
         /// <summary>
+        /// 获取或设置节点名称
+        /// </summary>
+        public string Node { get; set; } = string.Empty;
+
+        /// <summary>
         /// 认证配置
         /// </summary>
         public AuthorizationConfig Authorization { get; set; } = new AuthorizationConfig();
