@@ -50,7 +50,7 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3d
 `CYarp.Server`包设计为asp.net core的一个http中间件，其依赖于Authentication身份认证中间件，使用如下方法进行注册和中间件的配置。
 
 ```c#
-builder.Services.AddCYarp(cyarp=>
+builder.Services.AddCYarp().Configure(cyarp=>
 {
     ...
 });
@@ -223,12 +223,12 @@ CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core
 
 **SLB层**
 
-SLB层需要开启基于IP地址的TCP会话保持的，即来自同一IP地址的访问请求会转发到同一台后端CYarp.Server服务器上。如果没有SLB层，也可以让Client端实现客户端负载均衡。
+SLB层需要开启基于IP地址的TCP会话保持，即来自同一IP地址的访问请求会转发到同一台后端CYarp.Server服务器上。如果没有SLB层，也可以让Client端实现客户端负载均衡，即客户端自行决定直接连接到后端的哪台CYarp.Server服务器上。
 
 **CYarp.Server层**
 
-CYarp.Server服务器需要基于redis实现IClientStateStorager服务，即以IClient的Id值做为RedisKey、Node值做RedisValue持久化。当存在SLB时，这些CYarp.Server服务不再要求有从公网访问的要求。
+CYarp.Server服务器需要基于redis等实现IClientStateStorager服务，即以IClient的Id值做为RedisKey、Node值做RedisValue持久化。当存在SLB时，这些CYarp.Server服务不再要求有从公网访问的要求。
 
 **http网关层**
 
-需要基于YARP自主开发CYarp.Server服务的网关，从http请求上下文获取ClientId，然后从redis以ClientId值做为RedisKey反查得到Node值，最后把http请求上下文转发到这个Node下即可。
+需要基于YARP自主开发CYarp.Server服务的http网关，从http请求上下文获取ClientId，然后从redis以ClientId值做为RedisKey反查得到Node值，最后把http请求上下文转发到这个Node对应的CYarp.Server服务。http网关一般不需要自身再做负载均衡，虽然只有一个http网关时它承载了所有用户端的http请求流量，但它的功能单一性能强悍。
