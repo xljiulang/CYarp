@@ -7,6 +7,7 @@
     {
         /// <summary>
         /// 所在的节点名称
+        /// 从CYarpOptions.Node获得
         /// </summary>
         public required string Node { get; init; }
 
