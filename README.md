@@ -217,3 +217,18 @@ Server验证通过则响应200状态码
 
 ### 4 业务安全
 CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core平台的身份认证中间件，而http转发部分(例如`Host\CYarpServer.CYarpController`)是由开发者自行开发来决定是否要转发，涉及的授权验证逻辑由开发者自行验证。
+
+### 5 负载均衡
+负载均衡的主要作用是将海量的Client端由多个CYarp.Server服务器实例来直接或间接分担承载。
+
+**SLB层**
+
+SLB层需要开启基于IP地址的TCP会话保持的，即来自同一IP地址的访问请求会转发到同一台后端CYarp.Server服务器上。如果没有SLB层，也可以让Client端实现客户端负载均衡。
+
+**CYarp.Server层**
+
+CYarp.Server服务器需要开发IClientManager服务将IClient的状态持久化到redis的功能，即以IClient的Id做Key，CYarp.Server节点Uri做Value。
+
+**http网关层**
+
+需要基于YARP自主开发网关，从http请求上下文获取Client的Id，然后从redis获取此Id值对应的CYarp.Server节点Uri，最后把http请求上下文转发到这个Uri即可。
