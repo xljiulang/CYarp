@@ -221,6 +221,8 @@ CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core
 ### 5 负载均衡
 负载均衡的主要作用是将海量的Client端由多个CYarp.Server服务器实例来直接或间接分担承载。
 
+![balance](balance.png))
+
 **SLB层**
 
 SLB层需要开启基于IP地址的TCP会话保持，即来自同一IP地址的访问请求会转发到同一台后端CYarp.Server服务器上。如果没有SLB层，也可以让Client端实现客户端负载均衡，即客户端自行决定直接连接到后端的哪台CYarp.Server服务器上。
