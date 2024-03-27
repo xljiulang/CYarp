@@ -53,7 +53,7 @@ namespace CYarpServer.StateStrorages
             var options = this.redisOptions.CurrentValue;
             this.redis ??= await ConnectionMultiplexer.ConnectAsync(options.ConnectionString);
 
-            var key = $"{RedisClientStateStorageOptions.ClientNodePrefix}{clientState.Client.Id}";
+            var key = RedisClientStateStorageOptions.ClientNodePrefix + clientState.Client.Id;
             if (clientState.IsConnected)
             {
                 await this.redis.GetDatabase().StringSetAsync(key, clientState.Node);
