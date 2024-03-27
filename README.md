@@ -221,7 +221,7 @@ CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core
 ### 5 负载均衡
 负载均衡的主要作用是将海量的Client端由多个CYarp.Server服务器实例来直接或间接分担承载。
 
-![balance](balance.png))
+![balance](balance.png)
 
 **SLB层**
 
