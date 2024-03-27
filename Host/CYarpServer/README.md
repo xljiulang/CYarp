@@ -1,5 +1,5 @@
 ## CYarpServer
-CYarp服务器的demo，使用jwt来验证Client的连接和http请求
+CYarp服务器的demo，使用jwt来验证Client的连接和http请求，并实现了为CYarpServer进行负载均衡所必要的RedisClientStateStorage
 
 ### Token生成
 可以进入[bejson/jwt](https://www.bejson.com/jwt/)来生成RS256的JwtToken

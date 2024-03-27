@@ -1,4 +1,5 @@
 using CYarp.Server;
+using CYarpServer.StateStrorages;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,9 @@ namespace CYarpServer
             var builder = WebApplication.CreateBuilder(args);
 
             // 注册CYarp服务端组件
-            builder.Services.AddCYarp().Configure(builder.Configuration.GetSection(nameof(CYarpOptions)));
+            builder.Services.AddCYarp()
+                .Configure(builder.Configuration.GetSection(nameof(CYarpOptions)))
+                .AddRedisClientStateStorage(builder.Configuration.GetSection(nameof(RedisClientStateStorageOptions)));
 
             // asp.net的jwt认证、控制器等
             builder.Services.AddControllers();
