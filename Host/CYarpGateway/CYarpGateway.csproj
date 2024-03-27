@@ -6,16 +6,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Yarp.ReverseProxy" Version="2.1.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
 		<PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
 		<PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
 		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
 		<PackageReference Include="StackExchange.Redis" Version="2.7.33" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\..\CYarp.Server\CYarp.Server.csproj" />
 	</ItemGroup> 
 
 	<ItemGroup>

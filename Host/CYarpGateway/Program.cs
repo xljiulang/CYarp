@@ -1,5 +1,4 @@
-using CYarp.Server;
-using CYarpServer.StateStrorages;
+using CYarpGateway.StateStrorages;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +8,7 @@ using Serilog;
 using System;
 using System.IO;
 
-namespace CYarpServer
+namespace CYarpGateway
 {
     public class Program
     {
@@ -17,13 +16,12 @@ namespace CYarpServer
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 注册CYarp服务端组件
-            builder.Services.AddCYarp()
-                .Configure(builder.Configuration.GetSection(nameof(CYarpOptions)))
-                .AddRedisClientStateStorage(builder.Configuration.GetSection(nameof(RedisClientStateStorageOptions)));
+            builder.Services.AddHttpForwarder();
+            builder.Services.AddSingleton<HttpForwardMiddleware>();
+            builder.Services.AddSingleton<RedisClientStateStorage>();
+            builder.Services.Configure<RedisClientStateStorageOptions>(builder.Configuration.GetSection(nameof(RedisClientStateStorageOptions)));
+            builder.Services.Configure<GatewayOptions >(builder.Configuration.GetSection(nameof(GatewayOptions)));
 
-            // asp.net的jwt认证、控制器等
-            builder.Services.AddControllers();
             builder.Services.AddAuthorization();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
             builder.Services.Configure<JwtTokenOptions>(builder.Configuration.GetSection(nameof(JwtTokenOptions)));
@@ -50,10 +48,7 @@ namespace CYarpServer
             var app = builder.Build();
 
             app.UseAuthentication();
-            app.UseCYarp();
-
-            app.UseAuthorization();
-            app.MapControllers();
+            app.UseMiddleware<HttpForwardMiddleware>();
 
             app.Run();
         }
