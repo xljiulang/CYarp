@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\CYarp.Client\CYarp.Client.csproj" />
+	  <ProjectReference Include="..\..\CYarp.Server\CYarp.Server.csproj" />
+	</ItemGroup>
+
+</Project>

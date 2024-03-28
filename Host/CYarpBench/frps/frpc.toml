@@ -1,0 +1,8 @@
+serverAddr = "127.0.0.1"
+serverPort = 7000
+
+[[proxies]]
+name = "web"
+type = "http"
+localPort = 80
+customDomains = ["www.frp.com"]
