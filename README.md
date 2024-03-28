@@ -17,20 +17,42 @@ A reverse proxy toolkit to help you expose multiple local http servers behind a 
 
 ### Apache Bench
 
-CYarp and frp are deployed simultaneously on an Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz CentOS Linux 7 (Core) system machine. The ab tool for testing is on another machine on the LAN. The test sequence is the parameter order from top to bottom of the table.
+Nginx, CYarp and frp are deployed simultaneously on an Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz CentOS Linux 7 (Core) system machine. The ab tool for testing is on another machine on the LAN. The test sequence is the parameter order from top to bottom of the table.
 
-| Product    | Parameters of ab | Requests per second | Percentage of the requests |
-| ---------- | ---------------- | ------------------- | -------------------------- |
-| CYarp      | -c 1 -n 10000    | 522.59              | P95=2 P99=2                |
-| frp_0.56.0 | -c 1 -n 10000    | 432.88              | P95=3 P99=3                |
-| CYarp      | -c 10 -n 50000   | 6484.65             | P95=2 P99=3                |
-| frp_0.56.0 | -c 10 -n 50000   | 5532.75             | P95=3 P99=4                |
-| CYarp      | -c 20 -n 100000  | 9999.64             | P95=3 P99=4                |
-| frp_0.56.0 | -c 20 -n 100000  | 5966.92             | P95=5 P99=6                |
-| CYarp      | -c 50 -n 200000  | 12228.78            | P95=6 P99=8                |
-| frp_0.56.0 | -c 50 -n 200000  | 5552.32             | P95=15 P99=20              |
-| CYarp      | -c 100 -n 500000 | 12631.29            | P95=11 P99=15              |
-| frp_0.56.0 | -c 100 -n 500000 | 5231.71             | P95=34 P99=49              |
+#### ab -c 1 -n 10000
+| Product       | Requests per second | Rps Ratio | P95 | P99 |
+| ------------- | ------------------- | --------- | --- | --- |
+| Direct(nginx) | 1539.22             | 1.00      | 1   | 1   |
+| CYarpBench    | 700.3               | 0.45      | 2   | 2   |
+| frp_0.56.0    | 593.76              | 0.39      | 2   | 2   |
+
+#### ab -c 10 -n 50000
+| Product       | Requests per second | Rps Ratio | P95 | P99 |
+| ------------- | ------------------- | --------- | --- | --- |
+| Direct(nginx) | 9915.55             | 1.00      | 3   | 4   |
+| CYarpBench    | 9563.64             | 0.96      | 1   | 2   |
+| frp_0.56.0    | 5980.79             | 0.60      | 3   | 4   |
+
+#### ab -c 20 -n 100000
+| Product       | Requests per second | Rps Ratio | P95 | P99 |
+| ------------- | ------------------- | --------- | --- | --- |
+| Direct(nginx) | 11948.84            | 1.00      | 4   | 7   |
+| CYarpBench    | 12542.54            | 1.05      | 3   | 3   |
+| frp_0.56.0    | 6238.09             | 0.52      | 5   | 7   |
+
+#### ab -c 50 -n 200000
+| Product       | Requests per second | Rps Ratio | P95 | P99 |
+| ------------- | ------------------- | --------- | --- | --- |
+| Direct(nginx) | 12801.34            | 1.00      | 6   | 12  |
+| CYarpBench    | 13472.69            | 1.05      | 6   | 7   |
+| frp_0.56.0    | 5675.19             | 0.44      | 20  | 49  |
+
+#### ab -c 100 -n 500000
+| Product       | Requests per second | Rps Ratio | P95 | P99 |
+| ------------- | ------------------- | --------- | --- | --- |
+| Direct(nginx) | 14088.43            | 1.00      | 10  | 17  |
+| CYarpBench    | 14216.45            | 1.01      | 10  | 12  |
+| frp_0.56.0    | 6504.36             | 0.46      | 20  | 49  |
 
 ###  Demo and experience
 
@@ -148,7 +170,7 @@ At this time, the long connection based on `tcp` has been completed, and then th
 | ------ | ---------------- | ------------------------------------------------------- | ------------------------------------ |
 | Client | `PING\r\n`       | Detect server survival                                  | Reply `PONG\r\n`                     |
 | Server | `PING\r\n`       | Detect client survival                                  | Reply `PONG\r\n`                     |
-| Server | `{tunnelId}\r\n` | Let the Client to create a new HttpTunnel to the Server | Create HttpTunnel using `{tunnelId}` |  
+| Server | `{tunnelId}\r\n` | Let the Client to create a new HttpTunnel to the Server | Create HttpTunnel using `{tunnelId}` |
 
 > by http/2.0
 
@@ -174,7 +196,7 @@ At this time, the long connection based on `http/2.0` has been completed, and th
 | ------ | ---------------- | ------------------------------------------------------- | ------------------------------------ |
 | Client | `PING\r\n`       | Detect server survival                                  | Reply `PONG\r\n`                     |
 | Server | `PING\r\n`       | Detect client survival                                  | Reply `PONG\r\n`                     |
-| Server | `{tunnelId}\r\n` | Let the Client to create a new HttpTunnel to the Server | Create HttpTunnel using `{tunnelId}` |  
+| Server | `{tunnelId}\r\n` | Let the Client to create a new HttpTunnel to the Server | Create HttpTunnel using `{tunnelId}` |
   
 
 #### Creation of HttpTunnel
