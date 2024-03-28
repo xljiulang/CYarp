@@ -28,6 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IClientViewer>(serviceProvder => serviceProvder.GetRequiredService<ClientManager>());
 
             services.TryAddSingleton<HttpTunnelFactory>();
+            services.TryAddSingleton<IClientIdProvider, ClientIdProvider>();
 
             services.TryAddSingleton<CYarpMiddleware>();
             services.TryAddSingleton<CYarpClientMiddleware>();
@@ -72,6 +73,19 @@ namespace Microsoft.Extensions.DependencyInjection
             where TStorage : class, IClientStateStorage
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IClientStateStorage, TStorage>());
+            return builder;
+        }
+
+        /// <summary>
+        /// 添加IClient的Id提供者
+        /// </summary>
+        /// <typeparam name="TProvider">IClient的Id提供者类型</typeparam>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static ICYarpBuilder AddClientIdProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>(this ICYarpBuilder builder)
+           where TProvider : class, IClientIdProvider
+        {
+            builder.Services.Replace(ServiceDescriptor.Singleton<IClientIdProvider, TProvider>());
             return builder;
         }
 

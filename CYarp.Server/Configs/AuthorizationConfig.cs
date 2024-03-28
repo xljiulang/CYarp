@@ -19,7 +19,8 @@ namespace CYarp.Server.Configs
 
         /// <summary>
         /// IClient的Id对应的ClaimType
-        /// 默认为http://schemas.xmlsoap.org/ws/2005/05/identity/claims/sid
+        /// 默认值为http://schemas.xmlsoap.org/ws/2005/05/identity/claims/sid
+        /// 默认的IClientIdProvider在实现上依赖此属性
         /// </summary>
         public string ClientIdClaimType { get; set; } = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/sid";
 

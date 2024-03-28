@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Yarp.ReverseProxy.Forwarder;
 
@@ -28,6 +26,7 @@ namespace CYarp.Server.Middlewares
     sealed partial class CYarpClientMiddleware : IMiddleware
     {
         private readonly IAuthorizationService authorizationService;
+        private readonly IClientIdProvider clientIdProvider;
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly ClientManager clientManager;
@@ -39,6 +38,7 @@ namespace CYarp.Server.Middlewares
 
         public CYarpClientMiddleware(
             IAuthorizationService authorizationService,
+            IClientIdProvider clientIdProvider,
             IHttpForwarder httpForwarder,
             HttpTunnelFactory httpTunnelFactory,
             ClientManager clientManager,
@@ -46,6 +46,7 @@ namespace CYarp.Server.Middlewares
             ILogger<CYarpClient> logger)
         {
             this.authorizationService = authorizationService;
+            this.clientIdProvider = clientIdProvider;
             this.httpForwarder = httpForwarder;
             this.httpTunnelFactory = httpTunnelFactory;
             this.clientManager = clientManager;
@@ -57,11 +58,9 @@ namespace CYarp.Server.Middlewares
         /// 设置IClient的授权验证策略
         /// </summary>
         /// <param name="policy"></param>
-        public void SetAuthorizationPolicy(AuthorizationPolicy policy)
+        public void SetAuthorizationPolicy(AuthorizationPolicy? policy)
         {
-            var clientIdClaimType = this.yarpOptions.CurrentValue.Authorization.ClientIdClaimType;
-            var builder = new AuthorizationPolicyBuilder().RequireClaim(clientIdClaimType).Combine(policy);
-            this.authorizationPolicy = builder.Build();
+            this.authorizationPolicy = policy;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -97,8 +96,13 @@ namespace CYarp.Server.Middlewares
             }
 
             // 查找clientId
-            var clientId = clinetUser.FindFirstValue(options.Authorization.ClientIdClaimType);
-            Debug.Assert(clientId != null);
+            if (this.clientIdProvider.TryGetClientId(context, out var clientId) == false)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                var message = $"{this.clientIdProvider.Name}无法获取到IClient的Id";
+                this.LogFailureStatus(context, message);
+                return;
+            }
 
             var stream = await cyarpFeature.AcceptAsync();
             var connection = new CYarpConnection(stream);

@@ -70,10 +70,7 @@ namespace Microsoft.AspNetCore.Builder
             app.UseMiddleware<CYarpMiddleware>();
 
             var clientMiddleware = app.ApplicationServices.GetRequiredService<CYarpClientMiddleware>();
-            if (policy != null)
-            {
-                clientMiddleware.SetAuthorizationPolicy(policy);
-            }
+            clientMiddleware.SetAuthorizationPolicy(policy);
             app.Use(next => context => clientMiddleware.InvokeAsync(context, next));
 
             app.UseMiddleware<HttpTunnelMiddleware>();
