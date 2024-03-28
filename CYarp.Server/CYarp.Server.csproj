@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<DocumentationFile>$(TargetPath)\$(AssemblyName).xml</DocumentationFile>
-		<Description>一对多的http内网穿透服务中间件，支持tcp或http/2.0作为http/1.1的传输层</Description>
+		<Description>A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
