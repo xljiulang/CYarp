@@ -11,16 +11,7 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// Get / HTTP/1.1
-    /// Connection: Upgrade
-    /// Upgrade: CYarp
-    /// CYarp-Destination = {URI}
-    /// 
-    /// :method = CONNECT
-    /// :protocol = CYarp
-    /// :scheme = https
-    /// :path = /  
-    /// CYarp-Destination = {URI}
+    /// IClient的授权验证、实例创建和生命周期管理中间件
     /// </summary>
     sealed partial class CYarpClientMiddleware : IMiddleware
     {

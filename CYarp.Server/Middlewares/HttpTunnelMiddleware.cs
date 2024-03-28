@@ -8,14 +8,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// Get /{tunnelId} HTTP/1.1
-    /// Connection: Upgrade
-    /// Upgrade: CYarp
-    /// 
-    /// :method = CONNECT
-    /// :protocol = CYarp
-    /// :scheme = https
-    /// :path = /{tunnelId}  
+    /// HttpTunnel握手处理中间件
     /// </summary>
     sealed class HttpTunnelMiddleware : IMiddleware
     {

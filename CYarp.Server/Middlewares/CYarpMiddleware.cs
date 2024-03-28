@@ -8,6 +8,15 @@ using System.Threading.Tasks;
 
 namespace CYarp.Server.Middlewares
 {
+    /// <summary>
+    /// Get {PATH} HTTP/1.1
+    /// Connection: Upgrade
+    /// Upgrade: CYarp  
+    /// 
+    /// :method = CONNECT
+    /// :protocol = CYarp
+    /// :scheme = https
+    /// </summary>
     sealed class CYarpMiddleware : IMiddleware
     {
         public Task InvokeAsync(HttpContext context, RequestDelegate next)
