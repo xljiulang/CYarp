@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -15,9 +16,11 @@ namespace CYarp.Server.Clients
         private readonly IAuthorizationPolicyProvider authorizationPolicyProvider;
         private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
 
-        private AuthorizationPolicy? settingPolicy;
-        private string settingPolicyName = string.Empty;
-        private AuthorizationType settingType = AuthorizationType.Default;
+        private readonly List<string> policyNameList = new();
+        private readonly List<AuthorizationPolicy> policyList = new();
+        private AuthorizationType authorizationType = AuthorizationType.Default;
+
+        private AuthorizationPolicy? cachePolicy;
 
         public ClientAuthorization(
             IAuthorizationService authorizationService,
@@ -31,23 +34,32 @@ namespace CYarp.Server.Clients
 
         public void SetAllowAnonymous()
         {
-            this.settingType = AuthorizationType.Anonymous;
+            this.authorizationType = AuthorizationType.Anonymous;
         }
 
-        public void SetPolicy(AuthorizationPolicy policy)
+        public void AddPolicy(Action<AuthorizationPolicyBuilder> configurePolicy)
+        {
+            ArgumentNullException.ThrowIfNull(configurePolicy);
+
+            var builder = new AuthorizationPolicyBuilder();
+            configurePolicy(builder);
+            this.AddPolicy(builder.Build());
+        }
+
+        public void AddPolicy(AuthorizationPolicy policy)
         {
             ArgumentNullException.ThrowIfNull(policy);
 
-            this.settingPolicy = policy;
-            this.settingType = AuthorizationType.Policy;
+            this.policyList.Add(policy);
+            this.authorizationType = AuthorizationType.Policy;
         }
 
-        public void SetPolicy(string policyName)
+        public void AddPolicy(string policyName)
         {
             ArgumentException.ThrowIfNullOrEmpty(policyName);
 
-            this.settingPolicyName = policyName;
-            this.settingType = AuthorizationType.PolicyName;
+            this.policyNameList.Add(policyName);
+            this.authorizationType = AuthorizationType.Policy;
         }
 
         /// <summary>
@@ -58,34 +70,42 @@ namespace CYarp.Server.Clients
         /// <exception cref="InvalidOperationException"></exception>
         public async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user)
         {
-            if (this.settingType == AuthorizationType.Anonymous)
+            if (this.authorizationType == AuthorizationType.Anonymous)
             {
                 return AuthorizationResult.Success();
             }
 
-            if (this.settingType == AuthorizationType.Default)
+            if (this.authorizationType == AuthorizationType.Default)
             {
-                var policy = this.cyarpOptions.CurrentValue.Authorization.GetAuthorizationPolicy();
-                return await this.authorizationService.AuthorizeAsync(user, policy);
+                var defaultPolicy = this.cyarpOptions.CurrentValue.Authorization.GetAuthorizationPolicy();
+                return await this.authorizationService.AuthorizeAsync(user, defaultPolicy);
             }
 
-            if (this.settingType == AuthorizationType.Policy)
+            this.cachePolicy ??= await this.CreatePolicyAsync();
+            return await this.authorizationService.AuthorizeAsync(user, this.cachePolicy);
+        }
+
+
+        private async Task<AuthorizationPolicy> CreatePolicyAsync()
+        {
+            var builder = new AuthorizationPolicyBuilder();
+            foreach (var policy in this.policyList)
             {
-                var policy = this.settingPolicy!;
-                return await this.authorizationService.AuthorizeAsync(user, policy);
+                builder.Combine(policy);
             }
 
-            var namedPolicy = await this.authorizationPolicyProvider.GetPolicyAsync(this.settingPolicyName);
-            return namedPolicy == null
-                ? throw new InvalidOperationException($"找不到名{this.settingPolicyName}为的PolicyName")
-                : await this.authorizationService.AuthorizeAsync(user, namedPolicy);
+            foreach (var policyName in this.policyNameList)
+            {
+                var policy = await this.authorizationPolicyProvider.GetPolicyAsync(policyName);
+                builder.Combine(policy ?? throw new InvalidOperationException($"找不到名{policyName}为的PolicyName"));
+            }
+            return builder.Build();
         }
 
         private enum AuthorizationType
         {
             Default,
             Policy,
-            PolicyName,
             Anonymous,
         }
     }

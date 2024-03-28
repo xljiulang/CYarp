@@ -1,4 +1,5 @@
-﻿using CYarp.Server.Clients;
+﻿using CYarp.Server;
+using CYarp.Server.Clients;
 using CYarp.Server.Middlewares;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,76 +19,76 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseCYarp(this IApplicationBuilder app)
+        public static IClientAuthorizationBuilder UseCYarp(this IApplicationBuilder app)
         {
             app.UseMiddleware<CYarpMiddleware>();
             app.UseMiddleware<CYarpClientMiddleware>();
             app.UseMiddleware<HttpTunnelMiddleware>();
-            return app;
+            return new ClientAuthorizationBuilder(app.ApplicationServices);
         }
 
         /// <summary>
-        /// 使用CYarp中间件
-        /// 自动管理IClient的连接
-        /// 需要放到app.UseAuthentication()之后
+        /// 添加IClient的授权验证策略
+        /// CYarpOptions.Authorization不再生效
         /// </summary>
-        /// <param name="app"></param>
-        /// <param name="clientPolicy">IClient授权验证策略配置</param>
+        /// <param name="builder"></param>
+        /// <param name="clientPolicy">IClient授权验证策略</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseCYarp(this IApplicationBuilder app, AuthorizationPolicy clientPolicy)
+        public static IClientAuthorizationBuilder RequireAuthorization(this IClientAuthorizationBuilder builder, AuthorizationPolicy clientPolicy)
         {
-            app.Client().SetPolicy(clientPolicy);
-            return app.UseCYarp();
+            builder.Authorization().AddPolicy(clientPolicy);
+            return builder;
         }
 
         /// <summary>
-        /// 使用CYarp中间件
-        /// 自动管理IClient的连接
-        /// 需要放到app.UseAuthentication()之后
+        /// 添加IClient的授权验证策略名
+        /// CYarpOptions.Authorization不再生效
         /// </summary>
-        /// <param name="app"></param>
+        /// <param name="builder"></param>
         /// <param name="clientPolicyName">IClient授权验证策略名</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseCYarp(this IApplicationBuilder app, string clientPolicyName)
+        public static IClientAuthorizationBuilder RequireAuthorization(this IClientAuthorizationBuilder builder, string clientPolicyName)
         {
-            app.Client().SetPolicy(clientPolicyName);
-            return app.UseCYarp();
+            builder.Authorization().AddPolicy(clientPolicyName);
+            return builder;
         }
 
         /// <summary>
-        /// 使用CYarp中间件
-        /// 自动管理IClient的连接
-        /// 需要放到app.UseAuthentication()之后
+        /// 添加IClient授权验证策略配置
+        /// CYarpOptions.Authorization不再生效
         /// </summary>
-        /// <param name="app"></param>
+        /// <param name="builder"></param>
         /// <param name="configureClientPolicy">IClient授权验证策略配置</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseCYarp(this IApplicationBuilder app, Action<AuthorizationPolicyBuilder> configureClientPolicy)
+        public static IClientAuthorizationBuilder RequireAuthorization(this IClientAuthorizationBuilder builder, Action<AuthorizationPolicyBuilder> configureClientPolicy)
         {
-            var builder = new AuthorizationPolicyBuilder();
-            configureClientPolicy(builder);
-            var clientPolicy = builder.Build();
-
-            app.Client().SetPolicy(clientPolicy);
-            return app.UseCYarp();
+            builder.Authorization().AddPolicy(configureClientPolicy);
+            return builder;
         }
 
         /// <summary>
-        /// 使用CYarp中间件
-        /// 自动管理IClient的连接
-        /// 跳过IClient的授权验证        
+        /// 跳过IClient的授权验证
+        /// CYarpOptions.Authorization不再生效
         /// </summary>
-        /// <param name="app"></param> 
-        /// <returns></returns>
-        public static IApplicationBuilder UseCYarpAnonymous(this IApplicationBuilder app)
+        /// <param name="builder"></param> 
+        public static void AllowAnonymous(this IClientAuthorizationBuilder builder)
         {
-            app.Client().SetAllowAnonymous();
-            return app.UseCYarp();
+            builder.Authorization().SetAllowAnonymous();
         }
 
-        private static ClientAuthorization Client(this IApplicationBuilder app)
+        private static ClientAuthorization Authorization(this IClientAuthorizationBuilder app)
         {
             return app.ApplicationServices.GetRequiredService<ClientAuthorization>();
+        }
+
+        private class ClientAuthorizationBuilder : IClientAuthorizationBuilder
+        {
+            public IServiceProvider ApplicationServices { get; set; }
+
+            public ClientAuthorizationBuilder(IServiceProvider applicationServices)
+            {
+                this.ApplicationServices = applicationServices;
+            }
         }
     }
 }

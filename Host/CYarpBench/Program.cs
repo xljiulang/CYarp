@@ -29,7 +29,7 @@ namespace CYarpBench
 
             var app = builder.Build();
 
-            app.UseCYarpAnonymous();
+            app.UseCYarp().AllowAnonymous();
             app.UseMiddleware<HttpForwardMiddleware>();
 
             app.Run();
