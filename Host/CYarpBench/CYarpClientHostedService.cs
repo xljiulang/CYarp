@@ -18,7 +18,6 @@ namespace CYarpBench
         private readonly ILogger<CYarpClientHostedService> logger;
 
         public CYarpClientHostedService(
-            IHostApplicationLifetime applicationLifetime,
             IOptionsMonitor<CYarpClientOptions> clientOptions,
             ILogger<CYarpClientHostedService> logger)
         {
