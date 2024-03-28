@@ -34,6 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<HttpTunnelMiddleware>();
 
             services.AddHttpForwarder();
+            services.AddAuthorization();
             return new CYarpBuilder(services);
         }
 
