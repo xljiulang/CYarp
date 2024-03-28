@@ -13,7 +13,6 @@ namespace CYarpBench
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddSingleton<AuthenticationMiddleware>();
             builder.Services.AddSingleton<HttpForwardMiddleware>();
             builder.Services.AddHostedService<CYarpClientHostedService>();
 
@@ -30,8 +29,7 @@ namespace CYarpBench
 
             var app = builder.Build();
 
-            app.UseMiddleware<AuthenticationMiddleware>();
-            app.UseCYarp(client => client.RequireAuthenticatedUser());
+            app.UseCYarpAnonymous();
             app.UseMiddleware<HttpForwardMiddleware>();
 
             app.Run();

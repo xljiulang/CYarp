@@ -1,5 +1,4 @@
 ﻿using CYarp.Server.Clients;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -25,7 +24,7 @@ namespace CYarp.Server.Middlewares
     /// </summary>
     sealed partial class CYarpClientMiddleware : IMiddleware
     {
-        private readonly IAuthorizationService authorizationService;
+        private readonly ClientAuthorization clientAuthorization;
         private readonly IClientIdProvider clientIdProvider;
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpTunnelFactory httpTunnelFactory;
@@ -33,11 +32,10 @@ namespace CYarp.Server.Middlewares
         private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
         private readonly ILogger<CYarpClient> logger;
 
-        private AuthorizationPolicy? authorizationPolicy;
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
 
         public CYarpClientMiddleware(
-            IAuthorizationService authorizationService,
+            ClientAuthorization clientAuthorization,
             IClientIdProvider clientIdProvider,
             IHttpForwarder httpForwarder,
             HttpTunnelFactory httpTunnelFactory,
@@ -45,22 +43,13 @@ namespace CYarp.Server.Middlewares
             IOptionsMonitor<CYarpOptions> yarpOptions,
             ILogger<CYarpClient> logger)
         {
-            this.authorizationService = authorizationService;
+            this.clientAuthorization = clientAuthorization;
             this.clientIdProvider = clientIdProvider;
             this.httpForwarder = httpForwarder;
             this.httpTunnelFactory = httpTunnelFactory;
             this.clientManager = clientManager;
             this.yarpOptions = yarpOptions;
             this.logger = logger;
-        }
-
-        /// <summary>
-        /// 设置IClient的授权验证策略
-        /// </summary>
-        /// <param name="policy"></param>
-        public void SetAuthorizationPolicy(AuthorizationPolicy? policy)
-        {
-            this.authorizationPolicy = policy;
         }
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -83,9 +72,7 @@ namespace CYarp.Server.Middlewares
 
             // 身份验证
             var clinetUser = context.User;
-            var options = yarpOptions.CurrentValue;
-            var policy = this.authorizationPolicy ?? options.Authorization.GetAuthorizationPolicy();
-            var authorizationResult = await this.authorizationService.AuthorizeAsync(clinetUser, policy);
+            var authorizationResult = await this.clientAuthorization.AuthorizeAsync(clinetUser);
             if (authorizationResult.Succeeded == false)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -104,6 +91,7 @@ namespace CYarp.Server.Middlewares
                 return;
             }
 
+            var options = yarpOptions.CurrentValue;
             var stream = await cyarpFeature.AcceptAsync();
             var connection = new CYarpConnection(stream);
             using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientTargetUri, context, this.logger);

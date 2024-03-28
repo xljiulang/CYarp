@@ -6,15 +6,15 @@ using System.Security.Claims;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// IClient的Id的提供者
+    /// 默认的IClient的Id的提供者
     /// </summary>
-    sealed class ClientIdProvider : IClientIdProvider
+    sealed class DefaultClientIdProvider : IClientIdProvider
     {
         private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
 
-        public string Name => nameof(ClientIdProvider);
+        public string Name => nameof(DefaultClientIdProvider);
 
-        public ClientIdProvider(IOptionsMonitor<CYarpOptions> cyarpOptions)
+        public DefaultClientIdProvider(IOptionsMonitor<CYarpOptions> cyarpOptions)
         {
             this.cyarpOptions = cyarpOptions;
         }
