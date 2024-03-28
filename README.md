@@ -17,42 +17,42 @@ A reverse proxy toolkit to help you expose multiple local http servers behind a 
 
 ### Apache Bench
 
-Nginx, CYarp and frp are deployed simultaneously on an Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz CentOS Linux 7 (Core) system machine. The ab tool for testing is on another machine on the LAN. The test sequence is the parameter order from top to bottom of the table.
+Nginx, CYarp and frp_0.56.0 are deployed simultaneously on an Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz CentOS Linux 7 (Core) system machine. The ab tool for testing is on another machine on the LAN. The test sequence is the parameter order from top to bottom of the table.
 
 #### ab -c 1 -n 10000
-| Product       | Requests per second | Rps Ratio | P95 | P99 |
-| ------------- | ------------------- | --------- | --- | --- |
-| Direct(nginx) | 1539.22             | 1.00      | 1   | 1   |
-| CYarpBench    | 700.31              | 0.45      | 2   | 2   |
-| frp_0.56.0    | 593.76              | 0.39      | 2   | 2   |
+| Product          | Requests per second | Rps Ratio | P95 | P99 |
+| ---------------- | ------------------- | --------- | --- | --- |
+| ab->nginx        | 1539.22             | 1.00      | 1   | 1   |
+| ab->cyarp->nginx | 700.31              | 0.45      | 2   | 2   |
+| ab->frp->nginx   | 593.76              | 0.39      | 2   | 2   |
 
 #### ab -c 10 -n 50000
-| Product       | Requests per second | Rps Ratio | P95 | P99 |
-| ------------- | ------------------- | --------- | --- | --- |
-| Direct(nginx) | 9915.55             | 1.00      | 3   | 4   |
-| CYarpBench    | 9563.64             | 0.96      | 1   | 2   |
-| frp_0.56.0    | 5980.79             | 0.60      | 3   | 4   |
+| Product          | Requests per second | Rps Ratio | P95 | P99 |
+| ---------------- | ------------------- | --------- | --- | --- |
+| ab->nginx        | 9915.55             | 1.00      | 3   | 4   |
+| ab->cyarp->nginx | 9563.64             | 0.96      | 1   | 2   |
+| ab->frp->nginx   | 5980.79             | 0.60      | 3   | 4   |
 
 #### ab -c 20 -n 100000
-| Product       | Requests per second | Rps Ratio | P95 | P99 |
-| ------------- | ------------------- | --------- | --- | --- |
-| Direct(nginx) | 11948.84            | 1.00      | 4   | 7   |
-| CYarpBench    | 12542.54            | 1.05      | 3   | 3   |
-| frp_0.56.0    | 6238.09             | 0.52      | 5   | 7   |
+| Product          | Requests per second | Rps Ratio | P95 | P99 |
+| ---------------- | ------------------- | --------- | --- | --- |
+| ab->nginx        | 11948.84            | 1.00      | 4   | 7   |
+| ab->cyarp->nginx | 12542.54            | 1.05      | 3   | 3   |
+| ab->frp->nginx   | 6238.09             | 0.52      | 5   | 7   |
 
 #### ab -c 50 -n 200000
-| Product       | Requests per second | Rps Ratio | P95 | P99 |
-| ------------- | ------------------- | --------- | --- | --- |
-| Direct(nginx) | 12801.34            | 1.00      | 6   | 12  |
-| CYarpBench    | 13472.69            | 1.05      | 6   | 7   |
-| frp_0.56.0    | 5675.19             | 0.44      | 20  | 49  |
+| Product          | Requests per second | Rps Ratio | P95 | P99 |
+| ---------------- | ------------------- | --------- | --- | --- |
+| ab->nginx        | 12801.34            | 1.00      | 6   | 12  |
+| ab->cyarp->nginx | 13472.69            | 1.05      | 6   | 7   |
+| ab->frp->nginx   | 5675.19             | 0.44      | 20  | 49  |
 
 #### ab -c 100 -n 500000
-| Product       | Requests per second | Rps Ratio | P95 | P99 |
-| ------------- | ------------------- | --------- | --- | --- |
-| Direct(nginx) | 14088.43            | 1.00      | 10  | 17  |
-| CYarpBench    | 14216.45            | 1.01      | 10  | 12  |
-| frp_0.56.0    | 6504.36             | 0.46      | 20  | 49  |
+| Product          | Requests per second | Rps Ratio | P95 | P99 |
+| ---------------- | ------------------- | --------- | --- | --- |
+| ab->nginx        | 14088.43            | 1.00      | 10  | 17  |
+| ab->cyarp->nginx | 14216.45            | 1.01      | 10  | 12  |
+| ab->frp->nginx   | 6504.36             | 0.46      | 20  | 49  |
 
 ###  Demo and experience
 
