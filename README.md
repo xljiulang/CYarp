@@ -23,7 +23,7 @@ Nginx, CYarp and frp are deployed simultaneously on an Intel(R) Xeon(R) CPU E5-2
 | Product       | Requests per second | Rps Ratio | P95 | P99 |
 | ------------- | ------------------- | --------- | --- | --- |
 | Direct(nginx) | 1539.22             | 1.00      | 1   | 1   |
-| CYarpBench    | 700.3               | 0.45      | 2   | 2   |
+| CYarpBench    | 700.31              | 0.45      | 2   | 2   |
 | frp_0.56.0    | 593.76              | 0.39      | 2   | 2   |
 
 #### ab -c 10 -n 50000
