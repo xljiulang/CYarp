@@ -135,10 +135,11 @@ Authorization：{Client identity information}
 CYarp-TargetUri: {Access Uri of target httpServer}
 ```
 
-If the server is verified successfully, it will respond with a `101` status code.
+If the server is verified successfully, it will respond with a `101` status code and Set-Cookie is optional.
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
+Set-Cookie: <load balancer cookie>
 ```
 
 At this time, the long connection based on `tcp` has been completed, and then the following Stream in the long connection must implement the following functions
@@ -161,9 +162,10 @@ Authorization = {Client identity information}
 CYarp-TargetUri = {Access Uri of target httpServer}
 ```
 
-If the server is verified successfully, it will respond with a `200` status code.
+If the server is verified successfully, it will respond with a `200` status code and Set-Cookie is optional. 
 ```
 :status = 200
+Set-Cookie = <load balancer cookie>
 ```
 
 At this time, the long connection based on `http/2.0` has been completed, and then the following Stream in the long connection must implement the following functions
@@ -183,12 +185,14 @@ Client send the following request
 Get /{tunnelId} HTTP/1.1
 Connection: Upgrade
 Upgrade: CYarp
+Cookie：<if have Set-Cookie>
 ```
 
-If the server is verified successfully, it will respond with a `101` status code.
+If the server is verified successfully, it will respond with a `101` status code and Set-Cookie is optional.
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
+Set-Cookie: <load balancer cookie>
 ```
 
 At this time, the creation of the HttpTunnel over `tcp` has been completed, and then the server will send an http/1.1 request to the client and receive the client's http1.1 response in the subsequent Stream.
@@ -201,11 +205,13 @@ Client send the following request
 :protocol = CYarp
 :scheme = https
 :path = /{tunnelId}
+Cookie = <if have Set-Cookie>
 ```
 
-If the server is verified successfully, it will respond with a `200` status code.
+If the server is verified successfully, it will respond with a `200` status code and Set-Cookie is optional.
 ```
 :status = 200
+Set-Cookie = <load balancer cookie>
 ```
 
 At this time, the creation of the HttpTunnel over `http/2.0` has been completed, and then the server will send an http/1.1 request to the client and receive the client's http1.1 response in the subsequent Stream.
