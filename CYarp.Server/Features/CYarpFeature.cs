@@ -45,10 +45,12 @@ namespace CYarp.Server.Features
                 acceptAsync = AcceptAsync;
                 return true;
             }
-
-            protocol = default;
-            acceptAsync = default;
-            return default;
+            else
+            {
+                protocol = default;
+                acceptAsync = default;
+                return default;
+            }
 
             async Task<Stream> AcceptAsync()
             {
@@ -74,11 +76,14 @@ namespace CYarp.Server.Features
             {
                 protocol = TransportProtocol.HTTP2;
                 acceptAsync = AcceptAsync;
+                return true;
             }
-
-            protocol = default;
-            acceptAsync = default;
-            return default;
+            else
+            {
+                protocol = default;
+                acceptAsync = default;
+                return default;
+            }
 
             async Task<Stream> AcceptAsync()
             {
@@ -103,11 +108,14 @@ namespace CYarp.Server.Features
             {
                 protocol = TransportProtocol.Http11;
                 acceptAsync = AcceptAsync;
+                return true;
             }
-
-            protocol = default;
-            acceptAsync = default;
-            return default;
+            else
+            {
+                protocol = default;
+                acceptAsync = default;
+                return default;
+            }
 
             Task<Stream> AcceptAsync()
             {
