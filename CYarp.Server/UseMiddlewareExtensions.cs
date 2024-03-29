@@ -14,8 +14,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         /// <summary>
         /// 使用CYarp中间件
-        /// 自动管理IClient的连接
-        /// 需要放到app.UseAuthentication()之后
+        /// 使用CYarpOptions.Authorization规则进行身份验证和授权
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// 添加IClient的授权验证策略
-        /// CYarpOptions.Authorization不再生效
+        /// CYarpOptions.Authorization规则不再生效
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="clientPolicy">IClient授权验证策略</param>
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// 添加IClient的授权验证策略名
-        /// CYarpOptions.Authorization不再生效
+        /// CYarpOptions.Authorization规则不再生效
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="clientPolicyName">IClient授权验证策略名</param>
@@ -55,7 +54,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// 添加IClient授权验证策略配置
-        /// CYarpOptions.Authorization不再生效
+        /// CYarpOptions.Authorization规则不再生效
         /// </summary>
         /// <param name="builder"></param>
         /// <param name="configureClientPolicy">IClient授权验证策略配置</param>
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// 跳过IClient的授权验证
-        /// CYarpOptions.Authorization不再生效
+        /// CYarpOptions.Authorization规则不再生效
         /// </summary>
         /// <param name="builder"></param> 
         public static void AllowAnonymous(this ICYarpAppBuilder builder)

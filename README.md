@@ -70,22 +70,27 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3d
 ### Development Guide
 #### Server side
 
-The [CYarp.Server](https://www.nuget.org/packages/CYarp.Server/) package is designed as an http middleware for asp.net core. It relies on the `Authentication` middleware. Use the following methods to register and configure the middleware.
+The [CYarp.Server](https://www.nuget.org/packages/CYarp.Server/) package is designed as an http middleware for asp.net core. By default, it relies on the authentication services and authentication scheme to verify the IClient connection. Use the following methods to register and configure the middleware.
 
 ```c#
-builder.Services.AddCYarp().Configure(cyarp=>
-{
-    ...
-});
-```
+builder.Services.AddAuthentication(<DefaultScheme>).AddYourScheme();
+builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
-The middlewares configuration sequence is as follows
-```c#
-...
-app.UseAuthentication();
-...
+var app = builder.Build();
 app.UseCYarp();
 ...
+// app.UseAuthentication();
+// app.UseAuthorization();
+// app.MapControllers();
+app.Run();
+```
+Authentication and authorization when connecting to IClient can be skipped using the following method
+```c#
+builder.Services.AddCYarp().Configure(cyarp=>{ ... });
+
+var app = builder.Build();
+app.UseCYarp().AllowAnonymous();
+... 
 ```
 
 Finally, handle the http forwarding in the Controller, endpoint handler or the last custom middleware.
