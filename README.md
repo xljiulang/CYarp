@@ -70,16 +70,16 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3d
 ### Development Guide
 #### Server side
 
-The [CYarp.Server](https://www.nuget.org/packages/CYarp.Server/) package is designed as an http middleware for asp.net core. By default, it relies on the authentication services and authentication scheme to verify the IClient connection. Use the following methods to register and configure the middleware.
+The [CYarp.Server](https://www.nuget.org/packages/CYarp.Server/) package is designed as an http middleware for asp.net core. By default, it relies on the `Authentication` middleware to verify the IClient connection. Use the following methods to register and configure the middleware.
 
 ```c#
 builder.Services.AddAuthentication(<DefaultScheme>).AddYourScheme();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
+app.UseAuthentication();
 app.UseCYarp();
 ...
-// app.UseAuthentication();
 // app.UseAuthorization();
 // app.MapControllers();
 app.Run();

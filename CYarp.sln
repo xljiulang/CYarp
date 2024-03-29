@@ -17,7 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CYarpClient.Native", "Host\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CYarpGateway", "Host\CYarpGateway\CYarpGateway.csproj", "{D0471529-99D7-4A4C-AE95-3CDDE9A9F127}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CYarpBench", "Host\CYarpBench\CYarpBench.csproj", "{1D05987D-DE68-4BAA-B5E1-06D53ED736AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CYarpBench", "Host\CYarpBench\CYarpBench.csproj", "{1D05987D-DE68-4BAA-B5E1-06D53ED736AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

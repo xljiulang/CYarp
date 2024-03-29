@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         /// <summary>
         /// 使用CYarp中间件
-        /// 使用CYarpOptions.Authorization规则进行身份验证和授权
+        /// 使用CYarpOptions.Authorization规则进行授权
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>

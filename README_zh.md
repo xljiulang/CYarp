@@ -72,16 +72,16 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3d
 ### 开发指南
 #### 服务端开发
 
-[CYarp.Server](https://www.nuget.org/packages/CYarp.Server/) 包设计为asp.net core的一个http中间件，默认情况下其依赖于身份验证服务和验证方案来验证IClient的连接，使用如下方法进行注册和中间件的配置。
+[CYarp.Server](https://www.nuget.org/packages/CYarp.Server/) 包设计为asp.net core的一个http中间件，默认情况下其依赖于身份验证中间件验证IClient的连接，使用如下方法进行注册和中间件的配置。
 
 ```c#
 builder.Services.AddAuthentication(<DefaultScheme>).AddYourScheme();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
+app.UseAuthentication();
 app.UseCYarp();
 ...
-// app.UseAuthentication();
 // app.UseAuthorization();
 // app.MapControllers();
 app.Run();
