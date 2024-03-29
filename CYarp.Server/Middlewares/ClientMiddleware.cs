@@ -14,7 +14,7 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// IClient的授权验证、实例创建和生命周期管理中间件
     /// </summary>
-    sealed partial class CYarpClientMiddleware : IMiddleware
+    sealed partial class ClientMiddleware : IMiddleware
     {
         private readonly ClientPolicyService clientPolicyService;
         private readonly IClientIdProvider clientIdProvider;
@@ -22,18 +22,18 @@ namespace CYarp.Server.Middlewares
         private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly ClientManager clientManager;
         private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
-        private readonly ILogger<Client> logger;
+        private readonly ILogger<ClientConnection> logger;
 
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
 
-        public CYarpClientMiddleware(
+        public ClientMiddleware(
             ClientPolicyService clientPolicyService,
             IClientIdProvider clientIdProvider,
             IHttpForwarder httpForwarder,
             HttpTunnelFactory httpTunnelFactory,
             ClientManager clientManager,
             IOptionsMonitor<CYarpOptions> yarpOptions,
-            ILogger<Client> logger)
+            ILogger<ClientConnection> logger)
         {
             this.clientPolicyService = clientPolicyService;
             this.clientIdProvider = clientIdProvider;
@@ -83,13 +83,13 @@ namespace CYarp.Server.Middlewares
 
             var options = yarpOptions.CurrentValue;
             var stream = await cyarpFeature.AcceptAsSafeWriteStreamAsync();
-            var connection = new CYarpConnection(clientId, stream, options.Connection, this.logger);
-            using var cyarpClient = new Client(connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientTargetUri, context);
+            var connection = new ClientConnection(clientId, stream, options.Connection, this.logger);
+            using var client = new Client(connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientTargetUri, context);
 
-            if (await this.clientManager.AddAsync(cyarpClient, default))
+            if (await this.clientManager.AddAsync(client, default))
             {
                 await connection.WaitForCloseAsync();
-                await this.clientManager.RemoveAsync(cyarpClient, default);
+                await this.clientManager.RemoveAsync(client, default);
             }
         }
 

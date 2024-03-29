@@ -20,13 +20,13 @@ namespace CYarp.Server.Features
         {
             try
             {
-                await semaphoreSlim.WaitAsync(CancellationToken.None);
+                await this.semaphoreSlim.WaitAsync(CancellationToken.None);
                 await base.WriteAsync(source, cancellationToken);
-                await FlushAsync(cancellationToken);
+                await this.FlushAsync(cancellationToken);
             }
             finally
             {
-                semaphoreSlim.Release();
+                this.semaphoreSlim.Release();
             }
         }
 
@@ -34,10 +34,10 @@ namespace CYarp.Server.Features
         {
             base.Dispose(disposing);
 
-            semaphoreSlim.Dispose();
-            if (ownsInner)
+            this.semaphoreSlim.Dispose();
+            if (this.ownsInner)
             {
-                Inner.Dispose();
+                this.Inner.Dispose();
             }
         }
     }

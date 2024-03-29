@@ -14,12 +14,12 @@ namespace CYarp.Server.Clients
     {
         private readonly HttpTunnelConfig httpTunnelConfig;
         private readonly HttpTunnelFactory httpTunnelFactory;
-        private readonly IConnection connection;
+        private readonly ClientConnection connection;
 
         public ClientHttpHandler(
             HttpTunnelConfig httpTunnelConfig,
             HttpTunnelFactory httpTunnelFactory,
-            IConnection connection)
+            ClientConnection connection)
         {
             this.httpTunnelConfig = httpTunnelConfig;
             this.httpTunnelFactory = httpTunnelFactory;

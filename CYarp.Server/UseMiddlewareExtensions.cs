@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             app.UseWebSockets();
             app.UseMiddleware<CYarpMiddleware>();
-            app.UseMiddleware<CYarpClientMiddleware>();
+            app.UseMiddleware<ClientMiddleware>();
             app.UseMiddleware<HttpTunnelMiddleware>();
             return new CYarpAppBuilder(app.ApplicationServices);
         }

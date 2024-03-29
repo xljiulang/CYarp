@@ -33,12 +33,12 @@ namespace CYarp.Server.Features
 
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            return webSocket.SendAsync(buffer, WebSocketMessageType.Binary, endOfMessage: false, cancellationToken);
+            return this.webSocket.SendAsync(buffer, WebSocketMessageType.Binary, endOfMessage: false, cancellationToken);
         }
 
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            var result = await webSocket.ReceiveAsync(buffer, cancellationToken);
+            var result = await this.webSocket.ReceiveAsync(buffer, cancellationToken);
             return result.MessageType == WebSocketMessageType.Close ? 0 : result.Count;
         }
 
@@ -49,7 +49,7 @@ namespace CYarp.Server.Features
 
         protected override void Dispose(bool disposing)
         {
-            webSocket.Dispose();
+            this.webSocket.Dispose();
             base.Dispose(disposing);
         }
     }

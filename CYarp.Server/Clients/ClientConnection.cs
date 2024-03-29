@@ -1,5 +1,4 @@
-﻿using CYarp.Server.Clients;
-using CYarp.Server.Configs;
+﻿using CYarp.Server.Configs;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers;
@@ -8,13 +7,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYarp.Server.Middlewares
+namespace CYarp.Server.Clients
 {
-    sealed partial class CYarpConnection : IConnection
+    /// <summary>
+    /// 客户端的长连接
+    /// </summary>
+    sealed partial class ClientConnection : IDisposable
     {
-        private readonly string id;
         private readonly Stream stream;
-        private readonly ILogger logger;
+        private readonly ILogger<ClientConnection> logger;
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
         private readonly CancellationTokenSource disposeTokenSource = new();
@@ -24,11 +25,11 @@ namespace CYarp.Server.Middlewares
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
-        public string Id => this.id;
+        public string ClientId { get; }
 
-        public CYarpConnection(string id, Stream stream, ConnectionConfig config, ILogger logger)
+        public ClientConnection(string clientId, Stream stream, ConnectionConfig config, ILogger<ClientConnection> logger)
         {
-            this.id = id;
+            this.ClientId = clientId;
             this.stream = stream;
             this.logger = logger;
 
@@ -53,7 +54,7 @@ namespace CYarp.Server.Middlewares
             try
             {
                 await this.stream.WriteAsync(PingLine);
-                Log.LogPing(this.logger, this.id);
+                Log.LogPing(this.logger, this.ClientId);
             }
             catch (Exception)
             {
@@ -101,7 +102,7 @@ namespace CYarp.Server.Middlewares
                 }
                 else if (text == Ping)
                 {
-                    Log.LogPong(this.logger, this.id);
+                    Log.LogPong(this.logger, this.ClientId);
                     await this.stream.WriteAsync(PongLine, cancellationToken);
                 }
             }

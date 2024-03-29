@@ -17,7 +17,7 @@ namespace CYarp.Server.Clients
     sealed class Client : IClient
     {
         private volatile bool disposed = false;
-        private readonly IConnection connection;
+        private readonly ClientConnection connection;
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpTunnelConfig httpTunnelConfig;
         private readonly HttpTunnelFactory httpTunnelFactory;
@@ -25,7 +25,7 @@ namespace CYarp.Server.Clients
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
         private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version = HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
 
-        public string Id => this.connection.Id;
+        public string Id => this.connection.ClientId;
 
         public Uri TargetUri { get; }
 
@@ -46,7 +46,7 @@ namespace CYarp.Server.Clients
 
 
         public Client(
-            IConnection connection,
+            ClientConnection connection,
             IHttpForwarder httpForwarder,
             HttpTunnelConfig httpTunnelConfig,
             HttpTunnelFactory httpTunnelFactory,
@@ -85,12 +85,12 @@ namespace CYarp.Server.Clients
             if (this.disposed == false)
             {
                 this.disposed = true;
-                this.Dispose(disposing: true);
+                this.DisposeCore();
             }
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
+        private void DisposeCore()
         {
             if (this.httpClientLazy.IsValueCreated)
             {
