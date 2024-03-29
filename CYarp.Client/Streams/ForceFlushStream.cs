@@ -3,19 +3,16 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYarp.Client
+namespace CYarp.Client.Streams
 {
     /// <summary>
-    /// http隧道
+    /// 自动刷新的Stream
     /// </summary>
-    sealed class HttpTunnel : DelegatingStream
+    sealed class ForceFlushStream : DelegatingStream
     {
-        private readonly bool ownsInner;
-
-        public HttpTunnel(Stream inner, bool ownsInner = true)
+        public ForceFlushStream(Stream inner)
             : base(inner)
         {
-            this.ownsInner = ownsInner;
         }
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
@@ -27,11 +24,7 @@ namespace CYarp.Client
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-
-            if (this.ownsInner)
-            {
-                this.Inner.Dispose();
-            }
+            this.Inner.Dispose();
         }
     }
 }

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYarp.Client
+namespace CYarp.Client.Streams
 {
     /// <summary>
     /// 委托流
