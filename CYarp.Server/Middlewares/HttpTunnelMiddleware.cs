@@ -1,4 +1,5 @@
 ﻿using CYarp.Server.Clients;
+using CYarp.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -51,7 +52,7 @@ namespace CYarp.Server.Middlewares
             }
             else
             {
-                var stream = await cyarpFeature.AcceptAsync();
+                var stream = await cyarpFeature.AcceptAsStreamAsync();
                 var httpTunnel = new HttpTunnel(stream, tunnelId, context.Request.Protocol, this.logger);
 
                 if (this.httpTunnelFactory.SetResult(httpTunnel))

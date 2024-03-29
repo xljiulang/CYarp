@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace CYarp.Server.Middlewares
+namespace CYarp.Server.Features
 {
     /// <summary>
     /// CYarp特征
@@ -17,6 +17,12 @@ namespace CYarp.Server.Middlewares
         /// 使用当前物理连接创建新的双工流
         /// </summary>
         /// <returns></returns>
-        Task<Stream> AcceptAsync();
+        Task<Stream> AcceptAsStreamAsync();
+
+        /// <summary>
+        /// 使用当前物理连接创建新的线程安全写入的双工流
+        /// </summary>
+        /// <returns></returns>
+        Task<Stream> AcceptAsSafeWriteStreamAsync();
     }
 }

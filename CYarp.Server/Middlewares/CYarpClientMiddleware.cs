@@ -1,4 +1,5 @@
 ﻿using CYarp.Server.Clients;
+using CYarp.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -21,7 +22,7 @@ namespace CYarp.Server.Middlewares
         private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly ClientManager clientManager;
         private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
-        private readonly ILogger<CYarpClient> logger;
+        private readonly ILogger<Client> logger;
 
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
 
@@ -32,7 +33,7 @@ namespace CYarp.Server.Middlewares
             HttpTunnelFactory httpTunnelFactory,
             ClientManager clientManager,
             IOptionsMonitor<CYarpOptions> yarpOptions,
-            ILogger<CYarpClient> logger)
+            ILogger<Client> logger)
         {
             this.clientPolicyService = clientPolicyService;
             this.clientIdProvider = clientIdProvider;
@@ -81,13 +82,13 @@ namespace CYarp.Server.Middlewares
             }
 
             var options = yarpOptions.CurrentValue;
-            var stream = await cyarpFeature.AcceptAsync();
-            var connection = new CYarpConnection(stream);
-            using var cyarpClient = new CYarpClient(connection, options.Connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientId, clientTargetUri, context, this.logger);
+            var stream = await cyarpFeature.AcceptAsSafeWriteStreamAsync();
+            var connection = new CYarpConnection(clientId, stream, options.Connection, this.logger);
+            using var cyarpClient = new Client(connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientTargetUri, context);
 
             if (await this.clientManager.AddAsync(cyarpClient, default))
             {
-                await cyarpClient.WaitForCloseAsync();
+                await connection.WaitForCloseAsync();
                 await this.clientManager.RemoveAsync(cyarpClient, default);
             }
         }

@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns></returns>
         public static ICYarpAppBuilder UseCYarp(this IApplicationBuilder app)
         {
+            app.UseWebSockets();
             app.UseMiddleware<CYarpMiddleware>();
             app.UseMiddleware<CYarpClientMiddleware>();
             app.UseMiddleware<HttpTunnelMiddleware>();

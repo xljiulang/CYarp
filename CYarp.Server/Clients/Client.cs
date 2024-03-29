@@ -1,27 +1,31 @@
 ﻿using CYarp.Server.Configs;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Threading;
 using System.Threading.Tasks;
 using Yarp.ReverseProxy.Forwarder;
 
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 客户端抽象类
+    /// 客户端
     /// </summary>
-    abstract class ClientBase : IClient, IConnection
+    [DebuggerDisplay("Id = {Id}, Protocol = {Protocol}")]
+    sealed class Client : IClient
     {
+        private volatile bool disposed = false;
+        private readonly IConnection connection;
         private readonly IHttpForwarder httpForwarder;
+        private readonly HttpTunnelConfig httpTunnelConfig;
+        private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly HttpContext httpContext;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
-        private readonly CancellationTokenSource disposeTokenSource = new();
         private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version = HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
 
-        public string Id { get; }
+        public string Id => this.connection.Id;
 
         public Uri TargetUri { get; }
 
@@ -41,75 +45,58 @@ namespace CYarp.Server.Clients
         public DateTimeOffset CreationTime { get; } = DateTimeOffset.Now;
 
 
-        public ClientBase(
+        public Client(
+            IConnection connection,
             IHttpForwarder httpForwarder,
             HttpTunnelConfig httpTunnelConfig,
             HttpTunnelFactory httpTunnelFactory,
-            string clientId,
             Uri clientTargetUri,
             HttpContext httpContext)
         {
+            this.connection = connection;
             this.httpForwarder = httpForwarder;
-            this.httpClientLazy = new Lazy<HttpMessageInvoker>(() =>
-            {
-                var httpHandler = new ClientHttpHandler(httpTunnelConfig, httpTunnelFactory, this);
-                return new HttpMessageInvoker(httpHandler);
-            });
-
-            this.Id = clientId;
+            this.httpTunnelConfig = httpTunnelConfig;
+            this.httpTunnelFactory = httpTunnelFactory;
             this.TargetUri = clientTargetUri;
             this.httpContext = httpContext;
+
+            this.httpClientLazy = new Lazy<HttpMessageInvoker>(this.CreateHttpClient);
+        }
+
+        private HttpMessageInvoker CreateHttpClient()
+        {
+            var httpHandler = new ClientHttpHandler(this.httpTunnelConfig, this.httpTunnelFactory, this.connection);
+            return new HttpMessageInvoker(httpHandler);
         }
 
 
         public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext httpContext, ForwarderRequestConfig? requestConfig, HttpTransformer? transformer)
         {
-            ObjectDisposedException.ThrowIf(this.disposeTokenSource.IsCancellationRequested, this);
+            ObjectDisposedException.ThrowIf(this.disposed, this);
 
             var httpClient = this.httpClientLazy.Value;
             var destination = this.TargetUri.OriginalString;
             return this.httpForwarder.SendAsync(httpContext, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
         }
 
-        public abstract Task CreateHttpTunnelAsync(Guid tunnelId, CancellationToken cancellationToken);
-
-        public async Task WaitForCloseAsync()
-        {
-            try
-            {
-                var cancellationToken = this.disposeTokenSource.Token;
-                await this.HandleConnectionAsync(cancellationToken);
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        /// <summary>
-        /// 处理连接
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        protected abstract Task HandleConnectionAsync(CancellationToken cancellationToken);
-
 
         public void Dispose()
         {
-            if (this.disposeTokenSource.IsCancellationRequested == false)
+            if (this.disposed == false)
             {
-                this.disposeTokenSource.Cancel();
+                this.disposed = true;
                 this.Dispose(disposing: true);
             }
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
-            this.disposeTokenSource.Dispose();
             if (this.httpClientLazy.IsValueCreated)
             {
                 this.httpClientLazy.Value.Dispose();
             }
+            this.connection.Dispose();
         }
 
         public override string ToString()
