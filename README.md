@@ -202,7 +202,16 @@ At this time, the long connection based on `HTTP/2` has been completed, and then
 | Client | `PING\r\n`       | Detect server survival                                  | Reply `PONG\r\n`                     |
 | Server | `PING\r\n`       | Detect client survival                                  | Reply `PONG\r\n`                     |
 | Server | `{tunnelId}\r\n` | Let the Client to create a new HttpTunnel to the Server | Create HttpTunnel using `{tunnelId}` |
-  
+
+> by WebSocket
+
+WebSocket connection requires the following request header, requesting the `/` path. After the connection is successful, multiple binary frames are used to carry CYarp's Stream.
+| HeaderName             | HeaderValue                       |
+| ---------------------- | --------------------------------- |
+| Authorization          | {Client identity information}     |
+| CYarp-TargetUri        | {Access Uri of target httpServer} |
+| Sec-WebSocket-Protocol | `CYarp`                           |
+
 
 #### Creation of HttpTunnel
 > by HTTP/1.1
@@ -242,6 +251,15 @@ Set-Cookie = <load balancer cookie>
 ```
 
 At this time, the creation of the HttpTunnel over `HTTP/2` has been completed, and then the server will send an `HTTP/1.1` request to the client and receive the client's `HTTP/1.1` response in the subsequent Stream.
+
+> by WebSocket
+
+WebSocket connection requires the following request header, requesting the `/{tunnelId}` path. After the connection is successful, multiple binary frames are used to carry CYarp's Stream.
+
+| HeaderName             | HeaderValue                       |
+| ---------------------- | --------------------------------- |
+| Sec-WebSocket-Protocol | `CYarp`                           |
+
 
 ### Security
 When the server side uses https, the following parts are tls secure transmission

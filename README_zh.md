@@ -208,7 +208,17 @@ Set-Cookie = <load balancer cookie>
 | Client | 发送`PING\r\n`       | 侦测Server存活                     | 回复`PONG\r\n`                 |
 | Server | 发送`PING\r\n`       | 侦测Client存活                     | 回复`PONG\r\n`                 |
 | Server | 发送`{tunnelId}\r\n` | 让Client向Server创建新的HttpTunnel | 使用`{tunnelId}`创建HttpTunnel |
-  
+
+> WebSocket
+
+WebSocket连接需要如下请求头，请求到`/`路径，连接成功后使用多个binary帧来承载CYarp的Stream。
+| 请求头名称             | 请求头值                |
+| ---------------------- | ----------------------- |
+| Authorization          | 客户端身份信息          |
+| CYarp-TargetUri        | 目标httpServer的访问Uri |
+| Sec-WebSocket-Protocol | `CYarp`                 |
+
+
 
 #### HttpTunnel的创建
 > HTTP/1.1
@@ -248,6 +258,14 @@ Set-Cookie = <load balancer cookie>
 ```
 
 此时基于`HTTP/2`的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送`HTTP/1.1`的请求和接收客户端的`HTTP/1.1`响应。
+
+> WebSocket
+
+WebSocket连接需要如下请求头，请求到`/{tunnelId}`路径，连接成功后使用多个binary帧来承载CYarp的Stream。
+
+| 请求头名称             | 请求头值 |
+| ---------------------- | -------- |
+| Sec-WebSocket-Protocol | `CYarp`  |
 
 ### 安全
 当Server方使用https时，以下部分为tls安全传输
