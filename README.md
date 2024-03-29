@@ -1,7 +1,7 @@
 [README](README.md) | [中文文档](README_zh.md)
 
 ## CYarp
-A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet. It currently supports `http/1.1 over tcp` and `http/1.1 over http2` tunnel.
+A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet. It currently supports four connection methods: `HTTP/1.1 Upgrade`, `HTTP/2 Extended CONNECT`, `WebSocket` and `WebSocket over Http/2`.
 
 ### Features
 1. Use high-performance [kestrel](https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-8.0) as server
@@ -151,7 +151,7 @@ The following are the dynamic shared library commands exported by AOT compilatio
 
 
 #### Establish a long connection
-> by http/1.1
+> by HTTP/1.1
 
 Client initiates the following request
 ```
@@ -177,7 +177,7 @@ At this time, the long connection based on `tcp` has been completed, and then th
 | Server | `PING\r\n`       | Detect client survival                                  | Reply `PONG\r\n`                     |
 | Server | `{tunnelId}\r\n` | Let the Client to create a new HttpTunnel to the Server | Create HttpTunnel using `{tunnelId}` |
 
-> by http/2.0
+> by HTTP/2
 
 Client initiates the following request
 ```
@@ -195,7 +195,7 @@ If the server is verified successfully, it will respond with a `200` status code
 Set-Cookie = <load balancer cookie>
 ```
 
-At this time, the long connection based on `http/2.0` has been completed, and then the following Stream in the long connection must implement the following functions
+At this time, the long connection based on `HTTP/2` has been completed, and then the following Stream in the long connection must implement the following functions
 
 | Sender | Content          | Intention                                               | Receiver's actions                   |
 | ------ | ---------------- | ------------------------------------------------------- | ------------------------------------ |
@@ -205,7 +205,7 @@ At this time, the long connection based on `http/2.0` has been completed, and th
   
 
 #### Creation of HttpTunnel
-> by http/1.1
+> by HTTP/1.1
 
 Client send the following request
 ```
@@ -222,9 +222,9 @@ Connection: Upgrade
 Set-Cookie: <load balancer cookie>
 ```
 
-At this time, the creation of the HttpTunnel over `tcp` has been completed, and then the server will send an http/1.1 request to the client and receive the client's http1.1 response in the subsequent Stream.
+At this time, the creation of the HttpTunnel over `tcp` has been completed, and then the server will send an `HTTP/1.1` request to the client and receive the client's `HTTP/1.1` response in the subsequent Stream.
 
-> by http/2.0
+> by HTTP/2
 
 Client send the following request
 ```
@@ -241,7 +241,7 @@ If the server is verified successfully, it will respond with a `200` status code
 Set-Cookie = <load balancer cookie>
 ```
 
-At this time, the creation of the HttpTunnel over `http/2.0` has been completed, and then the server will send an http/1.1 request to the client and receive the client's http1.1 response in the subsequent Stream.
+At this time, the creation of the HttpTunnel over `HTTP/2` has been completed, and then the server will send an `HTTP/1.1` request to the client and receive the client's `HTTP/1.1` response in the subsequent Stream.
 
 ### Security
 When the server side uses https, the following parts are tls secure transmission

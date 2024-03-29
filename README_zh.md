@@ -1,7 +1,7 @@
 [README](README.md) | [中文文档](README_zh.md)
 
 ## CYarp
-CYarp是一组高性能的反向代理组件，用于将 NAT 或防火墙后面的多个本地 http 服务器公开到互联网。 目前它支持`http/1.1 over tcp`和`http/1.1 over http2`隧道。
+CYarp是一组高性能的反向代理组件，用于将 NAT 或防火墙后面的多个本地 http 服务器公开到互联网。 目前支持`HTTP/1.1 Upgrade`、`HTTP/2 Extended CONNECT`、`WebSocket`和`WebSocket over Http/2`四种连接方式。
 
 ### 功能特性
 1. 使用高性能的[kestrel](https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-8.0)做服务器
@@ -156,7 +156,7 @@ C和C++客户端，可以将CYarp.Client项目的源代码[AOT编译](https://le
 
 
 ####  建立长连接
-> http/1.1
+> HTTP/1.1
 
 Client发起如下请求
 ```
@@ -174,7 +174,7 @@ Connection: Upgrade
 Set-Cookie: <load balancer cookie>
 ```
 
-此时基于tcp的长连接已完成，接着在长连接后续的Stream要实现如下功能
+此时基于`tcp`的长连接已完成，接着在长连接后续的Stream要实现如下功能
 
 | 发起方 | 内容                 | 含义                               | 接收方操作                     |
 | ------ | -------------------- | ---------------------------------- | ------------------------------ |
@@ -183,7 +183,7 @@ Set-Cookie: <load balancer cookie>
 | Server | 发送`{tunnelId}\r\n` | 让Client向Server创建新的HttpTunnel | 使用`{tunnelId}`创建HttpTunnel |
   
 
-> http/2.0
+> HTTP/2
 
 Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc8441#section-4)
 ```
@@ -201,7 +201,7 @@ Server验证通过则响应`200`状态码，还可能携带Set-Cookie的响应�
 Set-Cookie = <load balancer cookie>
 ```
 
-此时基于http/2.0的长连接已完成，接着在长连接后续的Stream要实现如下功能
+此时基于`HTTP/2`的长连接已完成，接着在长连接后续的Stream要实现如下功能
 
 | 发起方 | 内容                 | 含义                               | 接收方操作                     |
 | ------ | -------------------- | ---------------------------------- | ------------------------------ |
@@ -211,7 +211,7 @@ Set-Cookie = <load balancer cookie>
   
 
 #### HttpTunnel的创建
-> http/1.1
+> HTTP/1.1
 
 Client发起如下请求
 ```
@@ -228,9 +228,9 @@ Connection: Upgrade
 Set-Cookie: <load balancer cookie>
 ```
 
-此时基于tcp的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送http/1.1的请求和接收客户端的http1.1响应。
+此时基于`tcp`的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送`HTTP/1.1`的请求和接收客户端的`HTTP/1.1`响应。
 
-> http/2.0
+> HTTP/2
 
 Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc8441#section-4)
 ```
@@ -247,7 +247,7 @@ Server验证通过则响应`200`状态码，还可能携带Set-Cookie的响应�
 Set-Cookie = <load balancer cookie>
 ```
 
-此时基于http/2.0的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送http/1.1的请求和接收客户端的http1.1响应。
+此时基于`HTTP/2`的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送`HTTP/1.1`的请求和接收客户端的`HTTP/1.1`响应。
 
 ### 安全
 当Server方使用https时，以下部分为tls安全传输
