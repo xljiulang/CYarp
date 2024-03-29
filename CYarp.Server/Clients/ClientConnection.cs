@@ -12,7 +12,7 @@ namespace CYarp.Server.Clients
     /// <summary>
     /// 客户端的长连接
     /// </summary>
-    sealed partial class ClientConnection : IDisposable
+    sealed partial class ClientConnection : IAsyncDisposable
     {
         private readonly Stream stream;
         private readonly ILogger<ClientConnection> logger;
@@ -108,16 +108,16 @@ namespace CYarp.Server.Clients
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             if (this.disposeTokenSource.IsCancellationRequested == false)
-            {
+            {               
                 this.disposeTokenSource.Cancel();
                 this.disposeTokenSource.Dispose();
-            }
-            GC.SuppressFinalize(this);
-        }
 
+                await this.stream.DisposeAsync();
+            }
+        }
 
         static partial class Log
         {

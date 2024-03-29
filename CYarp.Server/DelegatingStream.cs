@@ -168,5 +168,11 @@ namespace CYarp.Server
         {
             Inner.WriteByte(value);
         }
+
+        /// <inheritdoc/>
+        public sealed override void Close()
+        {
+            base.Close();
+        } 
     }
 }

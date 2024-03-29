@@ -27,15 +27,15 @@ namespace CYarp.Server.Features
                 this.semaphoreSlim.Release();
             }
         }
-        public override void Close()
+
+        public override ValueTask DisposeAsync()
         {
-            Inner.Close();
+            this.semaphoreSlim.Dispose();
+            return this.Inner.DisposeAsync();
         }
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
             this.semaphoreSlim.Dispose();
             this.Inner.Dispose();
         }

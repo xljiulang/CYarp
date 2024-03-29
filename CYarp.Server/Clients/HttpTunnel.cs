@@ -33,19 +33,24 @@ namespace CYarp.Server.Clients
             this.logger = logger;
         }
 
-        public override void Close()
+        public override ValueTask DisposeAsync()
         {
-            Inner.Close();
+            this.SetClosedResult();
+            return this.Inner.DisposeAsync();
         }
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
+            this.SetClosedResult();
             this.Inner.Dispose();
-            this.closeTaskCompletionSource.TrySetResult();
+        }
 
-            Log.LogTunnelClosed(this.logger, this.Protocol, this.Id);
+        private void SetClosedResult()
+        {
+            if (this.closeTaskCompletionSource.TrySetResult())
+            {
+                Log.LogTunnelClosed(this.logger, this.Protocol, this.Id);
+            }
         }
 
 

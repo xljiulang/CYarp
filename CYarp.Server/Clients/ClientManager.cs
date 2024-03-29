@@ -47,7 +47,7 @@ namespace CYarp.Server.Clients
             var clientId = client.Id;
             if (this.dictionary.TryRemove(clientId, out var existClient))
             {
-                existClient.Dispose();
+                await existClient.DisposeAsync();
             }
 
             if (this.dictionary.TryAdd(clientId, client))

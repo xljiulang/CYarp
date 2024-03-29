@@ -10,7 +10,7 @@ namespace CYarp.Server
     /// <summary>
     /// 客户端接口
     /// </summary>
-    public interface IClient : IDisposable
+    public interface IClient : IAsyncDisposable
     {
         /// <summary>
         /// 获取唯一标识

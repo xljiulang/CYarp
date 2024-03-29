@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace CYarp.Client
 {
     /// <summary>
     /// CYarp连接
     /// </summary>
-    sealed class CYarpConnection : IDisposable
+    sealed class CYarpConnection : IAsyncDisposable
     {
         private readonly Stream stream;
         private readonly Timer? keepAliveTimer;
@@ -75,10 +76,10 @@ namespace CYarp.Client
             }
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
-            this.stream.Dispose();
             this.keepAliveTimer?.Dispose();
+            return this.stream.DisposeAsync();
         }
     }
 }

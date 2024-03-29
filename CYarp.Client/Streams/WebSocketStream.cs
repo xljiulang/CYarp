@@ -45,13 +45,21 @@ namespace CYarp.Client.Streams
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
-        } 
-      
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            if (this.webSocket.State == WebSocketState.Open)
+            {
+                using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1d));
+                await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, timeoutTokenSource.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            }
+            this.webSocket.Dispose();
+        }
 
         protected override void Dispose(bool disposing)
         {
-            this.webSocket.Dispose();
-            base.Dispose(disposing);
+            throw new InvalidOperationException("必须调用DisposeAsync()方法");
         }
     }
 }

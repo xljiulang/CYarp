@@ -81,24 +81,18 @@ namespace CYarp.Server.Clients
             return this.httpForwarder.SendAsync(httpContext, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
         }
 
-
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
             if (this.disposed == false)
             {
                 this.disposed = true;
-                this.DisposeCore();
-            }
-            GC.SuppressFinalize(this);
-        }
 
-        private void DisposeCore()
-        {
-            if (this.httpClientLazy.IsValueCreated)
-            {
-                this.httpClientLazy.Value.Dispose();
+                if (this.httpClientLazy.IsValueCreated)
+                {
+                    this.httpClientLazy.Value.Dispose();
+                }
+                await this.connection.DisposeAsync();
             }
-            this.connection.Dispose();
         }
 
         public override string ToString()

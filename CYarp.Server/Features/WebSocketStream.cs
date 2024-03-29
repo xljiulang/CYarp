@@ -39,16 +39,47 @@ namespace CYarp.Server.Features
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var result = await this.webSocket.ReceiveAsync(buffer, cancellationToken);
-            return result.MessageType == WebSocketMessageType.Close ? 0 : result.Count;
+            if (result.MessageType == WebSocketMessageType.Close)
+            {
+                return 0;
+            }
+            else
+            {
+                return result.Count;
+            }
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
-        } 
+        }
 
+        /// <summary>
+        /// ClientConnection会调用到此方法
+        /// </summary>
+        /// <returns></returns>
+        public override async ValueTask DisposeAsync()
+        {
+            await this.CloseAndDisposeAsync();
+        }
+
+        /// <summary>
+        /// ClientHttpHandler会调用到此方法
+        /// 即SocketsHttpHandler检测到连接空闲时超时或捕获到其它异常
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
+            _ = CloseAndDisposeAsync();
+        }
+
+        private async Task CloseAndDisposeAsync()
+        {
+            if (this.webSocket.State == WebSocketState.Open)
+            {
+                using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1d));
+                await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, timeoutTokenSource.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            }
             this.webSocket.Dispose();
         }
     }

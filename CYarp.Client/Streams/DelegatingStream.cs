@@ -167,6 +167,12 @@ namespace CYarp.Client.Streams
         public override void WriteByte(byte value)
         {
             Inner.WriteByte(value);
-        }         
+        }
+
+        /// <inheritdoc/>
+        public sealed override void Close()
+        {
+            base.Close();
+        } 
     }
 }

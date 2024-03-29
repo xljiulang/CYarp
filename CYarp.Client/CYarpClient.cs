@@ -74,7 +74,7 @@ namespace CYarp.Client
         private async Task TransportCoreAsync(CancellationToken cancellationToken)
         {
             var stream = await this.connectionFactory.ConnectServerAsync(cancellationToken);
-            using var connection = new CYarpConnection(stream, this.options.KeepAliveInterval);
+            await using var connection = new CYarpConnection(stream, this.options.KeepAliveInterval);
             using var connectionTokenSource = new CancellationTokenSource();
 
             try
@@ -103,12 +103,12 @@ namespace CYarp.Client
         {
             try
             {
-                using var targetTunnel = await this.connectionFactory.CreateTargetTunnelAsync(cancellationToken);
-                using var httpTunnel = await this.connectionFactory.CreateServerTunnelAsync(tunnelId, cancellationToken);
+                await using var targetTunnel = await this.connectionFactory.CreateTargetTunnelAsync(cancellationToken);
+                await using var serverTunnel = await this.connectionFactory.CreateServerTunnelAsync(tunnelId, cancellationToken);
 
-                var task1 = httpTunnel.CopyToAsync(targetTunnel, cancellationToken);
-                var task2 = targetTunnel.CopyToAsync(httpTunnel, cancellationToken);
-                await Task.WhenAny(task1, task2);
+                var server2Target = serverTunnel.CopyToAsync(targetTunnel, cancellationToken);
+                var target2Server = targetTunnel.CopyToAsync(serverTunnel, cancellationToken);
+                await Task.WhenAny(server2Target, target2Server);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
