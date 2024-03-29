@@ -33,6 +33,11 @@ namespace CYarp.Server.Clients
             this.logger = logger;
         }
 
+        public override void Close()
+        {
+            Inner.Close();
+        }
+
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);

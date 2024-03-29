@@ -13,7 +13,7 @@ namespace CYarp.Client.Streams
         /// <summary>
         /// 获取所包装的流对象
         /// </summary>
-        protected Stream Inner { get; }
+        protected readonly Stream Inner;
 
         /// <summary>
         /// 委托流
@@ -21,7 +21,7 @@ namespace CYarp.Client.Streams
         /// <param name="inner"></param>
         public DelegatingStream(Stream inner)
         {
-            Inner = inner;
+            this.Inner = inner;
         }
 
         /// <inheritdoc/>
@@ -35,6 +35,24 @@ namespace CYarp.Client.Streams
 
         /// <inheritdoc/>
         public override long Length => Inner.Length;
+
+        /// <inheritdoc/>
+        public override bool CanTimeout => Inner.CanTimeout;
+
+        /// <inheritdoc/>
+        public override int ReadTimeout
+        {
+            get => Inner.ReadTimeout;
+            set => Inner.ReadTimeout = value;
+        }
+
+        /// <inheritdoc/>
+        public override int WriteTimeout
+        {
+            get => Inner.WriteTimeout;
+            set => Inner.WriteTimeout = value;
+        }
+
 
         /// <inheritdoc/>
         public override long Position
@@ -138,5 +156,17 @@ namespace CYarp.Client.Streams
         {
             TaskToAsyncResult.End(asyncResult);
         }
+
+        /// <inheritdoc/>
+        public override int ReadByte()
+        {
+            return Inner.ReadByte();
+        }
+
+        /// <inheritdoc/>
+        public override void WriteByte(byte value)
+        {
+            Inner.WriteByte(value);
+        }         
     }
 }

@@ -27,6 +27,10 @@ namespace CYarp.Server.Features
                 this.semaphoreSlim.Release();
             }
         }
+        public override void Close()
+        {
+            Inner.Close();
+        }
 
         protected override void Dispose(bool disposing)
         {

@@ -45,7 +45,8 @@ namespace CYarp.Client.Streams
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
-        }
+        } 
+      
 
         protected override void Dispose(bool disposing)
         {

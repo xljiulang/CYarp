@@ -21,6 +21,11 @@ namespace CYarp.Client.Streams
             await this.FlushAsync(cancellationToken);
         }
 
+        public override void Close()
+        {
+            this.Inner.Close();
+        }
+
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);

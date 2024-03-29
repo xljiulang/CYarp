@@ -37,6 +37,11 @@ namespace CYarp.Client.Streams
             }
         }
 
+        public override void Close()
+        {
+            this.Inner.Close();
+        }
+
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
