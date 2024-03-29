@@ -23,9 +23,9 @@ namespace CYarp.Server.Clients
         /// <summary>
         /// 传输协议
         /// </summary>
-        public string Protocol { get; }
+        public TransportProtocol Protocol { get; }
 
-        public HttpTunnel(Stream inner, Guid tunnelId, string protocol, ILogger logger)
+        public HttpTunnel(Stream inner, Guid tunnelId, TransportProtocol protocol, ILogger logger)
             : base(inner)
         {
             this.Id = tunnelId;
@@ -52,7 +52,7 @@ namespace CYarp.Server.Clients
         static partial class Log
         {
             [LoggerMessage(LogLevel.Information, "{protocol}隧道{tunnelId}已关闭")]
-            public static partial void LogTunnelClosed(ILogger logger, string protocol, Guid tunnelId);
+            public static partial void LogTunnelClosed(ILogger logger, TransportProtocol protocol, Guid tunnelId);
         }
     }
 }

@@ -181,14 +181,13 @@ namespace CYarp.Client
             }
         }
 
-
         private async Task<Stream> Http20ConnectServerAsync(Guid? tunnelId, CancellationToken cancellationToken)
         {
             var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
             var request = new HttpRequestMessage(HttpMethod.Connect, serverUri);
             request.Headers.Protocol = CYarp;
             request.Version = HttpVersion.Version20;
-            request.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
             if (tunnelId == null)
             {

@@ -67,7 +67,7 @@ namespace CYarp.Server.Clients
         static partial class Log
         {
             [LoggerMessage(LogLevel.Information, "[{clientId}] 创建{protocol}隧道{tunnelId}成功")]
-            public static partial void LogTunnelCreated(ILogger logger, string clientId, string protocol, Guid tunnelId);
+            public static partial void LogTunnelCreated(ILogger logger, string clientId, TransportProtocol protocol, Guid tunnelId);
 
             [LoggerMessage(LogLevel.Error, "[{clientId}] 创建Http隧道{tunnelId}超时")]
             public static partial void LogTunnelCreateTimeout(ILogger logger, string clientId, Guid tunnelId);

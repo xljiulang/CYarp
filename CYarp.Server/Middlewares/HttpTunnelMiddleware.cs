@@ -53,7 +53,7 @@ namespace CYarp.Server.Middlewares
             else
             {
                 var stream = await cyarpFeature.AcceptAsStreamAsync();
-                var httpTunnel = new HttpTunnel(stream, tunnelId, context.Request.Protocol, this.logger);
+                var httpTunnel = new HttpTunnel(stream, tunnelId, cyarpFeature.Protocol, this.logger);
 
                 if (this.httpTunnelFactory.SetResult(httpTunnel))
                 {
