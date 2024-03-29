@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IClientViewer>(serviceProvder => serviceProvder.GetRequiredService<ClientManager>());
 
             services.TryAddSingleton<HttpTunnelFactory>();
-            services.TryAddSingleton<ClientAuthorization>();
+            services.TryAddSingleton<ClientPolicyService>();
             services.TryAddSingleton<IClientIdProvider, DefaultClientIdProvider>();
 
             services.TryAddSingleton<CYarpMiddleware>();

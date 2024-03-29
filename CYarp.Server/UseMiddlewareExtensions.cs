@@ -76,9 +76,9 @@ namespace Microsoft.AspNetCore.Builder
             builder.Authorization().SetAllowAnonymous();
         }
 
-        private static ClientAuthorization Authorization(this ICYarpAppBuilder app)
+        private static ClientPolicyService Authorization(this ICYarpAppBuilder app)
         {
-            return app.ApplicationServices.GetRequiredService<ClientAuthorization>();
+            return app.ApplicationServices.GetRequiredService<ClientPolicyService>();
         }
 
         private class CYarpAppBuilder : ICYarpAppBuilder

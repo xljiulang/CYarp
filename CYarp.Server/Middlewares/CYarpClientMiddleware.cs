@@ -15,7 +15,7 @@ namespace CYarp.Server.Middlewares
     /// </summary>
     sealed partial class CYarpClientMiddleware : IMiddleware
     {
-        private readonly ClientAuthorization clientAuthorization;
+        private readonly ClientPolicyService clientPolicyService;
         private readonly IClientIdProvider clientIdProvider;
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpTunnelFactory httpTunnelFactory;
@@ -26,7 +26,7 @@ namespace CYarp.Server.Middlewares
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
 
         public CYarpClientMiddleware(
-            ClientAuthorization clientAuthorization,
+            ClientPolicyService clientPolicyService,
             IClientIdProvider clientIdProvider,
             IHttpForwarder httpForwarder,
             HttpTunnelFactory httpTunnelFactory,
@@ -34,7 +34,7 @@ namespace CYarp.Server.Middlewares
             IOptionsMonitor<CYarpOptions> yarpOptions,
             ILogger<CYarpClient> logger)
         {
-            this.clientAuthorization = clientAuthorization;
+            this.clientPolicyService = clientPolicyService;
             this.clientIdProvider = clientIdProvider;
             this.httpForwarder = httpForwarder;
             this.httpTunnelFactory = httpTunnelFactory;
@@ -61,14 +61,13 @@ namespace CYarp.Server.Middlewares
                 return;
             }
 
-            // 身份验证
-            var clinetUser = context.User;
-            var authorizationResult = await this.clientAuthorization.AuthorizeAsync(clinetUser);
+            // 授权验证
+            var authorizationResult = await this.clientPolicyService.AuthorizeAsync(context);
             if (authorizationResult.Succeeded == false)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                var failedItem = authorizationResult.Failure.FailedRequirements.FirstOrDefault();
-                var message = failedItem?.ToString() ?? "请求者的身份认证不通过";
+                var failedItem = authorizationResult.AuthorizationFailure?.FailedRequirements.FirstOrDefault();
+                var message = failedItem?.ToString() ?? "请求者的身份验证不通过";
                 this.LogFailureStatus(context, message);
                 return;
             }
