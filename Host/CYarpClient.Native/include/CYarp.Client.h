@@ -39,7 +39,7 @@ typedef void (*CYarpCompletedCallback)(
 struct CYarpClientOptions
 {
 	// CYarp服务器Uri
-	// 支持http和https
+	// 支持http、https、 ws和wss
 	char16_t* ServerUri;
 	// 目标服务器Uri
 	// 支持http和https

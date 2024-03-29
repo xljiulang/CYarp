@@ -8,12 +8,10 @@ namespace CYarp.Server.Features
     sealed class SafeWriteStream : DelegatingStream
     {
         private readonly SemaphoreSlim semaphoreSlim = new(1, 1);
-        private readonly bool ownsInner;
 
-        public SafeWriteStream(Stream inner, bool ownsInner = true)
+        public SafeWriteStream(Stream inner)
             : base(inner)
         {
-            this.ownsInner = ownsInner;
         }
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
@@ -35,10 +33,7 @@ namespace CYarp.Server.Features
             base.Dispose(disposing);
 
             this.semaphoreSlim.Dispose();
-            if (this.ownsInner)
-            {
-                this.Inner.Dispose();
-            }
+            this.Inner.Dispose();
         }
     }
 }
