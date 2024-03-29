@@ -23,6 +23,12 @@ namespace CYarp.Server.Middlewares
             this.logger = logger;
         }
 
+        /// <summary>
+        /// HttpTunnel不需要身份验证和授权，而是使用Guid的随机性和tunnel创建的超时时长来保证安全
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="next"></param>
+        /// <returns></returns>
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
