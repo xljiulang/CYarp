@@ -28,9 +28,9 @@ namespace CYarp.Server
         ClaimsPrincipal User { get; }
 
         /// <summary>
-        /// 获取连接协议
+        /// 获取传输协议
         /// </summary>
-        string Protocol { get; }
+        TransportProtocol Protocol { get; }
 
         /// <summary>
         /// 获取远程终结点

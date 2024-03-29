@@ -17,11 +17,12 @@ namespace CYarp.Server.Features
         private readonly IHttpExtendedConnectFeature? connectFeature;
         private readonly IHttpRequestTimeoutFeature? requestTimeoutFeature;
 
-        private readonly bool cyarpRequest;
+        public bool IsCYarpRequest { get; }
 
-        public bool IsCYarpRequest => this.cyarpRequest;
+        public TransportProtocol Protocol { get; }
 
         public CYarpFeature(
+            bool isHttp2,
             WebSocketManager webSocketManager,
             StringValues upgradeHeader,
             IHttpUpgradeFeature upgradeFeature,
@@ -33,15 +34,24 @@ namespace CYarp.Server.Features
             this.connectFeature = connectFeature;
             this.requestTimeoutFeature = requestTimeoutFeature;
 
-            this.cyarpRequest = (this.webSocketManager.IsWebSocketRequest && this.webSocketManager.WebSocketRequestedProtocols.Contains(CYarp, StringComparer.InvariantCultureIgnoreCase)) ||
-                (upgradeFeature.IsUpgradableRequest && string.Equals(CYarp, upgradeHeader, StringComparison.InvariantCultureIgnoreCase)) ||
-                (connectFeature != null && connectFeature.IsExtendedConnect && string.Equals(CYarp, connectFeature.Protocol, StringComparison.InvariantCultureIgnoreCase));
-        }
+            if (this.webSocketManager.IsWebSocketRequest &&
+                this.webSocketManager.WebSocketRequestedProtocols.Contains(CYarp, StringComparer.InvariantCultureIgnoreCase))
+            {
+                this.IsCYarpRequest = true;
+                this.Protocol = isHttp2 ? TransportProtocol.WebSocketWithHttp2 : TransportProtocol.WebSocketWithHttp11;
+            }
 
+            if ((upgradeFeature.IsUpgradableRequest && string.Equals(CYarp, upgradeHeader, StringComparison.InvariantCultureIgnoreCase)) ||
+                (connectFeature != null && connectFeature.IsExtendedConnect && string.Equals(CYarp, connectFeature.Protocol, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                this.IsCYarpRequest = true;
+                this.Protocol = isHttp2 ? TransportProtocol.HTTP2 : TransportProtocol.Http11;
+            }
+        }
 
         public async Task<Stream> AcceptAsStreamAsync()
         {
-            if (this.cyarpRequest == false)
+            if (this.IsCYarpRequest == false)
             {
                 throw new InvalidOperationException("Not a CYarp request");
             }
@@ -64,7 +74,7 @@ namespace CYarp.Server.Features
                 return await this.connectFeature.AcceptAsync();
             }
 
-            throw new InvalidOperationException("Not a CYarp request");
+            throw new NotImplementedException();
         }
 
         public async Task<Stream> AcceptAsSafeWriteStreamAsync()

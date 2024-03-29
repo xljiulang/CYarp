@@ -1,5 +1,7 @@
 ﻿using CYarp.Server.Configs;
+using CYarp.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -31,7 +33,7 @@ namespace CYarp.Server.Clients
 
         public ClaimsPrincipal User => this.httpContext.User;
 
-        public string Protocol => this.httpContext.Request.Protocol;
+        public TransportProtocol Protocol => this.httpContext.Features.GetRequiredFeature<ICYarpFeature>().Protocol;
 
         public IPEndPoint? RemoteEndpoint
         {

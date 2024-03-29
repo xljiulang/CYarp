@@ -14,6 +14,11 @@ namespace CYarp.Server.Features
         bool IsCYarpRequest { get; }
 
         /// <summary>
+        /// 获取传输协议类型
+        /// </summary>
+        TransportProtocol Protocol { get; }
+
+        /// <summary>
         /// 使用当前物理连接创建新的双工流
         /// </summary>
         /// <returns></returns>
