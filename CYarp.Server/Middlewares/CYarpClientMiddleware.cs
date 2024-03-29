@@ -46,8 +46,7 @@ namespace CYarp.Server.Middlewares
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
-            if (cyarpFeature.IsCYarpRequest == false ||
-                context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
+            if (cyarpFeature.IsCYarpRequest == false || context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
             {
                 await next(context);
                 return;

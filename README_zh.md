@@ -110,7 +110,7 @@ public class CYarpController : ControllerBase
     /// 核心操作是从请求上下文获取clientId
     /// 然后使用clientId从IClientViewer服务获取IClient来转发http
     /// </summary>
-    /// <param name="clientManager"></param>
+    /// <param name="clientViewer"></param>
     /// <returns></returns>
     [Route("/{**cyarp}")]
     public async Task InvokeAsync([FromServices] IClientViewer clientViewer)

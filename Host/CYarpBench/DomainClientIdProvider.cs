@@ -23,8 +23,11 @@ namespace CYarpBench
         {
             if (AuthenticationHeaderValue.TryParse(context.Request.Headers.Authorization, out var authorization))
             {
-                clientId = authorization.Parameter;
-                return clientId != null && authorization.Scheme == Scheme;
+                if (authorization.Scheme == Scheme)
+                {
+                    clientId = authorization.Parameter;
+                    return string.IsNullOrEmpty(clientId) == false;
+                }
             }
 
             clientId = null;

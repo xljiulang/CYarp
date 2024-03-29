@@ -106,7 +106,7 @@ public class CYarpController : ControllerBase
     /// The core operation is to get the clientId from the request context
     /// Then use clientId to get IClient from IClientViewer service to forward HttpContext
     /// </summary>
-    /// <param name="clientManager"></param>
+    /// <param name="clientViewer"></param>
     /// <returns></returns>
     [Route("/{**cyarp}")]
     public async Task InvokeAsync([FromServices] IClientViewer clientViewer)

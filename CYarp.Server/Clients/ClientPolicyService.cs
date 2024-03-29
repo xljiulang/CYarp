@@ -70,7 +70,7 @@ namespace CYarp.Server.Clients
         /// <param name="context"></param> 
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<PolicyAuthorizationResult> AuthorizeAsync(HttpContext context)
+        public async ValueTask<PolicyAuthorizationResult> AuthorizeAsync(HttpContext context)
         {
             if (this.authorizationType == AuthorizationType.Anonymous)
             {
@@ -100,7 +100,7 @@ namespace CYarp.Server.Clients
         }
 
 
-        private async Task<AuthorizationPolicy> GetPolicyAsync()
+        private async ValueTask<AuthorizationPolicy> GetPolicyAsync()
         {
             if (this.authorizationType == AuthorizationType.Default)
             {
@@ -112,7 +112,7 @@ namespace CYarp.Server.Clients
         }
 
 
-        private async Task<AuthorizationPolicy> CombinePolicyAsync()
+        private async ValueTask<AuthorizationPolicy> CombinePolicyAsync()
         {
             var builder = new AuthorizationPolicyBuilder();
             foreach (var policy in this.policyList)
