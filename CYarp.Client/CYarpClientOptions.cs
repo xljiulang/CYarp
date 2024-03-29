@@ -10,18 +10,19 @@ namespace CYarp.Client
     /// </summary>
     public class CYarpClientOptions
     {
-        private static readonly string[] httpSchemes = [Uri.UriSchemeHttp, Uri.UriSchemeHttps];
+        private static readonly string[] targetSchemes = [Uri.UriSchemeHttp, Uri.UriSchemeHttps];
+        private static readonly string[] serverSchemes = [Uri.UriSchemeHttp, Uri.UriSchemeHttps, Uri.UriSchemeWs, Uri.UriSchemeWss];
 
         /// <summary>
         /// CYarp服务器Uri
-        /// 支持http和https
+        /// 支持http、https、 ws和wss
         /// </summary>
         [AllowNull]
         public Uri ServerUri { get; set; }
 
         /// <summary>
         /// 目标服务器Uri
-        /// 支持http、https
+        /// 支持http和https
         /// </summary>
         [AllowNull]
         public Uri TargetUri { get; set; }
@@ -65,14 +66,14 @@ namespace CYarp.Client
             ArgumentException.ThrowIfNullOrEmpty(Authorization);
             ArgumentOutOfRangeException.ThrowIfLessThan(ConnectTimeout, TimeSpan.Zero);
 
-            if (httpSchemes.Contains(this.TargetUri.Scheme) == false)
+            if (targetSchemes.Contains(this.TargetUri.Scheme) == false)
             {
-                throw new ArgumentException($"Scheme must be http or https", nameof(TargetUri));
+                throw new ArgumentException($"Scheme must be {string.Join(", ", targetSchemes)}", nameof(TargetUri));
             }
 
-            if (httpSchemes.Contains(this.ServerUri.Scheme) == false)
+            if (serverSchemes.Contains(this.ServerUri.Scheme) == false)
             {
-                throw new ArgumentException("Scheme must be http or https", nameof(ServerUri));
+                throw new ArgumentException($"Scheme must be {string.Join(", ", serverSchemes)}", nameof(ServerUri));
             }
 
             if (AuthenticationHeaderValue.TryParse(this.Authorization, out _) == false)

@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IClientIdProvider, DefaultClientIdProvider>();
 
             services.TryAddSingleton<CYarpMiddleware>();
-            services.TryAddSingleton<CYarpClientMiddleware>();
+            services.TryAddSingleton<ClientMiddleware>();
             services.TryAddSingleton<HttpTunnelMiddleware>();
 
             services.AddHttpForwarder();

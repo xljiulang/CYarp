@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace CYarp.Client
 {
@@ -12,7 +11,7 @@ namespace CYarp.Client
     /// </summary>
     sealed class CYarpConnection : IDisposable
     {
-        private readonly Connection connection;
+        private readonly Stream stream;
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
 
@@ -22,7 +21,7 @@ namespace CYarp.Client
 
         public CYarpConnection(Stream stream, TimeSpan keepAliveInterval)
         {
-            this.connection = new Connection(stream);
+            this.stream = stream;
 
             if (keepAliveInterval > TimeSpan.Zero)
             {
@@ -43,7 +42,7 @@ namespace CYarp.Client
         {
             try
             {
-                await this.connection.WriteAsync(PingLine);
+                await this.stream.WriteAsync(PingLine);
             }
             catch (Exception)
             {
@@ -53,7 +52,7 @@ namespace CYarp.Client
 
         public async IAsyncEnumerable<Guid> ReadTunnelIdAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            using var textReader = new StreamReader(this.connection, leaveOpen: true);
+            using var textReader = new StreamReader(this.stream, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
             {
                 var textTask = textReader.ReadLineAsync(cancellationToken);
@@ -67,7 +66,7 @@ namespace CYarp.Client
                 }
                 else if (text == Ping)
                 {
-                    await this.connection.WriteAsync(PongLine, cancellationToken);
+                    await this.stream.WriteAsync(PongLine, cancellationToken);
                 }
                 else if (Guid.TryParse(text, out var tunnelId))
                 {
@@ -78,36 +77,8 @@ namespace CYarp.Client
 
         public void Dispose()
         {
-            this.connection.Dispose();
+            this.stream.Dispose();
             this.keepAliveTimer?.Dispose();
-        }
-
-
-        private class Connection(Stream inner) : DelegatingStream(inner)
-        {
-            private readonly SemaphoreSlim semaphoreSlim = new(1, 1);
-
-            public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
-            {
-                try
-                {
-                    await this.semaphoreSlim.WaitAsync(CancellationToken.None);
-                    await base.WriteAsync(source, cancellationToken);
-                    await this.FlushAsync(cancellationToken);
-                }
-                finally
-                {
-                    this.semaphoreSlim.Release();
-                }
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                base.Dispose(disposing);
-
-                this.semaphoreSlim.Dispose();
-                this.Inner.Dispose();
-            }
         }
     }
 }

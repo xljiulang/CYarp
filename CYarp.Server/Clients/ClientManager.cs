@@ -100,10 +100,10 @@ namespace CYarp.Server.Clients
         static partial class Log
         {
             [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，当前客户端数为 {count}")]
-            public static partial void LogConnected(ILogger logger, string clientId, string protocol, int count);
+            public static partial void LogConnected(ILogger logger, string clientId, TransportProtocol protocol, int count);
 
             [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长连接断开，当前客户端数为 {count}")]
-            public static partial void LogDisconnected(ILogger logger, string clientId, string protocol, int count);
+            public static partial void LogDisconnected(ILogger logger, string clientId, TransportProtocol protocol, int count);
         }
     }
 }
