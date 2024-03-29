@@ -6,6 +6,11 @@
     public enum TransportProtocol
     {
         /// <summary>
+        /// 无
+        /// </summary>
+        None,
+
+        /// <summary>
         /// HTTP/1.1 Upgrade
         /// </summary>
         Http11,

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Timeouts;
-using Microsoft.Extensions.Primitives;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,69 +12,115 @@ namespace CYarp.Server.Features
     sealed class CYarpFeature : ICYarpFeature
     {
         private const string CYarp = "CYarp";
-        private readonly WebSocketManager webSocketManager;
-        private readonly IHttpUpgradeFeature upgradeFeature;
-        private readonly IHttpExtendedConnectFeature? connectFeature;
-        private readonly IHttpRequestTimeoutFeature? requestTimeoutFeature;
+        private readonly Func<Task<Stream>>? acceptAsyncFunc;
 
-        public bool IsCYarpRequest { get; }
+        public bool IsCYarpRequest => this.acceptAsyncFunc != null;
 
         public TransportProtocol Protocol { get; }
 
-        public CYarpFeature(
-            bool isHttp2,
-            WebSocketManager webSocketManager,
-            StringValues upgradeHeader,
-            IHttpUpgradeFeature upgradeFeature,
-            IHttpExtendedConnectFeature? connectFeature,
-            IHttpRequestTimeoutFeature? requestTimeoutFeature)
+        public CYarpFeature(HttpContext context)
         {
-            this.webSocketManager = webSocketManager;
-            this.upgradeFeature = upgradeFeature;
-            this.connectFeature = connectFeature;
-            this.requestTimeoutFeature = requestTimeoutFeature;
-
-            if (this.webSocketManager.IsWebSocketRequest &&
-                this.webSocketManager.WebSocketRequestedProtocols.Contains(CYarp, StringComparer.InvariantCultureIgnoreCase))
+            if (TryGetWebSocketFeature(context, out var protocol, out var acceptAsync) ||
+                TryGetHttp2Feature(context, out protocol, out acceptAsync) ||
+                TryGetHttp11Feature(context, out protocol, out acceptAsync))
             {
-                this.IsCYarpRequest = true;
-                this.Protocol = isHttp2 ? TransportProtocol.WebSocketWithHttp2 : TransportProtocol.WebSocketWithHttp11;
-            }
-
-            if ((upgradeFeature.IsUpgradableRequest && string.Equals(CYarp, upgradeHeader, StringComparison.InvariantCultureIgnoreCase)) ||
-                (connectFeature != null && connectFeature.IsExtendedConnect && string.Equals(CYarp, connectFeature.Protocol, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                this.IsCYarpRequest = true;
-                this.Protocol = isHttp2 ? TransportProtocol.HTTP2 : TransportProtocol.Http11;
+                this.Protocol = protocol;
+                this.acceptAsyncFunc = acceptAsync;
             }
         }
 
-        public async Task<Stream> AcceptAsStreamAsync()
+        private static bool TryGetWebSocketFeature(
+            HttpContext context,
+            [MaybeNullWhen(false)] out TransportProtocol protocol,
+            [MaybeNullWhen(false)] out Func<Task<Stream>>? acceptAsync)
         {
-            if (this.IsCYarpRequest == false)
+            var webSocketManager = context.WebSockets;
+            if (webSocketManager.IsWebSocketRequest &&
+                webSocketManager.WebSocketRequestedProtocols.Contains(CYarp, StringComparer.InvariantCultureIgnoreCase))
             {
-                throw new InvalidOperationException("Not a CYarp request");
+                protocol = context.Request.Protocol == HttpProtocol.Http2
+                    ? TransportProtocol.WebSocketWithHttp2
+                    : TransportProtocol.WebSocketWithHttp11;
+
+                acceptAsync = AcceptAsync;
+                return true;
             }
 
-            if (this.webSocketManager.IsWebSocketRequest)
+            protocol = default;
+            acceptAsync = default;
+            return default;
+
+            async Task<Stream> AcceptAsync()
             {
-                var webSocket = await this.webSocketManager.AcceptWebSocketAsync();
+                var webSocket = await webSocketManager.AcceptWebSocketAsync();
                 return new WebSocketStream(webSocket);
             }
+        }
 
-            if (this.upgradeFeature.IsUpgradableRequest)
+        /// <summary>
+        /// :method = CONNECT
+        /// :protocol = CYarp
+        /// :scheme = https
+        /// </summary>
+        private static bool TryGetHttp2Feature(
+            HttpContext context,
+            [MaybeNullWhen(false)] out TransportProtocol protocol,
+            [MaybeNullWhen(false)] out Func<Task<Stream>>? acceptAsync)
+        {
+            var http2Feature = context.Features.Get<IHttpExtendedConnectFeature>();
+            if (http2Feature != null &&
+                http2Feature.IsExtendedConnect &&
+                string.Equals(CYarp, http2Feature.Protocol, StringComparison.InvariantCultureIgnoreCase))
             {
-                this.requestTimeoutFeature?.DisableTimeout();
-                return await this.upgradeFeature.UpgradeAsync();
+                protocol = TransportProtocol.HTTP2;
+                acceptAsync = AcceptAsync;
             }
 
-            if (this.connectFeature != null)
+            protocol = default;
+            acceptAsync = default;
+            return default;
+
+            async Task<Stream> AcceptAsync()
             {
-                this.requestTimeoutFeature?.DisableTimeout();
-                return await this.connectFeature.AcceptAsync();
+                context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
+                return await http2Feature.AcceptAsync();
+            }
+        }
+
+        /// <summary>
+        /// Get {PATH} HTTP/1.1
+        /// Connection: Upgrade
+        /// Upgrade: CYarp  
+        /// </summary>
+        private static bool TryGetHttp11Feature(
+            HttpContext context,
+            [MaybeNullWhen(false)] out TransportProtocol protocol,
+            [MaybeNullWhen(false)] out Func<Task<Stream>>? acceptAsync)
+        {
+            var http11Feature = context.Features.GetRequiredFeature<IHttpUpgradeFeature>();
+            if (http11Feature.IsUpgradableRequest &&
+                string.Equals(CYarp, context.Request.Headers.Upgrade, StringComparison.InvariantCultureIgnoreCase))
+            {
+                protocol = TransportProtocol.Http11;
+                acceptAsync = AcceptAsync;
             }
 
-            throw new NotImplementedException();
+            protocol = default;
+            acceptAsync = default;
+            return default;
+
+            Task<Stream> AcceptAsync()
+            {
+                context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
+                return http11Feature.UpgradeAsync();
+            }
+        }
+
+        public Task<Stream> AcceptAsStreamAsync()
+        {
+            return this.acceptAsyncFunc == null
+                ? throw new InvalidOperationException("Not a CYarp request")
+                : this.acceptAsyncFunc();
         }
 
         public async Task<Stream> AcceptAsSafeWriteStreamAsync()
