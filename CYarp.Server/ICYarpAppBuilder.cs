@@ -3,9 +3,9 @@
 namespace CYarp.Server
 {
     /// <summary>
-    /// IClient的授权验证Builder
+    /// CYarp应用的Builder
     /// </summary>
-    public interface IClientAuthorizationBuilder
+    public interface ICYarpAppBuilder
     {
         /// <summary>
         /// 应用程序的服务

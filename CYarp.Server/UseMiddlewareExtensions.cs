@@ -19,12 +19,12 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IClientAuthorizationBuilder UseCYarp(this IApplicationBuilder app)
+        public static ICYarpAppBuilder UseCYarp(this IApplicationBuilder app)
         {
             app.UseMiddleware<CYarpMiddleware>();
             app.UseMiddleware<CYarpClientMiddleware>();
             app.UseMiddleware<HttpTunnelMiddleware>();
-            return new ClientAuthorizationBuilder(app.ApplicationServices);
+            return new CYarpAppBuilder(app.ApplicationServices);
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder"></param>
         /// <param name="clientPolicy">IClient授权验证策略</param>
         /// <returns></returns>
-        public static IClientAuthorizationBuilder RequireAuthorization(this IClientAuthorizationBuilder builder, AuthorizationPolicy clientPolicy)
+        public static ICYarpAppBuilder RequireAuthorization(this ICYarpAppBuilder builder, AuthorizationPolicy clientPolicy)
         {
             builder.Authorization().AddPolicy(clientPolicy);
             return builder;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder"></param>
         /// <param name="clientPolicyName">IClient授权验证策略名</param>
         /// <returns></returns>
-        public static IClientAuthorizationBuilder RequireAuthorization(this IClientAuthorizationBuilder builder, string clientPolicyName)
+        public static ICYarpAppBuilder RequireAuthorization(this ICYarpAppBuilder builder, string clientPolicyName)
         {
             builder.Authorization().AddPolicy(clientPolicyName);
             return builder;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder"></param>
         /// <param name="configureClientPolicy">IClient授权验证策略配置</param>
         /// <returns></returns>
-        public static IClientAuthorizationBuilder RequireAuthorization(this IClientAuthorizationBuilder builder, Action<AuthorizationPolicyBuilder> configureClientPolicy)
+        public static ICYarpAppBuilder RequireAuthorization(this ICYarpAppBuilder builder, Action<AuthorizationPolicyBuilder> configureClientPolicy)
         {
             builder.Authorization().AddPolicy(configureClientPolicy);
             return builder;
@@ -71,21 +71,21 @@ namespace Microsoft.AspNetCore.Builder
         /// CYarpOptions.Authorization不再生效
         /// </summary>
         /// <param name="builder"></param> 
-        public static void AllowAnonymous(this IClientAuthorizationBuilder builder)
+        public static void AllowAnonymous(this ICYarpAppBuilder builder)
         {
             builder.Authorization().SetAllowAnonymous();
         }
 
-        private static ClientAuthorization Authorization(this IClientAuthorizationBuilder app)
+        private static ClientAuthorization Authorization(this ICYarpAppBuilder app)
         {
             return app.ApplicationServices.GetRequiredService<ClientAuthorization>();
         }
 
-        private class ClientAuthorizationBuilder : IClientAuthorizationBuilder
+        private class CYarpAppBuilder : ICYarpAppBuilder
         {
             public IServiceProvider ApplicationServices { get; set; }
 
-            public ClientAuthorizationBuilder(IServiceProvider applicationServices)
+            public CYarpAppBuilder(IServiceProvider applicationServices)
             {
                 this.ApplicationServices = applicationServices;
             }
