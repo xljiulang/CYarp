@@ -39,14 +39,7 @@ namespace CYarp.Server.Features
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var result = await this.webSocket.ReceiveAsync(buffer, cancellationToken);
-            if (result.MessageType == WebSocketMessageType.Close)
-            {
-                return 0;
-            }
-            else
-            {
-                return result.Count;
-            }
+            return result.MessageType == WebSocketMessageType.Close ? 0 : result.Count;
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
