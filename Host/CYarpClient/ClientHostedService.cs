@@ -11,11 +11,11 @@ namespace CYarpServer
     sealed class ClientHostedService : BackgroundService
     {
         private readonly IOptionsMonitor<CYarpClientOptions> clientOptions;
-        private readonly ILogger<ClientHostedService> logger;
+        private readonly ILogger<CYarp.Client.CYarpClient> logger;
 
         public ClientHostedService(
             IOptionsMonitor<CYarpClientOptions> clientOptions,
-            ILogger<ClientHostedService> logger)
+            ILogger<CYarp.Client.CYarpClient> logger)
         {
             this.clientOptions = clientOptions;
             this.logger = logger;
@@ -28,7 +28,7 @@ namespace CYarpServer
                 try
                 {
                     var options = this.clientOptions.CurrentValue;
-                    using var client = new CYarp.Client.CYarpClient(options);
+                    using var client = new CYarp.Client.CYarpClient(options,this.logger);
                     await client.TransportAsync(stoppingToken);
 
                     this.logger.LogInformation($"传输已被关闭，5秒后重新连接");

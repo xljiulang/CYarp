@@ -54,7 +54,7 @@ namespace CYarp.Server.Features
 
             async Task<Stream> AcceptAsync()
             {
-                var webSocket = await webSocketManager.AcceptWebSocketAsync();
+                var webSocket = await webSocketManager.AcceptWebSocketAsync(CYarp);
                 return new WebSocketStream(webSocket);
             }
         }

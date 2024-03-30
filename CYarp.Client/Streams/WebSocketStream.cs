@@ -59,7 +59,7 @@ namespace CYarp.Client.Streams
 
         protected override void Dispose(bool disposing)
         {
-            throw new InvalidOperationException("必须调用DisposeAsync()方法");
+            throw new InvalidOperationException($"只能调用{nameof(DisposeAsync)}()方法");
         }
     }
 }

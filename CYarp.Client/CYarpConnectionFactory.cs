@@ -16,15 +16,18 @@ namespace CYarp.Client
         private const string CYarp = "CYarp";
         private const string CYarpTargetUri = "CYarp-TargetUri";
 
-        private readonly HttpMessageInvoker httpClient;
+        private bool? serverHttp2Supported;
         private readonly CYarpClientOptions options;
+        private readonly HttpMessageInvoker httpClient;
 
         public CYarpConnectionFactory(
-            HttpMessageInvoker httpClient,
-            CYarpClientOptions options)
+            CYarpClientOptions options,
+            HttpMessageHandler handler,
+            bool disposeHandler = true)
         {
-            this.httpClient = httpClient;
             this.options = options;
+            var httpHandler = new FactoryHttpHandler(this, handler);
+            this.httpClient = new HttpMessageInvoker(httpHandler, disposeHandler);
         }
 
         /// <summary>
@@ -106,9 +109,18 @@ namespace CYarp.Client
         private async Task<Stream> WebSocketConnectServerAsync(Guid? tunnelId, CancellationToken cancellationToken)
         {
             var webSocket = new ClientWebSocket();
-            webSocket.Options.HttpVersion = HttpVersion.Version20;
-            webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
             webSocket.Options.AddSubProtocol(CYarp);
+
+            if (this.serverHttp2Supported == false)
+            {
+                webSocket.Options.HttpVersion = HttpVersion.Version11;
+                webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            }
+            else
+            {
+                webSocket.Options.HttpVersion = HttpVersion.Version20;
+                webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+            }
 
             if (tunnelId == null)
             {
@@ -121,6 +133,7 @@ namespace CYarp.Client
             {
                 var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
                 await webSocket.ConnectAsync(serverUri, this.httpClient, cancellationToken);
+
                 return new WebSocketStream(webSocket);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -150,15 +163,19 @@ namespace CYarp.Client
         {
             try
             {
-                if (this.options.ServerUri.Scheme == Uri.UriSchemeHttps)
+                if (this.serverHttp2Supported != false && this.options.ServerUri.Scheme == Uri.UriSchemeHttps)
                 {
                     try
                     {
                         return await this.Http20ConnectServerAsync(tunnelId, cancellationToken);
                     }
-                    catch (CYarpConnectException ex) when (ex.ErrorCode != CYarpConnectError.Unauthorized)
+                    catch (CYarpConnectException ex) when (ex.ErrorCode == CYarpConnectError.Unauthorized)
                     {
-                        // 捕获非Unauthorized状态的异常，从而降级到http/1.1的Upgrade协议
+                        throw;
+                    }
+                    catch (Exception)
+                    {
+                        // 捕获剩余的其它所有异常，从而降级到http/1.1的Upgrade协议
                     }
                 }
                 return await this.Http11ConnectServerAsync(tunnelId, cancellationToken);
@@ -243,6 +260,33 @@ namespace CYarp.Client
         public void Dispose()
         {
             this.httpClient.Dispose();
+        }
+
+        private class FactoryHttpHandler : DelegatingHandler
+        {
+            private readonly CYarpConnectionFactory factory;
+
+            public FactoryHttpHandler(CYarpConnectionFactory factory, HttpMessageHandler innerHandler)
+            {
+                this.factory = factory;
+                this.InnerHandler = innerHandler;
+            }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                var httpResponse = await base.SendAsync(request, cancellationToken);
+                if (factory.serverHttp2Supported == null)
+                {
+                    factory.serverHttp2Supported = httpResponse.Version == HttpVersion.Version20;
+                }
+
+                if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    var inner = new HttpRequestException(httpResponse.ReasonPhrase, null, httpResponse.StatusCode);
+                    throw new CYarpConnectException(CYarpConnectError.Unauthorized, inner);
+                }
+                return httpResponse;
+            }
         }
     }
 }

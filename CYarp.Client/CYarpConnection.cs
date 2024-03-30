@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -10,9 +11,10 @@ namespace CYarp.Client
     /// <summary>
     /// CYarp连接
     /// </summary>
-    sealed class CYarpConnection : IAsyncDisposable
+    sealed partial class CYarpConnection : IAsyncDisposable
     {
         private readonly Stream stream;
+        private readonly ILogger logger;
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
 
@@ -20,9 +22,10 @@ namespace CYarp.Client
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
-        public CYarpConnection(Stream stream, TimeSpan keepAliveInterval)
+        public CYarpConnection(Stream stream, TimeSpan keepAliveInterval, ILogger logger)
         {
             this.stream = stream;
+            this.logger = logger;
 
             if (keepAliveInterval > TimeSpan.Zero)
             {
@@ -43,6 +46,7 @@ namespace CYarp.Client
         {
             try
             {
+                Log.LogPing(this.logger);
                 await this.stream.WriteAsync(PingLine);
             }
             catch (Exception)
@@ -67,6 +71,7 @@ namespace CYarp.Client
                 }
                 else if (text == Ping)
                 {
+                    Log.LogPong(this.logger);
                     await this.stream.WriteAsync(PongLine, cancellationToken);
                 }
                 else if (Guid.TryParse(text, out var tunnelId))
@@ -80,6 +85,15 @@ namespace CYarp.Client
         {
             this.keepAliveTimer?.Dispose();
             return this.stream.DisposeAsync();
+        }
+
+        static partial class Log
+        {
+            [LoggerMessage(LogLevel.Debug, "发出PING心跳")]
+            public static partial void LogPing(ILogger logger);
+
+            [LoggerMessage(LogLevel.Debug, "回复PONG心跳")]
+            public static partial void LogPong(ILogger logger);
         }
     }
 }

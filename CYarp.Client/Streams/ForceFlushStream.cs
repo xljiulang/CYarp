@@ -28,7 +28,7 @@ namespace CYarp.Client.Streams
 
         protected override void Dispose(bool disposing)
         {
-            this.Inner.Dispose();
+            throw new InvalidOperationException($"只能调用{nameof(DisposeAsync)}()方法");
         }
     }
 }

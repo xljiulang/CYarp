@@ -1,5 +1,6 @@
-﻿using System;
-using System.Net;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,9 +10,10 @@ namespace CYarp.Client
     /// <summary>
     /// CYarp客户端
     /// </summary>
-    public class CYarpClient : IDisposable
+    public partial class CYarpClient : IDisposable
     {
         private readonly CYarpClientOptions options;
+        private readonly ILogger logger;
         private readonly CYarpConnectionFactory connectionFactory;
         private readonly CancellationTokenSource disposeTokenSource = new();
 
@@ -22,20 +24,34 @@ namespace CYarp.Client
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public CYarpClient(CYarpClientOptions options)
-            : this(options, new HttpClientHandler())
+            : this(options, NullLogger<CYarpClient>.Instance)
         {
         }
 
         /// <summary>
         /// CYarp客户端
         /// </summary>
-        /// <param name="options">客户端选项</param> 
+        /// <param name="options">客户端选项</param>
+        /// <param name="logger"></param>
+        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public CYarpClient(CYarpClientOptions options, ILogger logger)
+            : this(options, logger, new HttpClientHandler())
+        {
+        }
+
+        /// <summary>
+        /// CYarp客户端
+        /// </summary>
+        /// <param name="options">客户端选项</param>
+        /// <param name="logger">日志组件</param> 
         /// <param name="handler">httpHandler</param>
         /// <param name="disposeHandler"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public CYarpClient(
             CYarpClientOptions options,
+            ILogger logger,
             HttpMessageHandler handler,
             bool disposeHandler = true)
         {
@@ -44,8 +60,8 @@ namespace CYarp.Client
             options.Validate();
 
             this.options = options;
-            var httpClient = new HttpMessageInvoker(new UnauthorizedHttpHandler(handler), disposeHandler);
-            this.connectionFactory = new CYarpConnectionFactory(httpClient, options);
+            this.logger = logger;
+            this.connectionFactory = new CYarpConnectionFactory(options, handler, disposeHandler);
         }
 
         /// <summary>
@@ -74,14 +90,16 @@ namespace CYarp.Client
         private async Task TransportCoreAsync(CancellationToken cancellationToken)
         {
             var stream = await this.connectionFactory.ConnectServerAsync(cancellationToken);
-            await using var connection = new CYarpConnection(stream, this.options.KeepAliveInterval);
-            using var connectionTokenSource = new CancellationTokenSource();
+            Log.LogConnected(this.logger, this.options.ServerUri);
 
+            await using var connection = new CYarpConnection(stream, this.options.KeepAliveInterval, this.logger);
+            using var connectionTokenSource = new CancellationTokenSource();
             try
             {
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionTokenSource.Token);
                 await foreach (var tunnelId in connection.ReadTunnelIdAsync(cancellationToken))
                 {
+                    Log.LogTunnelCreating(this.logger, tunnelId);
                     this.BindTunnelIOAsync(tunnelId, linkedTokenSource.Token);
                 }
             }
@@ -105,10 +123,20 @@ namespace CYarp.Client
             {
                 await using var targetTunnel = await this.connectionFactory.CreateTargetTunnelAsync(cancellationToken);
                 await using var serverTunnel = await this.connectionFactory.CreateServerTunnelAsync(tunnelId, cancellationToken);
+                Log.LogTunnelCreated(this.logger, tunnelId);
 
                 var server2Target = serverTunnel.CopyToAsync(targetTunnel, cancellationToken);
                 var target2Server = targetTunnel.CopyToAsync(serverTunnel, cancellationToken);
-                await Task.WhenAny(server2Target, target2Server);
+                var task = await Task.WhenAny(server2Target, target2Server);
+
+                if (task == server2Target)
+                {
+                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.ServerUri);
+                }
+                else
+                {
+                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.TargetUri);
+                }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -116,6 +144,7 @@ namespace CYarp.Client
             catch (Exception ex)
             {
                 this.OnTunnelException(ex);
+                Log.LogTunnelError(this.logger, tunnelId, ex.Message);
             }
         }
 
@@ -152,23 +181,25 @@ namespace CYarp.Client
             this.disposeTokenSource.Dispose();
         }
 
-        private class UnauthorizedHttpHandler : DelegatingHandler
-        {
-            public UnauthorizedHttpHandler(HttpMessageHandler innerHandler)
-            {
-                this.InnerHandler = innerHandler;
-            }
 
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                var httpResponse = await base.SendAsync(request, cancellationToken);
-                if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    var inner = new HttpRequestException(httpResponse.ReasonPhrase, null, httpResponse.StatusCode);
-                    throw new CYarpConnectException(CYarpConnectError.Unauthorized, inner);
-                }
-                return httpResponse;
-            }
+        static partial class Log
+        {
+            [LoggerMessage(LogLevel.Information, "已成功连接到{address}")]
+            public static partial void LogConnected(ILogger logger, Uri address);
+
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 传输通道正在创建中")]
+            public static partial void LogTunnelCreating(ILogger logger, Guid tunnelId);
+
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 传输通道已创建完成")]
+            public static partial void LogTunnelCreated(ILogger logger, Guid tunnelId);
+
+
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 传输通道已被{address}关闭")]
+            public static partial void LogTunnelClosed(ILogger logger, Guid tunnelId, Uri address);
+
+
+            [LoggerMessage(LogLevel.Warning, "[{tunnelId}] 传输通道异常：{reason}")]
+            public static partial void LogTunnelError(ILogger logger, Guid tunnelId, string? reason);
         }
     }
 }
