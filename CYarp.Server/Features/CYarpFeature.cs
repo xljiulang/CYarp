@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CYarp.Server.Features
 {
-    sealed class CYarpFeature : ICYarpFeature
+    sealed partial class CYarpFeature : ICYarpFeature
     {
         private const string CYarp = "CYarp";
         private readonly Func<Task<Stream>>? acceptAsyncFunc;
