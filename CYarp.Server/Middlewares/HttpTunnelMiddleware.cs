@@ -25,7 +25,7 @@ namespace CYarp.Server.Middlewares
         }
 
         /// <summary>
-        /// HttpTunnel不需要身份验证和授权，而是使用Guid的随机性和tunnel创建的超时时长来保证安全
+        /// HttpTunnel不需要身份验证和授权，tunnelId本身具有随机性和服务端可校验性来保证安全
         /// </summary>
         /// <param name="context"></param>
         /// <param name="next"></param>
