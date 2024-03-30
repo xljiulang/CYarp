@@ -111,15 +111,15 @@ namespace CYarp.Client
             var webSocket = new ClientWebSocket();
             webSocket.Options.AddSubProtocol(CYarp);
 
-            if (this.serverHttp2Supported == false)
-            {
-                webSocket.Options.HttpVersion = HttpVersion.Version11;
-                webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
-            }
-            else
+            if (this.serverHttp2Supported != false && this.options.ServerUri.Scheme == Uri.UriSchemeWss)
             {
                 webSocket.Options.HttpVersion = HttpVersion.Version20;
                 webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
+            }
+            else
+            {
+                webSocket.Options.HttpVersion = HttpVersion.Version11;
+                webSocket.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             }
 
             if (tunnelId == null)
