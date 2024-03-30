@@ -173,6 +173,6 @@ namespace CYarp.Client.Streams
         public sealed override void Close()
         {
             base.Close();
-        } 
+        }
     }
 }

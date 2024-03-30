@@ -1,4 +1,5 @@
 ﻿using CYarp.Client.Streams;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net;
@@ -11,23 +12,25 @@ using System.Threading.Tasks;
 
 namespace CYarp.Client
 {
-    sealed class CYarpConnectionFactory : IDisposable
+    sealed partial class CYarpConnectionFactory : IDisposable
     {
         private const string CYarp = "CYarp";
         private const string CYarpTargetUri = "CYarp-TargetUri";
 
         private bool? serverHttp2Supported;
+        private readonly ILogger logger;
         private readonly CYarpClientOptions options;
         private readonly HttpMessageInvoker httpClient;
 
         public CYarpConnectionFactory(
+            ILogger logger,
             CYarpClientOptions options,
             HttpMessageHandler handler,
             bool disposeHandler = true)
         {
+            this.logger = logger;
             this.options = options;
-            var httpHandler = new FactoryHttpHandler(this, handler);
-            this.httpClient = new HttpMessageInvoker(httpHandler, disposeHandler);
+            this.httpClient = new HttpMessageInvoker(new HttpHandler(this, handler), disposeHandler);
         }
 
         /// <summary>
@@ -81,7 +84,7 @@ namespace CYarp.Client
         /// <returns></returns>
         public async Task<Stream> CreateServerTunnelAsync(Guid tunnelId, CancellationToken cancellationToken)
         {
-            var stream = await this.ConnectServerCoreAsync(tunnelId, cancellationToken);
+            var stream = await this.ConnectServerAsync(tunnelId, cancellationToken);
             return new ForceFlushStream(stream);
         }
 
@@ -92,14 +95,15 @@ namespace CYarp.Client
         /// <exception cref="CYarpConnectException"></exception>
         /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
-        public async Task<Stream> ConnectServerAsync(CancellationToken cancellationToken)
+        public async Task<CYarpConnection> CreateServerConnectionAsync(CancellationToken cancellationToken)
         {
-            var stream = await this.ConnectServerCoreAsync(tunnelId: null, cancellationToken);
-            return new SafeWriteStream(stream);
+            var stream = await this.ConnectServerAsync(tunnelId: null, cancellationToken);
+            var safeWriteStream = new SafeWriteStream(stream);
+            return new CYarpConnection(safeWriteStream, this.options.KeepAliveInterval, this.logger);
         }
 
 
-        private Task<Stream> ConnectServerCoreAsync(Guid? tunnelId, CancellationToken cancellationToken)
+        private Task<Stream> ConnectServerAsync(Guid? tunnelId, CancellationToken cancellationToken)
         {
             return this.options.ServerUri.Scheme.StartsWith(Uri.UriSchemeWs)
                 ? this.WebSocketConnectServerAsync(tunnelId, cancellationToken)
@@ -260,33 +264,6 @@ namespace CYarp.Client
         public void Dispose()
         {
             this.httpClient.Dispose();
-        }
-
-        private class FactoryHttpHandler : DelegatingHandler
-        {
-            private readonly CYarpConnectionFactory factory;
-
-            public FactoryHttpHandler(CYarpConnectionFactory factory, HttpMessageHandler innerHandler)
-            {
-                this.factory = factory;
-                this.InnerHandler = innerHandler;
-            }
-
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-            {
-                var httpResponse = await base.SendAsync(request, cancellationToken);
-                if (factory.serverHttp2Supported == null)
-                {
-                    factory.serverHttp2Supported = httpResponse.Version == HttpVersion.Version20;
-                }
-
-                if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    var inner = new HttpRequestException(httpResponse.ReasonPhrase, null, httpResponse.StatusCode);
-                    throw new CYarpConnectException(CYarpConnectError.Unauthorized, inner);
-                }
-                return httpResponse;
-            }
         }
     }
 }

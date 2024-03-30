@@ -56,12 +56,13 @@ namespace CYarp.Client
             bool disposeHandler = true)
         {
             ArgumentNullException.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(handler);
             options.Validate();
 
             this.options = options;
             this.logger = logger;
-            this.connectionFactory = new CYarpConnectionFactory(options, handler, disposeHandler);
+            this.connectionFactory = new CYarpConnectionFactory(logger, options, handler, disposeHandler);
         }
 
         /// <summary>
@@ -89,10 +90,9 @@ namespace CYarp.Client
         /// <exception cref="OperationCanceledException"></exception>
         private async Task TransportCoreAsync(CancellationToken cancellationToken)
         {
-            var stream = await this.connectionFactory.ConnectServerAsync(cancellationToken);
+            await using var connection = await this.connectionFactory.CreateServerConnectionAsync(cancellationToken);
             Log.LogConnected(this.logger, this.options.ServerUri);
 
-            await using var connection = new CYarpConnection(stream, this.options.KeepAliveInterval, this.logger);
             using var connectionTokenSource = new CancellationTokenSource();
             try
             {
@@ -151,7 +151,7 @@ namespace CYarp.Client
         /// <summary>
         /// 隧道异常时
         /// </summary>
-        /// <param name="ex"></param>
+        /// <param name="ex">异常</param>
         protected virtual void OnTunnelException(Exception ex)
         {
             this.options.TunnelErrorCallback?.Invoke(ex);
@@ -193,10 +193,8 @@ namespace CYarp.Client
             [LoggerMessage(LogLevel.Information, "[{tunnelId}] 传输通道已创建完成")]
             public static partial void LogTunnelCreated(ILogger logger, Guid tunnelId);
 
-
             [LoggerMessage(LogLevel.Information, "[{tunnelId}] 传输通道已被{address}关闭")]
             public static partial void LogTunnelClosed(ILogger logger, Guid tunnelId, Uri address);
-
 
             [LoggerMessage(LogLevel.Warning, "[{tunnelId}] 传输通道异常：{reason}")]
             public static partial void LogTunnelError(ILogger logger, Guid tunnelId, string? reason);
