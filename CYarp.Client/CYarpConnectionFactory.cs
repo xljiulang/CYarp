@@ -137,7 +137,6 @@ namespace CYarp.Client
             {
                 var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
                 await webSocket.ConnectAsync(serverUri, this.httpClient, cancellationToken);
-
                 return new WebSocketStream(webSocket);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -167,29 +166,11 @@ namespace CYarp.Client
         {
             try
             {
-                if (this.serverHttp2Supported != false && this.options.ServerUri.Scheme == Uri.UriSchemeHttps)
-                {
-                    try
-                    {
-                        return await this.Http20ConnectServerAsync(tunnelId, cancellationToken);
-                    }
-                    catch (CYarpConnectException ex) when (ex.ErrorCode == CYarpConnectError.Unauthorized)
-                    {
-                        throw;
-                    }
-                    catch (Exception)
-                    {
-                        // 捕获剩余的其它所有异常，从而降级到http/1.1的Upgrade协议
-                    }
-                }
-                return await this.Http11ConnectServerAsync(tunnelId, cancellationToken);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                throw;
+                return await this.HttpConnectServerCoreAsync(tunnelId, cancellationToken);
             }
             catch (OperationCanceledException ex)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 throw new CYarpConnectException(CYarpConnectError.Timedout, ex);
             }
             catch (CYarpConnectException)
@@ -200,6 +181,26 @@ namespace CYarp.Client
             {
                 throw new CYarpConnectException(CYarpConnectError.Failure, ex);
             }
+        }
+
+        private async Task<Stream> HttpConnectServerCoreAsync(Guid? tunnelId, CancellationToken cancellationToken)
+        {
+            if (this.serverHttp2Supported != false && this.options.ServerUri.Scheme == Uri.UriSchemeHttps)
+            {
+                try
+                {
+                    return await this.Http20ConnectServerAsync(tunnelId, cancellationToken);
+                }
+                catch (CYarpConnectException ex) when (ex.ErrorCode == CYarpConnectError.Unauthorized)
+                {
+                    throw;
+                }
+                catch (Exception)
+                {
+                    // 捕获剩余的其它所有异常，从而降级到http/1.1的Upgrade协议
+                }
+            }
+            return await this.Http11ConnectServerAsync(tunnelId, cancellationToken);
         }
 
         private async Task<Stream> Http20ConnectServerAsync(Guid? tunnelId, CancellationToken cancellationToken)
