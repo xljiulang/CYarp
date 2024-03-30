@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,16 +13,13 @@ namespace CYarp.Server.Clients
     {
         private readonly ClientStateChannel clientStateChannel;
         private readonly IEnumerable<IClientStateStorage> stateStorages;
-        private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
 
         public ClientStateStorageService(
             ClientStateChannel clientStateChannel,
-            IEnumerable<IClientStateStorage> stateStorages,
-            IOptionsMonitor<CYarpOptions> cyarpOptions)
+            IEnumerable<IClientStateStorage> stateStorages)
         {
             this.clientStateChannel = clientStateChannel;
             this.stateStorages = stateStorages;
-            this.cyarpOptions = cyarpOptions;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,10 +38,9 @@ namespace CYarp.Server.Clients
         /// <returns></returns>
         private async Task ResetClientStatesAsync(CancellationToken cancellationToken)
         {
-            var node = this.cyarpOptions.CurrentValue.Node;
             foreach (var storage in this.stateStorages)
             {
-                await storage.ResetClientStatesAsync(node, cancellationToken);
+                await storage.ResetClientStatesAsync( cancellationToken);
             }
         }
 

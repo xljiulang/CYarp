@@ -14,30 +14,29 @@ namespace CYarpServer.StateStrorages
     sealed class RedisClientStateStorage : IClientStateStorage
     {
         private ConnectionMultiplexer? redis;
+        private readonly string node;
         private readonly IOptionsMonitor<RedisClientStateStorageOptions> redisOptions;
         private readonly ILogger<RedisClientStateStorage> logger;
 
         public RedisClientStateStorage(
+            IOptions<CYarpOptions> cyarpOptions,
             IOptionsMonitor<RedisClientStateStorageOptions> redisOptions,
             ILogger<RedisClientStateStorage> logger)
         {
+            ArgumentException.ThrowIfNullOrEmpty(cyarpOptions.Value.Node);
+
+            this.node = cyarpOptions.Value.Node;
             this.redisOptions = redisOptions;
             this.logger = logger;
         }
 
-        public Task ResetClientStatesAsync(string node, CancellationToken cancellationToken)
+        public Task ResetClientStatesAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
 
         public async Task WriteClientStateAsync(ClientState clientState, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(clientState.Node))
-            {
-                this.logger.LogError("请配置CYarpOptions.Node值");
-                return;
-            }
-
             try
             {
                 await this.WriteClientStateCoreAsync(clientState, cancellationToken);
@@ -56,7 +55,7 @@ namespace CYarpServer.StateStrorages
             var key = RedisClientStateStorageOptions.ClientNodePrefix + clientState.Client.Id;
             if (clientState.IsConnected)
             {
-                await this.redis.GetDatabase().StringSetAsync(key, clientState.Node);
+                await this.redis.GetDatabase().StringSetAsync(key, this.node);
             }
             else
             {

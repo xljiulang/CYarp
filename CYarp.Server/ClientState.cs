@@ -6,12 +6,6 @@
     public record ClientState
     {
         /// <summary>
-        /// 所在的节点名称
-        /// 从CYarpOptions.Node获得
-        /// </summary>
-        public required string Node { get; init; }
-
-        /// <summary>
         /// 客户端实例
         /// </summary>
         public required IClient Client { get; init; }

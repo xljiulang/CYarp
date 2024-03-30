@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -13,15 +12,11 @@ namespace CYarp.Server.Clients
     sealed class ClientStateChannel
     {
         private readonly bool hasStateStorages;
-        private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
         private readonly Channel<ClientState> channel = Channel.CreateUnbounded<ClientState>();
 
-        public ClientStateChannel(
-            IEnumerable<IClientStateStorage> stateStorages,
-            IOptionsMonitor<CYarpOptions> cyarpOptions)
+        public ClientStateChannel(IEnumerable<IClientStateStorage> stateStorages)
         {
             this.hasStateStorages = stateStorages.Any();
-            this.cyarpOptions = cyarpOptions;
         }
 
         /// <summary>
@@ -41,7 +36,6 @@ namespace CYarp.Server.Clients
 
             var clientState = new ClientState
             {
-                Node = this.cyarpOptions.CurrentValue.Node,
                 Client = client,
                 IsConnected = connected
             };
