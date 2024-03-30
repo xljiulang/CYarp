@@ -30,7 +30,7 @@ namespace CYarpServer.StateStrorages
             this.logger = logger;
         }
 
-        public Task ResetClientStatesAsync(CancellationToken cancellationToken)
+        public Task InitClientStatesAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

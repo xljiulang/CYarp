@@ -26,21 +26,21 @@ namespace CYarp.Server.Clients
         {
             if (this.stateStorages.Any())
             {
-                await this.ResetClientStatesAsync(stoppingToken);
+                await this.InitClientStatesAsync(stoppingToken);
                 await this.ConsumeClientStatesAsync(stoppingToken);
             }
         }
 
         /// <summary>
-        /// 重置节点的ClientState
+        /// 初始化所有客户端为离线
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task ResetClientStatesAsync(CancellationToken cancellationToken)
+        private async Task InitClientStatesAsync(CancellationToken cancellationToken)
         {
             foreach (var storage in this.stateStorages)
             {
-                await storage.ResetClientStatesAsync( cancellationToken);
+                await storage.InitClientStatesAsync( cancellationToken);
             }
         }
 

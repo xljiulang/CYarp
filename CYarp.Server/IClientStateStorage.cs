@@ -9,12 +9,12 @@ namespace CYarp.Server
     public interface IClientStateStorage
     {
         /// <summary>
-        /// 重置所有客户端为离线
+        /// 初始化所有客户端为离线
         /// 服务启动后触发此方法
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task ResetClientStatesAsync(CancellationToken cancellationToken);
+        Task InitClientStatesAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// 写入客户端状态
