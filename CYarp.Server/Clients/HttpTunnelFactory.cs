@@ -29,7 +29,10 @@ namespace CYarp.Server.Clients
         {
             var tunnelId = HttpTunnel.CreateTunnelId(connection.ClientId);
             var tunnelCompletionSource = new TaskCompletionSource<HttpTunnel>();
-            this.httpTunnelCompletionSources.TryAdd(tunnelId, tunnelCompletionSource);
+            if (this.httpTunnelCompletionSources.TryAdd(tunnelId, tunnelCompletionSource) == false)
+            {
+                throw new SystemException($"系统中已存在{tunnelId}的tunnelId");
+            }
 
             try
             {
@@ -49,19 +52,15 @@ namespace CYarp.Server.Clients
                 this.httpTunnelCompletionSources.TryRemove(tunnelId, out _);
             }
         }
-
+     
         public bool Contains(Guid tunnelId)
         {
             return this.httpTunnelCompletionSources.ContainsKey(tunnelId);
         }
-
-        /// <summary>
-        /// 设置TunnelStream
-        /// </summary> 
-        /// <param name="httpTunnel"></param>
+      
         public bool SetResult(HttpTunnel httpTunnel)
         {
-            return this.httpTunnelCompletionSources.TryRemove(httpTunnel.Id, out var tunnelAwaiter) && tunnelAwaiter.TrySetResult(httpTunnel);
+            return this.httpTunnelCompletionSources.TryRemove(httpTunnel.Id, out var source) && source.TrySetResult(httpTunnel);
         }
 
         static partial class Log

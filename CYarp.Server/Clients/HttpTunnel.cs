@@ -43,13 +43,19 @@ namespace CYarp.Server.Clients
         /// <returns></returns>
         public static Guid CreateTunnelId(string clientId)
         {
+            var hash32 = new XxHash32();
             Span<byte> span = stackalloc byte[16];
+
             // [0-3]   clientId
-            XxHash32.Hash(Encoding.UTF8.GetBytes(clientId), span);
+            Span<byte> clientIdBytes = stackalloc byte[Encoding.UTF8.GetByteCount(clientId)];
+            Encoding.UTF8.GetBytes(clientId, clientIdBytes);
+            hash32.Append(clientIdBytes);
+            hash32.GetHashAndReset(span);
+
             // [4-11]  随机数 
             Random.Shared.NextBytes(span.Slice(4, 8));
+
             // [12-15] 校验值
-            var hash32 = new XxHash32();
             hash32.Append(span[..12]);
             hash32.Append(secureSalt);
             hash32.GetCurrentHash(span[12..]);
