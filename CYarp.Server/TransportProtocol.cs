@@ -18,7 +18,7 @@
         /// <summary>
         /// HTTP/2 Extended CONNECT
         /// </summary>
-        HTTP2,
+        Http2,
 
         /// <summary>
         /// WebSocket

@@ -74,7 +74,7 @@ namespace CYarp.Server.Features
                 http2Feature.IsExtendedConnect &&
                 string.Equals(CYarp, http2Feature.Protocol, StringComparison.InvariantCultureIgnoreCase))
             {
-                protocol = TransportProtocol.HTTP2;
+                protocol = TransportProtocol.Http2;
                 acceptAsync = AcceptAsync;
                 return true;
             }

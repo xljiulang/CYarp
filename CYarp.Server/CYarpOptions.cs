@@ -13,6 +13,12 @@ namespace CYarp.Server
         public string Node { get; set; } = string.Empty;
 
         /// <summary>
+        /// 允许的传输协议
+        /// 默认为All
+        /// </summary>
+        public Protocols Protocols { get; set; } = Protocols.All;
+
+        /// <summary>
         /// 认证配置
         /// </summary>
         public AuthorizationConfig Authorization { get; set; } = new AuthorizationConfig();
