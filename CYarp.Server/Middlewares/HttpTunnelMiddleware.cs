@@ -46,7 +46,11 @@ namespace CYarp.Server.Middlewares
                 return;
             }
 
-            if (this.httpTunnelFactory.Contains(tunnelId) == false)
+            if (HttpTunnel.VerifyTunnelId(tunnelId) == false)
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            }
+            else if (this.httpTunnelFactory.Contains(tunnelId) == false)
             {
                 context.Response.StatusCode = StatusCodes.Status408RequestTimeout;
             }
@@ -54,7 +58,6 @@ namespace CYarp.Server.Middlewares
             {
                 var stream = await cyarpFeature.AcceptAsStreamAsync();
                 var httpTunnel = new HttpTunnel(stream, tunnelId, cyarpFeature.Protocol, this.logger);
-
                 if (this.httpTunnelFactory.SetResult(httpTunnel))
                 {
                     await httpTunnel.Closed;

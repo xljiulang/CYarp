@@ -162,14 +162,15 @@ Authorization：{Client identity information}
 CYarp-TargetUri: {Access Uri of target httpServer}
 ```
 
-If the server is verified successfully, it will respond with a `101` status code and Set-Cookie is optional.
+If the server authentication passes, it will respond with a `101` status code, and if the identity authentication fails, it will respond with a `401` status code. In addition, the response may also carry the Set-Cookie response header.
+
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
 Set-Cookie: <load balancer cookie>
 ```
 
-At this time, the long connection based on `tcp` has been completed, and then the following Stream in the long connection must implement the following functions
+At this time, the long connection based on `tcp` has been completed. Then the Stream following the long connection must implement the functions of the following table, where {tunnelId} is a 36-character guid format text, such as `c0248b3a-171c-1e9c-e75c-188daf5e773f`.
 
 | Sender | Content          | Intention                                               | Receiver's actions                   |
 | ------ | ---------------- | ------------------------------------------------------- | ------------------------------------ |
@@ -189,13 +190,13 @@ Authorization = {Client identity information}
 CYarp-TargetUri = {Access Uri of target httpServer}
 ```
 
-If the server is verified successfully, it will respond with a `200` status code and Set-Cookie is optional. 
+If the server authentication passes, it will respond with a `200` status code, and if the identity authentication fails, it will respond with a `401` status code. In addition, the response may also carry the Set-Cookie response header.
 ```
 :status = 200
 Set-Cookie = <load balancer cookie>
 ```
 
-At this time, the long connection based on `HTTP/2` has been completed, and then the following Stream in the long connection must implement the following functions
+At this time, the long connection based on `HTTP/2` has been completed. Then the Stream following the long connection must implement the functions of the following table, where {tunnelId} is a 36-character guid format text, such as `c0248b3a-171c-1e9c-e75c-188daf5e773f`.
 
 | Sender | Content          | Intention                                               | Receiver's actions                   |
 | ------ | ---------------- | ------------------------------------------------------- | ------------------------------------ |
@@ -224,7 +225,7 @@ Upgrade: CYarp
 Cookie：<if have Set-Cookie>
 ```
 
-If the server is verified successfully, it will respond with a `101` status code and Set-Cookie is optional.
+If the server passes the verification {tunnelId}, it will respond with a `101` status code. If the verification fails, it will respond with a `401` status code. In addition, the response may also carry the Set-Cookie response header.
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
@@ -244,7 +245,7 @@ Client send the following request
 Cookie = <if have Set-Cookie>
 ```
 
-If the server is verified successfully, it will respond with a `200` status code and Set-Cookie is optional.
+If the server passes the verification {tunnelId}, it will respond with a `200` status code. If the verification fails, it will respond with a `401` status code. In addition, the response may also carry the Set-Cookie response header.
 ```
 :status = 200
 Set-Cookie = <load balancer cookie>

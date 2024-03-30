@@ -167,14 +167,14 @@ Authorization：{客户端身份信息}
 CYarp-TargetUri: {目标httpServer的访问Uri}
 ```
 
-Server验证通过则响应`101`状态码，还可能携带Set-Cookie的响应头
+Server验证通过则响应`101`状态码，身份认证失败则响应`401`的状态码。此外响应还可能携带Set-Cookie的响应头。
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
 Set-Cookie: <load balancer cookie>
 ```
 
-此时基于`tcp`的长连接已完成，接着在长连接后续的Stream要实现如下功能
+此时基于`tcp`的长连接已完成，接着在长连接后续的Stream要实现如下表格的功能，其中{tunnelId}是一个36个字符的guid格式文本，例如`c0248b3a-171c-1e9c-e75c-188daf5e773f`。
 
 | 发起方 | 内容                 | 含义                               | 接收方操作                     |
 | ------ | -------------------- | ---------------------------------- | ------------------------------ |
@@ -195,19 +195,21 @@ Authorization = {客户端身份信息}
 CYarp-TargetUri = {目标httpServer的访问Uri}
 ```
 
-Server验证通过则响应`200`状态码，还可能携带Set-Cookie的响应头
+Server验证通过则响应`200`状态码，身份认证失败则响应`401`的状态码。此外响应还可能携带Set-Cookie的响应头
 ```
 :status = 200
 Set-Cookie = <load balancer cookie>
 ```
 
-此时基于`HTTP/2`的长连接已完成，接着在长连接后续的Stream要实现如下功能
+此时基于`HTTP/2`的长连接已完成，接着在长连接后续的Stream要实现如下表格的功能，其中{tunnelId}是一个36个字符的guid格式文本，例如`c0248b3a-171c-1e9c-e75c-188daf5e773f`。
 
 | 发起方 | 内容                 | 含义                               | 接收方操作                     |
 | ------ | -------------------- | ---------------------------------- | ------------------------------ |
 | Client | 发送`PING\r\n`       | 侦测Server存活                     | 回复`PONG\r\n`                 |
 | Server | 发送`PING\r\n`       | 侦测Client存活                     | 回复`PONG\r\n`                 |
 | Server | 发送`{tunnelId}\r\n` | 让Client向Server创建新的HttpTunnel | 使用`{tunnelId}`创建HttpTunnel |
+
+
 
 > WebSocket
 
@@ -231,7 +233,7 @@ Upgrade: CYarp
 Cookie：<if have Set-Cookie>
 ```
 
-Server验证通过则响应`101`状态码，还可能携带Set-Cookie的响应头
+Server验证{tunnelId}通过则响应`101`状态码，校验失败则响应`401`的状态码。此外响应还可能携带Set-Cookie的响应头。
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
@@ -251,7 +253,7 @@ Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc844
 Cookie = <if have Set-Cookie>
 ```
 
-Server验证通过则响应`200`状态码，还可能携带Set-Cookie的响应头
+Server验证{tunnelId}通过则响应`200`状态码，校验失败则响应`401`的状态码。此外响应还可能携带Set-Cookie的响应头。
 ```
 :status = 200
 Set-Cookie = <load balancer cookie>

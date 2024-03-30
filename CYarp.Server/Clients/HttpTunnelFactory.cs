@@ -27,7 +27,7 @@ namespace CYarp.Server.Clients
         /// <returns></returns>
         public async Task<HttpTunnel> CreateAsync(ClientConnection connection, CancellationToken cancellationToken)
         {
-            var tunnelId = Guid.NewGuid();
+            var tunnelId = HttpTunnel.CreateTunnelId(connection.ClientId);
             var tunnelCompletionSource = new TaskCompletionSource<HttpTunnel>();
             this.httpTunnelCompletionSources.TryAdd(tunnelId, tunnelCompletionSource);
 
