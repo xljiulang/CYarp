@@ -36,7 +36,7 @@ namespace CYarp.Client
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public CYarpClient(CYarpClientOptions options, ILogger logger)
-            : this(options, logger, new HttpClientHandler())
+            : this(options, logger, new SocketsHttpHandler { EnableMultipleHttp2Connections = true })
         {
         }
 

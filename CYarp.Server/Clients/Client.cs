@@ -25,7 +25,18 @@ namespace CYarp.Server.Clients
         private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly HttpContext httpContext;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
-        private static readonly ForwarderRequestConfig forwarderRequestConfig = new() { Version = HttpVersion.Version11, VersionPolicy = HttpVersionPolicy.RequestVersionExact };
+
+        private static readonly ForwarderRequestConfig httpRequestConfig = new()
+        {
+            Version = HttpVersion.Version11,
+            VersionPolicy = HttpVersionPolicy.RequestVersionExact
+        };
+
+        private static readonly ForwarderRequestConfig httpsRequestConfig = new()
+        {
+            Version = HttpVersion.Version20,
+            VersionPolicy = HttpVersionPolicy.RequestVersionOrLower
+        };
 
         public string Id => this.connection.ClientId;
 
@@ -74,13 +85,14 @@ namespace CYarp.Server.Clients
         }
 
 
-        public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext httpContext, ForwarderRequestConfig? requestConfig, HttpTransformer? transformer)
+        public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer)
         {
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
             var httpClient = this.httpClientLazy.Value;
             var destination = this.TargetUri.OriginalString;
-            return this.httpForwarder.SendAsync(httpContext, destination, httpClient, requestConfig ?? forwarderRequestConfig, transformer ?? HttpTransformer.Empty);
+            var requestConfig = this.TargetUri.Scheme == Uri.UriSchemeHttp ? httpRequestConfig : httpsRequestConfig;
+            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig, transformer ?? HttpTransformer.Empty);
         }
 
         public async ValueTask DisposeAsync()
