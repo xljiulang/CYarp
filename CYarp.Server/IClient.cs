@@ -38,6 +38,11 @@ namespace CYarp.Server
         IPEndPoint? RemoteEndpoint { get; }
 
         /// <summary>
+        /// 获取仍在连接的HttpTunnel数量
+        /// </summary>
+        int HttpTunnelCount { get; }
+
+        /// <summary>
         /// 获取创建时间
         /// </summary>
         DateTimeOffset CreationTime { get; }

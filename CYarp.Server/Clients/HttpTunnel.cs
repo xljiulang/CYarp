@@ -24,6 +24,11 @@ namespace CYarp.Server.Clients
         /// </summary>
         public TransportProtocol Protocol { get; }
 
+        /// <summary>
+        /// 获取或设置关联的长连接
+        /// </summary>
+        public ClientConnection? Connection { get; set; }
+
         public HttpTunnel(Stream inner, TunnelId tunnelId, TransportProtocol protocol, ILogger logger)
             : base(inner)
         {
@@ -48,7 +53,8 @@ namespace CYarp.Server.Clients
         {
             if (this.closeTaskCompletionSource.TrySetResult())
             {
-                Log.LogTunnelClosed(this.logger, this.Protocol, this.Id);
+                var tunnelCout = this.Connection?.DecrementHttpTunnelCount();
+                Log.LogTunnelClosed(this.logger, this.Connection?.ClientId, this.Protocol, this.Id, tunnelCout);
             }
         }
 
@@ -60,8 +66,8 @@ namespace CYarp.Server.Clients
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "{protocol}隧道{tunnelId}已关闭")]
-            public static partial void LogTunnelClosed(ILogger logger, TransportProtocol protocol, TunnelId tunnelId);
+            [LoggerMessage(LogLevel.Information, "[{clientId}] 关闭了{protocol}协议隧道{tunnelId}，当前隧道数为{tunnelCount}")]
+            public static partial void LogTunnelClosed(ILogger logger, string? clientId, TransportProtocol protocol, TunnelId tunnelId, int? tunnelCount);
         }
     }
 }

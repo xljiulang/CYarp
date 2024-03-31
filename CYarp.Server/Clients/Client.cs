@@ -35,6 +35,8 @@ namespace CYarp.Server.Clients
 
         public TransportProtocol Protocol => this.httpContext.Features.GetRequiredFeature<ICYarpFeature>().Protocol;
 
+        public int HttpTunnelCount => this.connection.HttpTunnelCount;
+
         public IPEndPoint? RemoteEndpoint
         {
             get

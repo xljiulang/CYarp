@@ -11,10 +11,10 @@ namespace CYarp.Server.Clients
     /// </summary> 
     sealed partial class HttpTunnelFactory
     {
-        private readonly ILogger<HttpTunnelFactory> logger;
+        private readonly ILogger<HttpTunnel> logger;
         private readonly ConcurrentDictionary<TunnelId, TaskCompletionSource<HttpTunnel>> httpTunnelCompletionSources = new();
 
-        public HttpTunnelFactory(ILogger<HttpTunnelFactory> logger)
+        public HttpTunnelFactory(ILogger<HttpTunnel> logger)
         {
             this.logger = logger;
         }
@@ -38,8 +38,10 @@ namespace CYarp.Server.Clients
             {
                 await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
                 var httpTunnel = await tunnelCompletionSource.Task.WaitAsync(cancellationToken);
+                httpTunnel.Connection = connection;
+                var tunnelCout = connection.IncrementHttpTunnelCount();
 
-                Log.LogTunnelCreated(this.logger, connection.ClientId, httpTunnel.Protocol, httpTunnel.Id);
+                Log.LogTunnelCreated(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, tunnelCout);
                 return httpTunnel;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)
@@ -65,11 +67,11 @@ namespace CYarp.Server.Clients
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 创建{protocol}隧道{tunnelId}成功")]
-            public static partial void LogTunnelCreated(ILogger logger, string clientId, TransportProtocol protocol, TunnelId tunnelId);
-
-            [LoggerMessage(LogLevel.Error, "[{clientId}] 创建Http隧道{tunnelId}超时")]
+            [LoggerMessage(LogLevel.Error, "[{clientId}] 创建隧道{tunnelId}超时")]
             public static partial void LogTunnelCreateTimeout(ILogger logger, string clientId, TunnelId tunnelId);
+
+            [LoggerMessage(LogLevel.Information, "[{clientId}] 创建了{protocol}协议隧道{tunnelId}，当前隧道数为{tunnelCount}")]
+            public static partial void LogTunnelCreated(ILogger logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, int tunnelCount);
         }
     }
 }

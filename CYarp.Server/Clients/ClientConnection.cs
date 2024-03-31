@@ -14,6 +14,7 @@ namespace CYarp.Server.Clients
     /// </summary>
     sealed partial class ClientConnection : IAsyncDisposable
     {
+        private int httpTunnelCount = 0;
         private readonly Stream stream;
         private readonly ILogger<ClientConnection> logger;
         private readonly Timer? keepAliveTimer;
@@ -26,6 +27,8 @@ namespace CYarp.Server.Clients
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
         public string ClientId { get; }
+
+        public int HttpTunnelCount => this.httpTunnelCount;
 
         public ClientConnection(string clientId, Stream stream, ConnectionConfig config, ILogger<ClientConnection> logger)
         {
@@ -74,6 +77,16 @@ namespace CYarp.Server.Clients
             await this.stream.WriteAsync(buffer, cancellationToken);
         }
 
+        public int IncrementHttpTunnelCount()
+        {
+            return Interlocked.Increment(ref this.httpTunnelCount);
+        }
+
+        public int DecrementHttpTunnelCount()
+        {
+            return Interlocked.Decrement(ref this.httpTunnelCount);
+        }
+
         public async Task WaitForCloseAsync()
         {
             try
@@ -111,7 +124,7 @@ namespace CYarp.Server.Clients
         public async ValueTask DisposeAsync()
         {
             if (this.disposeTokenSource.IsCancellationRequested == false)
-            {               
+            {
                 this.disposeTokenSource.Cancel();
                 this.disposeTokenSource.Dispose();
 
