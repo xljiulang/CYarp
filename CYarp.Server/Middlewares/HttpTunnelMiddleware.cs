@@ -11,7 +11,7 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// HttpTunnel握手处理中间件
     /// </summary>
-    sealed class HttpTunnelMiddleware : IMiddleware
+    sealed partial class HttpTunnelMiddleware : IMiddleware
     {
         private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly ILogger<HttpTunnel> logger;
@@ -46,18 +46,11 @@ namespace CYarp.Server.Middlewares
                 return;
             }
 
-            if (tunnelId.IsValid == false)
-            {
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
-            }
-            else if (this.httpTunnelFactory.Contains(tunnelId) == false)
-            {
-                context.Response.StatusCode = StatusCodes.Status408RequestTimeout;
-            }
-            else
+            if (tunnelId.IsValid && this.httpTunnelFactory.Contains(tunnelId))
             {
                 var stream = await cyarpFeature.AcceptAsStreamAsync();
                 var httpTunnel = new HttpTunnel(stream, tunnelId, cyarpFeature.Protocol, this.logger);
+
                 if (this.httpTunnelFactory.SetResult(httpTunnel))
                 {
                     await httpTunnel.Closed;
@@ -67,6 +60,17 @@ namespace CYarp.Server.Middlewares
                     httpTunnel.Dispose();
                 }
             }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                Log.LogInvalidTunnelId(this.logger, context.Connection.Id, tunnelId);
+            }
+        }
+
+        static partial class Log
+        {
+            [LoggerMessage(LogLevel.Warning, "连接{connectionId}传递了无效的tunnelId：{tunnelId}")]
+            public static partial void LogInvalidTunnelId(ILogger logger, string connectionId, TunnelId tunnelId);
         }
     }
 }
