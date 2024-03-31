@@ -25,11 +25,11 @@ namespace CYarp.Server.Clients
         /// <param name="connection"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<HttpTunnel> CreateAsync(ClientConnection connection, CancellationToken cancellationToken)
+        public async Task<HttpTunnel> CreateHttpTunnelAsync(ClientConnection connection, CancellationToken cancellationToken)
         {
             var tunnelId = TunnelId.NewTunnelId(connection.ClientId);
-            var tunnelCompletionSource = new TaskCompletionSource<HttpTunnel>();
-            if (this.httpTunnelCompletionSources.TryAdd(tunnelId, tunnelCompletionSource) == false)
+            var httpTunnelSource = new TaskCompletionSource<HttpTunnel>();
+            if (this.httpTunnelCompletionSources.TryAdd(tunnelId, httpTunnelSource) == false)
             {
                 throw new SystemException($"系统中已存在{tunnelId}的tunnelId");
             }
@@ -37,11 +37,11 @@ namespace CYarp.Server.Clients
             try
             {
                 await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
-                var httpTunnel = await tunnelCompletionSource.Task.WaitAsync(cancellationToken);
+                var httpTunnel = await httpTunnelSource.Task.WaitAsync(cancellationToken);
                 httpTunnel.Connection = connection;
-                var tunnelCout = connection.IncrementHttpTunnelCount();
+                var httpTunnelCout = connection.IncrementHttpTunnelCount();
 
-                Log.LogTunnelCreated(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, tunnelCout);
+                Log.LogTunnelCreated(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, httpTunnelCout);
                 return httpTunnel;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)

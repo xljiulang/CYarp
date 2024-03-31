@@ -57,7 +57,7 @@ namespace CYarp.Server.Clients
 
         private async ValueTask<Stream> ConnectAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
         {
-            return await this.httpTunnelFactory.CreateAsync(this.connection, cancellationToken);
+            return await this.httpTunnelFactory.CreateHttpTunnelAsync(this.connection, cancellationToken);
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

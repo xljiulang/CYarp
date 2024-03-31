@@ -53,8 +53,8 @@ namespace CYarp.Server.Clients
         {
             if (this.closeTaskCompletionSource.TrySetResult())
             {
-                var tunnelCout = this.Connection?.DecrementHttpTunnelCount();
-                Log.LogTunnelClosed(this.logger, this.Connection?.ClientId, this.Protocol, this.Id, tunnelCout);
+                var httpTunnelCout = this.Connection?.DecrementHttpTunnelCount();
+                Log.LogTunnelClosed(this.logger, this.Connection?.ClientId, this.Protocol, this.Id, httpTunnelCout);
             }
         }
 
