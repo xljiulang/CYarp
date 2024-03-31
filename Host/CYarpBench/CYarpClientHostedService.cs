@@ -36,7 +36,7 @@ namespace CYarpBench
                     using var client = new CYarpClient(options);
                     await client.TransportAsync(stoppingToken);
 
-                    this.logger.LogInformation($"传输已被关闭，5秒后重新连接");
+                    this.logger.LogInformation($"连接已被关闭，5秒后重新连接");
                     await Task.Delay(TimeSpan.FromSeconds(5d), stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

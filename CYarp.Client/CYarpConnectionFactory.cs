@@ -22,7 +22,7 @@ namespace CYarp.Client
         private readonly CYarpClientOptions options;
         private readonly HttpMessageInvoker httpClient;
 
-        public bool IsServerMultiplexing => serverHttp2Supported == true;
+        public bool ServerHttp2Supported => serverHttp2Supported == true;
 
         public CYarpConnectionFactory(
             ILogger logger,
