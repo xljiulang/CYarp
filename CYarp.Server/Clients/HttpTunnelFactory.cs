@@ -38,10 +38,11 @@ namespace CYarp.Server.Clients
             {
                 await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
                 var httpTunnel = await httpTunnelSource.Task.WaitAsync(cancellationToken);
-                httpTunnel.Connection = connection;
-                var httpTunnelCout = connection.IncrementHttpTunnelCount();
 
-                Log.LogTunnelCreated(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, httpTunnelCout);
+                var httpTunnelCount = connection.IncrementHttpTunnelCount();
+                httpTunnel.BindConnection(connection);
+
+                Log.LogTunnelCreated(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, httpTunnelCount);
                 return httpTunnel;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)

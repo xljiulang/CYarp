@@ -9,9 +9,13 @@ namespace CYarp.Server.Clients
     /// </summary>
     sealed partial class HttpTunnel : DelegatingStream
     {
+        private ClientConnection? connection;
         private readonly ILogger logger;
         private readonly TaskCompletionSource closeTaskCompletionSource = new();
 
+        /// <summary>
+        /// 等待HttpClient对其关闭
+        /// </summary>
         public Task Closed => this.closeTaskCompletionSource.Task;
 
         /// <summary>
@@ -24,17 +28,17 @@ namespace CYarp.Server.Clients
         /// </summary>
         public TransportProtocol Protocol { get; }
 
-        /// <summary>
-        /// 获取或设置关联的长连接
-        /// </summary>
-        public ClientConnection? Connection { get; set; }
-
         public HttpTunnel(Stream inner, TunnelId tunnelId, TransportProtocol protocol, ILogger logger)
             : base(inner)
         {
             this.Id = tunnelId;
             this.Protocol = protocol;
             this.logger = logger;
+        }
+
+        public void BindConnection(ClientConnection connection)
+        {
+            this.connection = connection;
         }
 
         public override ValueTask DisposeAsync()
@@ -53,11 +57,10 @@ namespace CYarp.Server.Clients
         {
             if (this.closeTaskCompletionSource.TrySetResult())
             {
-                var httpTunnelCout = this.Connection?.DecrementHttpTunnelCount();
-                Log.LogTunnelClosed(this.logger, this.Connection?.ClientId, this.Protocol, this.Id, httpTunnelCout);
+                var httpTunnelCount = this.connection?.DecrementHttpTunnelCount();
+                Log.LogTunnelClosed(this.logger, this.connection?.ClientId, this.Protocol, this.Id, httpTunnelCount);
             }
         }
-
 
         public override string ToString()
         {
