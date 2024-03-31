@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace CYarp.Client
     /// </summary>
     public partial class CYarpClient : IDisposable
     {
+        private int httpTunnelCount = 0;
         private readonly CYarpClientOptions options;
         private readonly ILogger logger;
         private readonly CYarpConnectionFactory connectionFactory;
@@ -91,7 +93,14 @@ namespace CYarp.Client
         private async Task TransportCoreAsync(CancellationToken cancellationToken)
         {
             await using var connection = await this.connectionFactory.CreateServerConnectionAsync(cancellationToken);
-            Log.LogConnected(this.logger, this.options.ServerUri);
+            if (this.connectionFactory.IsServerMultiplexing)
+            {
+                Log.LogMultiplexingConnected(this.logger, this.options.ServerUri);
+            }
+            else
+            {
+                Log.LogConnected(this.logger, this.options.ServerUri);
+            }
 
             using var connectionTokenSource = new CancellationTokenSource();
             try
@@ -99,7 +108,6 @@ namespace CYarp.Client
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionTokenSource.Token);
                 await foreach (var tunnelId in connection.ReadTunnelIdAsync(cancellationToken))
                 {
-                    Log.LogTunnelCreating(this.logger, tunnelId);
                     this.BindTunnelIOAsync(tunnelId, linkedTokenSource.Token);
                 }
             }
@@ -121,21 +129,31 @@ namespace CYarp.Client
         {
             try
             {
+                var stopwatch = Stopwatch.StartNew();
+                Log.LogTunnelCreating(this.logger, tunnelId, this.options.TargetUri);
                 await using var targetTunnel = await this.connectionFactory.CreateTargetTunnelAsync(cancellationToken);
+
+                Log.LogTunnelCreating(this.logger, tunnelId, this.options.ServerUri);
                 await using var serverTunnel = await this.connectionFactory.CreateServerTunnelAsync(tunnelId, cancellationToken);
-                Log.LogTunnelCreated(this.logger, tunnelId);
+
+
+                var tunnelCount = Interlocked.Increment(ref this.httpTunnelCount);
+                Log.LogTunnelCreated(this.logger, tunnelId, stopwatch.Elapsed, tunnelCount);
 
                 var server2Target = serverTunnel.CopyToAsync(targetTunnel, cancellationToken);
                 var target2Server = targetTunnel.CopyToAsync(serverTunnel, cancellationToken);
                 var task = await Task.WhenAny(server2Target, target2Server);
 
+                stopwatch.Stop();
+                tunnelCount = Interlocked.Decrement(ref this.httpTunnelCount);
+
                 if (task == server2Target)
                 {
-                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.ServerUri);
+                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.ServerUri, stopwatch.Elapsed, tunnelCount);
                 }
                 else
                 {
-                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.TargetUri);
+                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.TargetUri, stopwatch.Elapsed, tunnelCount);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -184,19 +202,22 @@ namespace CYarp.Client
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "已成功连接到{address}")]
+            [LoggerMessage(LogLevel.Information, "连接到服务器{address}成功")]
             public static partial void LogConnected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 传输通道正在创建中")]
-            public static partial void LogTunnelCreating(ILogger logger, Guid tunnelId);
+            [LoggerMessage(LogLevel.Information, "连接到服务器{address}成功，已启用多路复用")]
+            public static partial void LogMultiplexingConnected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 传输通道已创建完成")]
-            public static partial void LogTunnelCreated(ILogger logger, Guid tunnelId);
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 正在创建到{address}的隧道..")]
+            public static partial void LogTunnelCreating(ILogger logger, Guid tunnelId, Uri address);
 
-            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 传输通道已被{address}关闭")]
-            public static partial void LogTunnelClosed(ILogger logger, Guid tunnelId, Uri address);
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 隧道创建完成耗时{elapsed}，当前隧道数为{tunnelCount}")]
+            public static partial void LogTunnelCreated(ILogger logger, Guid tunnelId, TimeSpan elapsed, int tunnelCount);
 
-            [LoggerMessage(LogLevel.Warning, "[{tunnelId}] 传输通道异常：{reason}")]
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 隧道已被{address}关闭，生命周期为{lifeTime}，当前隧道数为{tunnelCount}")]
+            public static partial void LogTunnelClosed(ILogger logger, Guid tunnelId, Uri address, TimeSpan lifeTime, int tunnelCount);
+
+            [LoggerMessage(LogLevel.Warning, "[{tunnelId}] 隧道遇到异常：{reason}")]
             public static partial void LogTunnelError(ILogger logger, Guid tunnelId, string? reason);
         }
     }
