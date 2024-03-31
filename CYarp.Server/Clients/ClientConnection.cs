@@ -16,7 +16,7 @@ namespace CYarp.Server.Clients
     {
         private int httpTunnelCount = 0;
         private readonly Stream stream;
-        private readonly ILogger<ClientConnection> logger;
+        private readonly ILogger logger;
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
         private readonly CancellationTokenSource disposeTokenSource = new();
@@ -30,7 +30,7 @@ namespace CYarp.Server.Clients
 
         public int HttpTunnelCount => this.httpTunnelCount;
 
-        public ClientConnection(string clientId, Stream stream, ConnectionConfig config, ILogger<ClientConnection> logger)
+        public ClientConnection(string clientId, Stream stream, ConnectionConfig config, ILogger logger)
         {
             this.ClientId = clientId;
             this.stream = stream;

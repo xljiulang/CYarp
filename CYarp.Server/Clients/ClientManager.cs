@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,21 +12,17 @@ namespace CYarp.Server.Clients
     /// 客户端管理器
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
-    sealed partial class ClientManager : IClientViewer
+    sealed class ClientManager : IClientViewer
     {
         private readonly ConcurrentDictionary<string, IClient> dictionary = new();
         private readonly ClientStateChannel clientStateChannel;
-        private readonly ILogger logger;
 
         /// <inheritdoc/>
         public int Count => this.dictionary.Count;
 
-        public ClientManager(
-            ClientStateChannel clientStateChannel,
-            ILogger<ClientManager> logger)
+        public ClientManager(ClientStateChannel clientStateChannel)
         {
             this.clientStateChannel = clientStateChannel;
-            this.logger = logger;
         }
 
         /// <inheritdoc/>
@@ -52,7 +47,6 @@ namespace CYarp.Server.Clients
 
             if (this.dictionary.TryAdd(clientId, client))
             {
-                Log.LogConnected(this.logger, clientId, client.Protocol, this.Count);
                 await this.clientStateChannel.WriteAsync(client, connected: true, cancellationToken);
                 return true;
             }
@@ -65,21 +59,22 @@ namespace CYarp.Server.Clients
         /// <param name="client">客户端实例</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async ValueTask RemoveAsync(IClient client, CancellationToken cancellationToken)
+        public async ValueTask<bool> RemoveAsync(IClient client, CancellationToken cancellationToken)
         {
             var clientId = client.Id;
             if (this.dictionary.TryRemove(clientId, out var existClient))
             {
                 if (ReferenceEquals(existClient, client))
                 {
-                    Log.LogDisconnected(this.logger, clientId, client.Protocol, this.Count);
                     await this.clientStateChannel.WriteAsync(client, connected: false, cancellationToken);
+                    return true;
                 }
                 else
                 {
                     this.dictionary.TryAdd(clientId, existClient);
                 }
             }
+            return false;
         }
 
 
@@ -95,15 +90,6 @@ namespace CYarp.Server.Clients
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
-        }
-
-        static partial class Log
-        {
-            [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，当前客户端数为 {count}")]
-            public static partial void LogConnected(ILogger logger, string clientId, TransportProtocol protocol, int count);
-
-            [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长连接断开，当前客户端数为 {count}")]
-            public static partial void LogDisconnected(ILogger logger, string clientId, TransportProtocol protocol, int count);
         }
     }
 }
