@@ -14,13 +14,20 @@ namespace CYarpBench
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddSingleton<HttpForwardMiddleware>();
-            builder.Services.AddHostedService<CYarpClientHostedService>();
+            builder.Services.AddHostedService<Http11Client>();
+            builder.Services.AddHostedService<Http2Client>();
+            builder.Services.AddHostedService<WebSocketWithHttp11Client>();
+            builder.Services.AddHostedService<WebSocketWithHttp2Client>();
 
             builder.Services.AddCYarp()
                 .Configure(builder.Configuration.GetSection(nameof(CYarpOptions)))
                 .AddClientIdProvider<DomainClientIdProvider>();
 
-            builder.Services.Configure<CYarpClientOptions>(builder.Configuration.GetSection(nameof(CYarpClientOptions)));
+            string[] names = ["Http11Client", "Http2Client", "WebSocketWithHttp11Client", "WebSocketWithHttp2Client"];
+            foreach (var name in names)
+            {
+                builder.Services.Configure<CYarpClientOptions>(name, builder.Configuration.GetSection(nameof(CYarpClientOptions) + ":" + name));
+            }
 
             builder.Host.ConfigureHostOptions(host =>
             {

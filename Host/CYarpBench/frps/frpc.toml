@@ -5,4 +5,4 @@ serverPort = 7000
 name = "web"
 type = "http"
 localPort = 80
-customDomains = ["www.frp.com"]
+customDomains = ["frp.bench.com"]
