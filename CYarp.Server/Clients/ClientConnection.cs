@@ -134,14 +134,14 @@ namespace CYarp.Server.Clients
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Debug, "[{clienId}] 发出PING心跳")]
-            public static partial void LogPing(ILogger logger, string clienId);
+            [LoggerMessage(LogLevel.Debug, "[{clientId}] 发出PING心跳")]
+            public static partial void LogPing(ILogger logger, string clientId);
 
-            [LoggerMessage(LogLevel.Debug, "[{clienId}] 回复PONG心跳")]
-            public static partial void LogPong(ILogger logger, string clienId);
+            [LoggerMessage(LogLevel.Debug, "[{clientId}] 回复PONG心跳")]
+            public static partial void LogPong(ILogger logger, string clientId);
 
-            [LoggerMessage(LogLevel.Debug, "[{clienId}] 连接已关闭")]
-            public static partial void LogClosed(ILogger logger, string clienId);
+            [LoggerMessage(LogLevel.Debug, "[{clientId}] 连接已关闭")]
+            public static partial void LogClosed(ILogger logger, string clientId);
         }
     }
 }
