@@ -64,9 +64,6 @@ namespace CYarp.Server.Clients
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             request.Headers.Host = null;
-            request.Version = HttpVersion.Version11;
-            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-
             return base.SendAsync(request, cancellationToken);
         }
     }
