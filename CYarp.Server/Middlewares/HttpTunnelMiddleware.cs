@@ -40,13 +40,13 @@ namespace CYarp.Server.Middlewares
             }
 
             var target = context.Features.GetRequiredFeature<IHttpRequestFeature>().RawTarget;
-            if (Guid.TryParse(target.AsSpan().TrimStart('/'), out var tunnelId) == false)
+            if (TunnelId.TryParse(target.AsSpan().TrimStart('/'), out var tunnelId) == false)
             {
                 await next(context);
                 return;
             }
 
-            if (HttpTunnel.VerifyTunnelId(tunnelId) == false)
+            if (tunnelId.IsValid == false)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
             }

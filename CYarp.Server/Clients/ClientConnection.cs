@@ -62,7 +62,7 @@ namespace CYarp.Server.Clients
             }
         }
 
-        public async Task CreateHttpTunnelAsync(Guid tunnelId, CancellationToken cancellationToken)
+        public async Task CreateHttpTunnelAsync(TunnelId tunnelId, CancellationToken cancellationToken)
         {
             const int size = 64;
             var tunnelIdLine = $"{tunnelId}\r\n";
