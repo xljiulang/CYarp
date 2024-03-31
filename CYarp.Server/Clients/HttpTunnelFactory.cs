@@ -36,18 +36,24 @@ namespace CYarp.Server.Clients
 
             try
             {
+                Log.LogTunnelCreating(this.logger, connection.ClientId, tunnelId);
                 await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
                 var httpTunnel = await httpTunnelSource.Task.WaitAsync(cancellationToken);
 
                 var httpTunnelCount = connection.IncrementHttpTunnelCount();
                 httpTunnel.BindConnection(connection);
 
-                Log.LogTunnelCreated(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, httpTunnelCount);
+                Log.LogTunnelCreateSuccess(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, httpTunnelCount);
                 return httpTunnel;
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested == false)
+            catch (OperationCanceledException)
             {
-                Log.LogTunnelCreateTimeout(this.logger, connection.ClientId, tunnelId);
+                Log.LogTunnelCreateFailure(this.logger, connection.ClientId, tunnelId, "远程端操作超时");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Log.LogTunnelCreateFailure(this.logger, connection.ClientId, tunnelId, ex.Message);
                 throw;
             }
             finally
@@ -68,11 +74,14 @@ namespace CYarp.Server.Clients
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Error, "[{clientId}] 创建隧道{tunnelId}超时")]
-            public static partial void LogTunnelCreateTimeout(ILogger logger, string clientId, TunnelId tunnelId);
+            [LoggerMessage(LogLevel.Information, "[{clientId}] 请求创建隧道{tunnelId}")]
+            public static partial void LogTunnelCreating(ILogger logger, string clientId, TunnelId tunnelId);
+
+            [LoggerMessage(LogLevel.Warning, "[{clientId}] 创建隧道{tunnelId}失败：{reason}")]
+            public static partial void LogTunnelCreateFailure(ILogger logger, string clientId, TunnelId tunnelId, string? reason);
 
             [LoggerMessage(LogLevel.Information, "[{clientId}] 创建了{protocol}协议隧道{tunnelId}，当前隧道数为{tunnelCount}")]
-            public static partial void LogTunnelCreated(ILogger logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, int tunnelCount);
+            public static partial void LogTunnelCreateSuccess(ILogger logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, int tunnelCount);
         }
     }
 }
