@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -11,6 +12,7 @@ namespace CYarp.Server.Clients
     {
         private ClientConnection? connection;
         private readonly ILogger logger;
+        private readonly long tickCout = Environment.TickCount64;
         private readonly TaskCompletionSource closeTaskCompletionSource = new();
 
         /// <summary>
@@ -58,7 +60,8 @@ namespace CYarp.Server.Clients
             if (this.closeTaskCompletionSource.TrySetResult())
             {
                 var httpTunnelCount = this.connection?.DecrementHttpTunnelCount();
-                Log.LogTunnelClosed(this.logger, this.connection?.ClientId, this.Protocol, this.Id, httpTunnelCount);
+                var lifeTime = TimeSpan.FromMilliseconds(Environment.TickCount64 - this.tickCout);
+                Log.LogTunnelClosed(this.logger, this.connection?.ClientId, this.Protocol, this.Id, lifeTime, httpTunnelCount);
             }
         }
 
@@ -69,8 +72,8 @@ namespace CYarp.Server.Clients
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 关闭了{protocol}协议隧道{tunnelId}，当前隧道数为{tunnelCount}")]
-            public static partial void LogTunnelClosed(ILogger logger, string? clientId, TransportProtocol protocol, TunnelId tunnelId, int? tunnelCount);
+            [LoggerMessage(LogLevel.Information, "[{clientId}] 关闭了{protocol}协议隧道{tunnelId}，生命周期为{lifeTime}，其当前隧道总数为{tunnelCount}")]
+            public static partial void LogTunnelClosed(ILogger logger, string? clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan lifeTime, int? tunnelCount);
         }
     }
 }

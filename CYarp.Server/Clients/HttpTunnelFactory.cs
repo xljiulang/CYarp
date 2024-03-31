@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +37,7 @@ namespace CYarp.Server.Clients
 
             try
             {
+                var stopwatch = Stopwatch.StartNew();
                 Log.LogTunnelCreating(this.logger, connection.ClientId, tunnelId);
                 await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
                 var httpTunnel = await httpTunnelSource.Task.WaitAsync(cancellationToken);
@@ -43,7 +45,8 @@ namespace CYarp.Server.Clients
                 var httpTunnelCount = connection.IncrementHttpTunnelCount();
                 httpTunnel.BindConnection(connection);
 
-                Log.LogTunnelCreateSuccess(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, httpTunnelCount);
+                stopwatch.Stop();
+                Log.LogTunnelCreateSuccess(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, stopwatch.Elapsed, httpTunnelCount);
                 return httpTunnel;
             }
             catch (OperationCanceledException)
@@ -80,8 +83,8 @@ namespace CYarp.Server.Clients
             [LoggerMessage(LogLevel.Warning, "[{clientId}] 创建隧道{tunnelId}失败：{reason}")]
             public static partial void LogTunnelCreateFailure(ILogger logger, string clientId, TunnelId tunnelId, string? reason);
 
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 创建了{protocol}协议隧道{tunnelId}，当前隧道数为{tunnelCount}")]
-            public static partial void LogTunnelCreateSuccess(ILogger logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, int tunnelCount);
+            [LoggerMessage(LogLevel.Information, "[{clientId}] 创建了{protocol}协议隧道{tunnelId}，过程耗时{elapsed}，其当前隧道总数为{tunnelCount}")]
+            public static partial void LogTunnelCreateSuccess(ILogger logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan elapsed, int tunnelCount);
         }
     }
 }

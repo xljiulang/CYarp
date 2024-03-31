@@ -112,10 +112,10 @@ namespace CYarp.Server.Middlewares
             [LoggerMessage(LogLevel.Warning, "连接{connectionId}触发{statusCode}状态码: {message}")]
             public static partial void LogFailureStatus(ILogger logger, string connectionId, int statusCode, string message);
 
-            [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，系统中的客户端数为{count}")]
+            [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，系统当前客户端总数为{count}")]
             public static partial void LogConnected(ILogger logger, string clientId, TransportProtocol protocol, int count);
 
-            [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长连接断开，系统中的客户端数为{count}")]
+            [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长连接断开，系统当前客户端总数为{count}")]
             public static partial void LogDisconnected(ILogger logger, string clientId, TransportProtocol protocol, int count);
         }
     }
