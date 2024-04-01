@@ -1,5 +1,4 @@
-﻿using CYarp.Client.Streams;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net;
@@ -32,7 +31,7 @@ namespace CYarp.Client
         {
             this.logger = logger;
             this.options = options;
-            this.httpClient = new HttpMessageInvoker(new HttpHandler(this, handler), disposeHandler);
+            this.httpClient = new HttpMessageInvoker(new FactoryHttpHandler(this, handler), disposeHandler);
         }
 
         /// <summary>

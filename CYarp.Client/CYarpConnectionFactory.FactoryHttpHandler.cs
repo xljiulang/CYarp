@@ -7,11 +7,11 @@ namespace CYarp.Client
 {
     sealed partial class CYarpConnectionFactory
     {
-        private class HttpHandler : DelegatingHandler
+        private class FactoryHttpHandler : DelegatingHandler
         {
             private readonly CYarpConnectionFactory factory;
 
-            public HttpHandler(CYarpConnectionFactory factory, HttpMessageHandler innerHandler)
+            public FactoryHttpHandler(CYarpConnectionFactory factory, HttpMessageHandler innerHandler)
             {
                 this.factory = factory;
                 this.InnerHandler = innerHandler;

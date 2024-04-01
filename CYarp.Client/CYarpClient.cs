@@ -43,7 +43,7 @@ namespace CYarp.Client
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public CYarpClient(CYarpClientOptions options, ILogger logger)
-            : this(options, logger, new SocketsHttpHandler { EnableMultipleHttp2Connections = true })
+            : this(options, logger, CreateDefaultHttpHandler())
         {
         }
 
@@ -58,18 +58,25 @@ namespace CYarp.Client
         /// <exception cref="ArgumentNullException"></exception>
         public CYarpClient(
             CYarpClientOptions options,
-            ILogger logger,
+            ILogger? logger,
             HttpMessageHandler handler,
             bool disposeHandler = true)
         {
             ArgumentNullException.ThrowIfNull(options);
-            ArgumentNullException.ThrowIfNull(logger);
             ArgumentNullException.ThrowIfNull(handler);
             options.Validate();
 
             this.options = options;
-            this.logger = logger;
-            this.connectionFactory = new CYarpConnectionFactory(logger, options, handler, disposeHandler);
+            this.logger = logger ?? NullLogger<CYarpClient>.Instance;
+            this.connectionFactory = new CYarpConnectionFactory(this.logger, options, handler, disposeHandler);
+        }
+
+        private static SocketsHttpHandler CreateDefaultHttpHandler()
+        {
+            return new SocketsHttpHandler
+            {
+                EnableMultipleHttp2Connections = true
+            };
         }
 
         /// <summary>
