@@ -186,14 +186,14 @@ Client initiates the following request
 :protocol = CYarp
 :scheme = https
 :path = /
-Authorization = {Client identity information}
-CYarp-TargetUri = {Access Uri of target httpServer}
+authorization = {Client identity information}
+cyarp-targeturi = {Access Uri of target httpServer}
 ```
 
-If the server authentication passes, it will respond with a `200` status code, and if the identity authentication fails, it will respond with a `401` status code. In addition, the response may also carry the Set-Cookie response header.
+If the server authentication passes, it will respond with a `200` status code, and if the identity authentication fails, it will respond with a `401` status code. In addition, the response may also carry the set-cookie response header.
 ```
 :status = 200
-Set-Cookie = <load balancer cookie>
+set-cookie = <load balancer cookie>
 ```
 
 At this time, the long connection based on `HTTP/2` has been completed. Then the Stream following the long connection must implement the functions of the following table, where {tunnelId} is a 36-character guid format text, such as `c0248b3a-171c-1e9c-e75c-188daf5e773f`.
@@ -242,13 +242,13 @@ Client send the following request
 :protocol = CYarp
 :scheme = https
 :path = /{tunnelId}
-Cookie = <if have Set-Cookie>
+cookie = <if have set-cookie>
 ```
 
-If the server passes the verification {tunnelId}, it will respond with a `200` status code. If the verification fails, it will respond with a `401` status code. In addition, the response may also carry the Set-Cookie response header.
+If the server passes the verification {tunnelId}, it will respond with a `200` status code. If the verification fails, it will respond with a `401` status code. In addition, the response may also carry the set-cookie response header.
 ```
 :status = 200
-Set-Cookie = <load balancer cookie>
+set-cookie = <load balancer cookie>
 ```
 
 At this time, the creation of the HttpTunnel over `HTTP/2` has been completed, and then the server will send an `HTTP/1.1` request to the client and receive the client's `HTTP/1.1` response in the subsequent Stream.

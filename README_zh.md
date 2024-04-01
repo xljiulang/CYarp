@@ -191,14 +191,14 @@ Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc844
 :protocol = CYarp
 :scheme = https
 :path = /
-Authorization = {客户端身份信息}
-CYarp-TargetUri = {目标httpServer的访问Uri}
+authorization = {客户端身份信息}
+cyarp-targeturi = {目标httpServer的访问Uri}
 ```
 
-Server验证通过则响应`200`状态码，身份认证失败则响应`401`的状态码。此外响应还可能携带Set-Cookie的响应头
+Server验证通过则响应`200`状态码，身份认证失败则响应`401`的状态码。此外响应还可能携带set-cookie的响应头
 ```
 :status = 200
-Set-Cookie = <load balancer cookie>
+set-cookie = <load balancer cookie>
 ```
 
 此时基于`HTTP/2`的长连接已完成，接着在长连接后续的Stream要实现如下表格的功能，其中{tunnelId}是一个36个字符的guid格式文本，例如`c0248b3a-171c-1e9c-e75c-188daf5e773f`。
@@ -250,13 +250,13 @@ Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc844
 :protocol = CYarp
 :scheme = https
 :path = /{tunnelId}
-Cookie = <if have Set-Cookie>
+cookie = <if have set-cookie>
 ```
 
-Server验证{tunnelId}通过则响应`200`状态码，校验失败则响应`401`的状态码。此外响应还可能携带Set-Cookie的响应头。
+Server验证{tunnelId}通过则响应`200`状态码，校验失败则响应`401`的状态码。此外响应还可能携带set-cookie的响应头。
 ```
 :status = 200
-Set-Cookie = <load balancer cookie>
+set-cookie = <load balancer cookie>
 ```
 
 此时基于`HTTP/2`的HttpTunnel创建已完成，接着服务端将在后续的Stream里向客户端发送`HTTP/1.1`的请求和接收客户端的`HTTP/1.1`响应。
