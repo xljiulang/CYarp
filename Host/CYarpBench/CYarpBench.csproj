@@ -7,8 +7,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\CYarp.Client\CYarp.Client.csproj" />
-	  <ProjectReference Include="..\..\CYarp.Server\CYarp.Server.csproj" />
+		<PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+		<PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+		<PackageReference Include="StackExchange.Redis" Version="2.7.33" />
+
+		<ProjectReference Include="..\..\CYarp.Client\CYarp.Client.csproj" />
+		<ProjectReference Include="..\..\CYarp.Server\CYarp.Server.csproj" />
 	</ItemGroup>
 
 </Project>

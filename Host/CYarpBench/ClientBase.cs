@@ -12,13 +12,13 @@ namespace CYarpBench
     /// <summary>
     /// 客户端后台服务
     /// </summary>
-    abstract class ClientHostedService : BackgroundService
+    abstract class ClientBase : BackgroundService
     {
         private readonly string name;
         private readonly IOptionsMonitor<CYarpClientOptions> clientOptions;
         private readonly ILogger logger;
 
-        public ClientHostedService(
+        public ClientBase(
             IOptionsMonitor<CYarpClientOptions> clientOptions,
             ILogger logger)
         {
@@ -29,7 +29,9 @@ namespace CYarpBench
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Delay(TimeSpan.FromSeconds(3d), stoppingToken);
+            var delay = 3.0d + 3d * Random.Shared.NextDouble();
+            await Task.Delay(TimeSpan.FromSeconds(delay), stoppingToken);
+
             while (stoppingToken.IsCancellationRequested == false)
             {
                 try
