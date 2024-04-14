@@ -19,6 +19,7 @@ namespace CYarp.Client
         private readonly TimeSpan keepAliveTimeout;
 
         private static readonly string Ping = "PING";
+        private static readonly string Pong = "PONG";
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
@@ -46,7 +47,7 @@ namespace CYarp.Client
         {
             try
             {
-                Log.LogPing(this.logger);
+                Log.LogSendPing(this.logger);
                 await this.stream.WriteAsync(PingLine);
             }
             catch (Exception)
@@ -71,12 +72,20 @@ namespace CYarp.Client
                 }
                 else if (text == Ping)
                 {
-                    Log.LogPong(this.logger);
+                    Log.LogRecvPing(this.logger);
                     await this.stream.WriteAsync(PongLine, cancellationToken);
+                }
+                else if (text == Pong)
+                {
+                    Log.LogRecvPong(this.logger);
                 }
                 else if (Guid.TryParse(text, out var tunnelId))
                 {
                     yield return tunnelId;
+                }
+                else
+                {
+                    Log.LogRecvUnknown(this.logger, text);
                 }
             }
         }
@@ -89,11 +98,17 @@ namespace CYarp.Client
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Debug, "发出PING心跳")]
-            public static partial void LogPing(ILogger logger);
+            [LoggerMessage(LogLevel.Debug, "发出PING请求")]
+            public static partial void LogSendPing(ILogger logger);
 
-            [LoggerMessage(LogLevel.Debug, "回复PONG心跳")]
-            public static partial void LogPong(ILogger logger);
+            [LoggerMessage(LogLevel.Debug, "收到PING请求")]
+            public static partial void LogRecvPing(ILogger logger);
+
+            [LoggerMessage(LogLevel.Debug, "收到PONG回应")]
+            public static partial void LogRecvPong(ILogger logger);
+
+            [LoggerMessage(LogLevel.Debug, "收到未知数据: {text}")]
+            public static partial void LogRecvUnknown(ILogger logger, string text);
         }
     }
 }
