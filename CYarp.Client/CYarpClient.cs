@@ -140,9 +140,9 @@ namespace CYarp.Client
         /// <param name="cancellationToken"></param>
         private async void BindTunnelIOAsync(Guid tunnelId, CancellationToken cancellationToken)
         {
+            var stopwatch = Stopwatch.StartNew();
             try
             {
-                var stopwatch = Stopwatch.StartNew();
                 Log.LogTunnelCreating(this.logger, tunnelId, this.options.TargetUri);
                 await using var targetTunnel = await this.connectionFactory.CreateTargetTunnelAsync(cancellationToken);
 
@@ -155,18 +155,6 @@ namespace CYarp.Client
                 var server2Target = serverTunnel.CopyToAsync(targetTunnel, cancellationToken);
                 var target2Server = targetTunnel.CopyToAsync(serverTunnel, cancellationToken);
                 var task = await Task.WhenAny(server2Target, target2Server);
-
-                stopwatch.Stop();
-                count = Interlocked.Decrement(ref this.tunnelCount);
-
-                if (task == server2Target)
-                {
-                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.ServerUri, stopwatch.Elapsed, count);
-                }
-                else
-                {
-                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.TargetUri, stopwatch.Elapsed, count);
-                }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -175,6 +163,18 @@ namespace CYarp.Client
             {
                 this.OnTunnelException(ex);
                 Log.LogTunnelError(this.logger, tunnelId, ex.Message);
+            }
+            finally{
+                stopwatch.Stop();
+                count = Interlocked.Decrement(ref this.tunnelCount);
+                if (task == server2Target)
+                {
+                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.ServerUri, stopwatch.Elapsed, count);
+                }
+                else
+                {
+                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.TargetUri, stopwatch.Elapsed, count);
+                }
             }
         }
 
