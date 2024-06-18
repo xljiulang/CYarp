@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<DocumentationFile>$(TargetPath)\$(AssemblyName).xml</DocumentationFile>
+		<TargetFramework>net8.0</TargetFramework> 
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<Description>A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet</Description>
 	</PropertyGroup>
 

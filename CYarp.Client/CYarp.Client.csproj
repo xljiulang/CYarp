@@ -4,7 +4,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<IsAotCompatible>true</IsAotCompatible>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<DocumentationFile>$(TargetPath)\$(AssemblyName).xml</DocumentationFile>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<Description>A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet</Description>
 	</PropertyGroup>
 
