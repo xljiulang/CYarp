@@ -22,7 +22,8 @@ namespace CYarp.Server.Clients
         private readonly CancellationTokenSource disposeTokenSource = new();
 
         private static readonly int bufferSize = 8;
-        private static readonly string Ping = "PING";
+        private const string Ping = "PING";
+        private const string Pong = "PONG";
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
@@ -57,7 +58,7 @@ namespace CYarp.Server.Clients
             try
             {
                 await this.stream.WriteAsync(PingLine);
-                Log.LogPing(this.logger, this.ClientId);
+                Log.LogSendPing(this.logger, this.ClientId);
             }
             catch (Exception)
             {
@@ -109,14 +110,23 @@ namespace CYarp.Server.Clients
                     ? await textTask
                     : await textTask.AsTask().WaitAsync(this.keepAliveTimeout, cancellationToken);
 
-                if (text == null)
+                switch (text)
                 {
-                    break;
-                }
-                else if (text == Ping)
-                {
-                    Log.LogPong(this.logger, this.ClientId);
-                    await this.stream.WriteAsync(PongLine, cancellationToken);
+                    case null:
+                        break;
+
+                    case Ping:
+                        Log.LogRecvPing(this.logger, this.ClientId);
+                        await this.stream.WriteAsync(PongLine, cancellationToken);
+                        break;
+
+                    case Pong:
+                        Log.LogRecvPong(this.logger, this.ClientId);
+                        break;
+
+                    default:
+                        Log.LogRecvUnknown(this.logger, this.ClientId, text);
+                        break;
                 }
             }
         }
@@ -134,11 +144,17 @@ namespace CYarp.Server.Clients
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Debug, "[{clientId}] 发出PING心跳")]
-            public static partial void LogPing(ILogger logger, string clientId);
+            [LoggerMessage(LogLevel.Debug, "[{clientId}] 发出PING请求")]
+            public static partial void LogSendPing(ILogger logger, string clientId);
 
-            [LoggerMessage(LogLevel.Debug, "[{clientId}] 回复PONG心跳")]
-            public static partial void LogPong(ILogger logger, string clientId);
+            [LoggerMessage(LogLevel.Debug, "[{clientId}] 收到PING请求")]
+            public static partial void LogRecvPing(ILogger logger, string clientId);
+
+            [LoggerMessage(LogLevel.Debug, "[{clientId}] 收到PONG回应")]
+            public static partial void LogRecvPong(ILogger logger, string clientId);
+
+            [LoggerMessage(LogLevel.Debug, "[{clientId}] 收到未知数据: {text}")]
+            public static partial void LogRecvUnknown(ILogger logger, string clientId, string text);
 
             [LoggerMessage(LogLevel.Debug, "[{clientId}] 连接已关闭")]
             public static partial void LogClosed(ILogger logger, string clientId);
