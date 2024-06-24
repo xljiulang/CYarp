@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework> 
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Description>A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet</Description>
 	</PropertyGroup>
 

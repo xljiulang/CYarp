@@ -1,0 +1,403 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CYarp.Client</name>
+    </assembly>
+    <members>
+        <member name="T:CYarp.Client.AOT">
+            <summary>
+            AOT编译
+            </summary>
+        </member>
+        <member name="T:CYarp.Client.AOT.ErrorCode">
+            <summary>
+            错误码
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.AOT.ErrorCode.InvalidHandle">
+            <summary>
+            句柄无效
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.AOT.ErrorCode.NoError">
+            <summary>
+            无错误
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.AOT.ErrorCode.ConnectFailure">
+            <summary>
+            连接到服务器失败
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.AOT.ErrorCode.ConnectTimedout">
+            <summary>
+            连接到服务器已超时
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.AOT.ErrorCode.ConnectUnauthorized">
+            <summary>
+            连接到服务身份认证不通过
+            </summary>
+        </member>
+        <member name="T:CYarp.Client.AOT.ClientOptions">
+            <summary>
+            客户端选项
+            </summary>
+        </member>
+        <member name="M:CYarp.Client.AOT.CYarpClientCreate(CYarp.Client.AOT.ClientOptions*)">
+            <summary>
+            创建客户端
+            </summary>
+            <returns>客户端句柄</returns>
+        </member>
+        <member name="M:CYarp.Client.AOT.CYarpClientFree(System.IntPtr)">
+            <summary>
+            释放客户端
+            </summary>
+            <param name="clientPtr">客户端句柄</param>
+        </member>
+        <member name="M:CYarp.Client.AOT.CYarpClientTransport(System.IntPtr)">
+            <summary>
+            同步传输数据
+            </summary>
+            <param name="clientPtr">客户端句柄</param> 
+            <returns>传输错误枚举</returns>
+        </member>
+        <member name="M:CYarp.Client.AOT.CYarpClientTransportAsync(System.IntPtr,)">
+            <summary>
+            异步传输数据
+            </summary>
+            <param name="clientPtr">客户端句柄</param>
+            <param name="completedCallback">传输完成回调，null则转同步调用</param>
+            <returns>传输错误枚举</returns>
+        </member>
+        <member name="M:CYarp.Client.AOT.Transport(System.IntPtr)">
+            <summary>
+            同步数据传输
+            </summary>
+            <param name="clientPtr"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CYarp.Client.AOT.TransportAsync(CYarp.Client.CYarpClient,System.Action{CYarp.Client.AOT.ErrorCode})">
+            <summary>
+            传输数据
+            </summary>
+            <param name="client">客户端</param>
+            <param name="completedCallback">传输完成回调</param>        
+        </member>
+        <member name="T:CYarp.Client.CYarpClient">
+            <summary>
+            CYarp客户端
+            </summary>
+        </member>
+        <member name="P:CYarp.Client.CYarpClient.TunnelCount">
+            <summary>
+            获取当前隧道数量
+            </summary>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.#ctor(CYarp.Client.CYarpClientOptions)">
+            <summary>
+            CYarp客户端
+            </summary>
+            <param name="options">客户端选项</param>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.#ctor(CYarp.Client.CYarpClientOptions,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            CYarp客户端
+            </summary>
+            <param name="options">客户端选项</param>
+            <param name="logger"></param>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.#ctor(CYarp.Client.CYarpClientOptions,Microsoft.Extensions.Logging.ILogger,System.Net.Http.HttpMessageHandler,System.Boolean)">
+            <summary>
+            CYarp客户端
+            </summary>
+            <param name="options">客户端选项</param>
+            <param name="logger">日志组件</param> 
+            <param name="handler">httpHandler</param>
+            <param name="disposeHandler"></param>
+            <exception cref="T:System.ArgumentException"></exception>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.TransportAsync(System.Threading.CancellationToken)">
+            <summary>
+            连接到CYarp服务器并开始隧道传输
+            </summary> 
+            <param name="cancellationToken"></param>
+            <returns></returns>
+            <exception cref="T:CYarp.Client.CYarpConnectException"></exception>
+            <exception cref="T:System.ObjectDisposedException"></exception>
+            <exception cref="T:System.OperationCanceledException"></exception>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.TransportCoreAsync(System.Threading.CancellationToken)">
+            <summary>
+            连接到CYarp服务器并开始隧道传输
+            </summary> 
+            <param name="cancellationToken"></param>
+            <returns></returns>
+            <exception cref="T:CYarp.Client.CYarpConnectException"></exception> 
+            <exception cref="T:System.OperationCanceledException"></exception>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.BindTunnelIOAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            绑定tunnel的IO
+            </summary> 
+            <param name="tunnelId"></param>
+            <param name="cancellationToken"></param>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.OnTunnelException(System.Exception)">
+            <summary>
+            隧道异常时
+            </summary>
+            <param name="ex">异常</param>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.Dispose">
+            <summary>
+            释放资源
+            </summary>
+        </member>
+        <member name="M:CYarp.Client.CYarpClient.Dispose(System.Boolean)">
+            <summary>
+            释放资源
+            </summary>
+            <param name="disposing"></param>
+        </member>
+        <member name="T:CYarp.Client.CYarpClientOptions">
+            <summary>
+            客户端选项
+            </summary>
+        </member>
+        <member name="P:CYarp.Client.CYarpClientOptions.ServerUri">
+            <summary>
+            CYarp服务器Uri
+            支持http、https、 ws和wss
+            </summary>
+        </member>
+        <member name="P:CYarp.Client.CYarpClientOptions.TargetUri">
+            <summary>
+            目标服务器Uri
+            支持http和https
+            </summary>
+        </member>
+        <member name="P:CYarp.Client.CYarpClientOptions.TargetUnixDomainSocket">
+            <summary>
+            目标服务器的UnixDomainSocket路径[可选]
+            </summary>
+        </member>
+        <member name="P:CYarp.Client.CYarpClientOptions.Authorization">
+            <summary>
+            连接到CYarp服务器的Authorization请求头的值
+            </summary>
+        </member>
+        <member name="P:CYarp.Client.CYarpClientOptions.ConnectTimeout">
+            <summary>
+            与server或target的连接超时时长
+            默认为5s
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.CYarpClientOptions.TunnelErrorCallback">
+            <summary>
+            隧道传输错误回调
+            </summary>
+        </member>
+        <member name="P:CYarp.Client.CYarpClientOptions.KeepAliveInterval">
+            <summary>
+            心跳包周期
+            默认30s
+            </summary>
+        </member>
+        <member name="M:CYarp.Client.CYarpClientOptions.Validate">
+            <summary>
+            验证参数
+            </summary>
+            <exception cref="T:System.ArgumentException"></exception>
+        </member>
+        <member name="T:CYarp.Client.CYarpConnectError">
+            <summary>
+            连接错误码
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.CYarpConnectError.Failure">
+            <summary>
+            连接失败
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.CYarpConnectError.Timedout">
+            <summary>
+            连接已超时
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.CYarpConnectError.Unauthorized">
+            <summary>
+            连接的身份认证不通过
+            </summary>
+        </member>
+        <member name="T:CYarp.Client.CYarpConnectException">
+            <summary>
+            连接异常
+            </summary>
+        </member>
+        <member name="P:CYarp.Client.CYarpConnectException.ErrorCode">
+            <summary>
+            获取连接错误码
+            </summary>
+        </member>
+        <member name="M:CYarp.Client.CYarpConnectException.#ctor(CYarp.Client.CYarpConnectError,System.Exception)">
+            <summary>
+            CYarp异常
+            </summary>
+            <param name="errorCode"></param> 
+            <param name="innerException"></param>
+        </member>
+        <member name="T:CYarp.Client.CYarpConnection">
+            <summary>
+            CYarp连接
+            </summary>
+        </member>
+        <member name="M:CYarp.Client.CYarpConnection.KeepAliveTimerTick(System.Object)">
+            <summary>
+            心跳timer
+            </summary>
+            <param name="state"></param>
+        </member>
+        <member name="M:CYarp.Client.CYarpConnectionFactory.CreateTargetTunnelAsync(System.Threading.CancellationToken)">
+            <summary>
+            创建到目的地的通道
+            </summary> 
+            <param name="cancellationToken"></param>
+            <exception cref="T:CYarp.Client.CYarpConnectException"></exception>
+            <exception cref="T:System.OperationCanceledException"></exception>
+            <returns></returns>
+        </member>
+        <member name="M:CYarp.Client.CYarpConnectionFactory.CreateServerTunnelAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            创建到服务器的通道
+            </summary> 
+            <param name="tunnelId"></param>
+            <param name="cancellationToken"></param>
+            <exception cref="T:CYarp.Client.CYarpConnectException"></exception>
+            <exception cref="T:System.OperationCanceledException"></exception>
+            <returns></returns>
+        </member>
+        <member name="M:CYarp.Client.CYarpConnectionFactory.CreateServerConnectionAsync(System.Threading.CancellationToken)">
+            <summary>
+            创建与CYarp服务器的连接
+            </summary> 
+            <param name="cancellationToken"></param>
+            <exception cref="T:CYarp.Client.CYarpConnectException"></exception>
+            <exception cref="T:System.OperationCanceledException"></exception>
+            <returns></returns>
+        </member>
+        <member name="T:CYarp.Client.CYarpConnectionFactory.ForceFlushStream">
+            <summary>
+            自动刷新的Stream
+            </summary>
+        </member>
+        <member name="T:CYarp.Client.CYarpConnectionFactory.SafeWriteStream">
+            <summary>
+            安全写入的Stream
+            </summary>
+        </member>
+        <member name="T:CYarp.Client.DelegatingStream">
+            <summary>
+            委托流
+            </summary>
+        </member>
+        <member name="F:CYarp.Client.DelegatingStream.Inner">
+            <summary>
+            获取所包装的流对象
+            </summary>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.#ctor(System.IO.Stream)">
+            <summary>
+            委托流
+            </summary>
+            <param name="inner"></param>
+        </member>
+        <member name="P:CYarp.Client.DelegatingStream.CanRead">
+            <inheritdoc/>
+        </member>
+        <member name="P:CYarp.Client.DelegatingStream.CanSeek">
+            <inheritdoc/>
+        </member>
+        <member name="P:CYarp.Client.DelegatingStream.CanWrite">
+            <inheritdoc/>
+        </member>
+        <member name="P:CYarp.Client.DelegatingStream.Length">
+            <inheritdoc/>
+        </member>
+        <member name="P:CYarp.Client.DelegatingStream.CanTimeout">
+            <inheritdoc/>
+        </member>
+        <member name="P:CYarp.Client.DelegatingStream.ReadTimeout">
+            <inheritdoc/>
+        </member>
+        <member name="P:CYarp.Client.DelegatingStream.WriteTimeout">
+            <inheritdoc/>
+        </member>
+        <member name="P:CYarp.Client.DelegatingStream.Position">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.Flush">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.FlushAsync(System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.Read(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.Read(System.Span{System.Byte})">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.ReadAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.ReadAsync(System.Memory{System.Byte},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.Seek(System.Int64,System.IO.SeekOrigin)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.SetLength(System.Int64)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.Write(System.Byte[],System.Int32,System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.Write(System.ReadOnlySpan{System.Byte})">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.WriteAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.WriteAsync(System.ReadOnlyMemory{System.Byte},System.Threading.CancellationToken)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.BeginRead(System.Byte[],System.Int32,System.Int32,System.AsyncCallback,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.EndRead(System.IAsyncResult)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.BeginWrite(System.Byte[],System.Int32,System.Int32,System.AsyncCallback,System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.EndWrite(System.IAsyncResult)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.ReadByte">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.WriteByte(System.Byte)">
+            <inheritdoc/>
+        </member>
+        <member name="M:CYarp.Client.DelegatingStream.Close">
+            <inheritdoc/>
+        </member>
+    </members>
+</doc>

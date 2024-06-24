@@ -5,6 +5,7 @@
 		<IsAotCompatible>true</IsAotCompatible>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Description>A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet</Description>
 	</PropertyGroup>
 
@@ -22,5 +23,6 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
-	</ItemGroup>
+	</ItemGroup> 
+	
 </Project>

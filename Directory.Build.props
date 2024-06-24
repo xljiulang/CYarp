@@ -1,17 +1,28 @@
-<Project>	
+<Project>
 	<PropertyGroup>
-		<Version>1.0.0</Version>
-	    <Nullable>enable</Nullable>		
-		<Copyright>Copyright © laojiu 2024-2024</Copyright> 
+		<Version>1.0.1</Version>
+		<Nullable>enable</Nullable>
+		<UseArtifactsOutput>true</UseArtifactsOutput>
+		<Copyright>Copyright © laojiu 2024-2024</Copyright>
 	</PropertyGroup>
 
 	<PropertyGroup>
 		<Authors>laojiu</Authors>
-		<Company>laojiu</Company>		
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Company>laojiu</Company>	
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/xljiulang/CYarp</PackageProjectUrl>	
+		<PackageProjectUrl>https://github.com/xljiulang/CYarp</PackageProjectUrl>
 	</PropertyGroup>
- 
+
+	<PropertyGroup>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+	</ItemGroup>
+
 </Project>
