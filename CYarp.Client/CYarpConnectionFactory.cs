@@ -56,7 +56,7 @@ namespace CYarp.Client
                 using var timeoutTokenSource = new CancellationTokenSource(this.options.ConnectTimeout);
                 using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
                 await socket.ConnectAsync(endPoint, linkedTokenSource.Token);
-                return new NetworkStream(socket);
+                return new NetworkStream(socket, ownsSocket: true);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
