@@ -40,7 +40,7 @@ namespace CYarp.Server.Clients
         {
             foreach (var storage in this.stateStorages)
             {
-                await storage.InitClientStatesAsync( cancellationToken);
+                await storage.InitClientStatesAsync(cancellationToken);
             }
         }
 

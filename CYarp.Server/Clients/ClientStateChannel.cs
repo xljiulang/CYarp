@@ -1,8 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace CYarp.Server.Clients
 {
@@ -36,7 +42,7 @@ namespace CYarp.Server.Clients
 
             var clientState = new ClientState
             {
-                Client = client,
+                Client = new ReadOnlyClient(client),
                 IsConnected = connected
             };
 
@@ -51,6 +57,34 @@ namespace CYarp.Server.Clients
         public IAsyncEnumerable<ClientState> ReadAllAsync(CancellationToken cancellationToken)
         {
             return this.channel.Reader.ReadAllAsync(cancellationToken);
+        }
+
+        [DebuggerDisplay("Id = {Id}, Protocol = {Protocol}")]
+        private sealed class ReadOnlyClient(IClient client) : IClient
+        {
+            public string Id { get; } = client.Id;
+
+            public Uri TargetUri { get; } = client.TargetUri;
+
+            public ClaimsPrincipal User { get; } = client.User;
+
+            public TransportProtocol Protocol { get; } = client.Protocol;
+
+            public IPEndPoint? RemoteEndpoint { get; } = client.RemoteEndpoint;
+
+            public int HttpTunnelCount { get; } = client.HttpTunnelCount;
+
+            public DateTimeOffset CreationTime { get; } = client.CreationTime;
+
+            public ValueTask DisposeAsync()
+            {
+                throw new NotSupportedException();
+            }
+
+            public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = null)
+            {
+                throw new NotSupportedException();
+            }
         }
     }
 }
