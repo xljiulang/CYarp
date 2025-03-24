@@ -157,6 +157,7 @@ Client initiates the following request
 ```
 Get / HTTP/1.1
 Connection: Upgrade
+Host: {host}
 Upgrade: CYarp
 Authorization：{Client identity information}
 CYarp-TargetUri: {Access Uri of target httpServer}
@@ -182,6 +183,7 @@ At this time, the long connection based on `tcp` has been completed. Then the St
 
 Client initiates the following request
 ```
+:authority = {host}
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
@@ -220,6 +222,7 @@ WebSocket connection requires the following request header, requesting the `/` p
 Client send the following request
 ```
 Get /{tunnelId} HTTP/1.1
+Host: {host}
 Connection: Upgrade
 Upgrade: CYarp
 Cookie：<if have Set-Cookie>
@@ -238,6 +241,7 @@ At this time, the creation of the HttpTunnel over `tcp` has been completed, and 
 
 Client send the following request
 ```
+:authority = {host}
 :method = CONNECT
 :protocol = CYarp
 :scheme = https

@@ -161,6 +161,7 @@ C和C++客户端，可以将CYarp.Client项目的源代码[AOT编译](https://le
 Client发起如下请求
 ```
 Get / HTTP/1.1
+Host: {host}
 Connection: Upgrade
 Upgrade: CYarp
 Authorization：{客户端身份信息}
@@ -187,6 +188,7 @@ Set-Cookie: <load balancer cookie>
 
 Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc8441#section-4)
 ```
+:authority = {host}
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
@@ -228,6 +230,7 @@ WebSocket连接需要如下请求头，请求到`/`路径，连接成功后使�
 Client发起如下请求
 ```
 Get /{tunnelId} HTTP/1.1
+Host: {host}
 Connection: Upgrade
 Upgrade: CYarp
 Cookie：<if have Set-Cookie>
@@ -246,6 +249,7 @@ Set-Cookie: <load balancer cookie>
 
 Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc8441#section-4)
 ```
+:authority = {host}
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
