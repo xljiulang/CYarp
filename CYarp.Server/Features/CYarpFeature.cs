@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Timeouts;
 using System;
@@ -88,8 +87,9 @@ namespace CYarp.Server.Features
 
             async Task<Stream> AcceptAsync()
             {
+                var stream = await http2Feature.AcceptAsync();
                 context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
-                return await http2Feature.AcceptAsync();
+                return new HttpStream(context, stream);
             }
         }
 
@@ -120,10 +120,9 @@ namespace CYarp.Server.Features
 
             async Task<Stream> AcceptAsync()
             {
-                context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
                 var stream = await http11Feature.UpgradeAsync();
-                var connection = context.Features.Get<IConnectionSocketFeature>()?.Socket;
-                return new Http11Stream(stream, connection);
+                context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
+                return new HttpStream(context, stream);
             }
         }
 
