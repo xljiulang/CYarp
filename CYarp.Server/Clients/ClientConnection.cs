@@ -110,25 +110,24 @@ namespace CYarp.Server.Clients
                     ? await textTask
                     : await textTask.AsTask().WaitAsync(this.keepAliveTimeout, cancellationToken);
 
-                switch (text)
+                if (text == null)
                 {
-                    case null:
-                        break;
-
-                    case Ping:
-                        Log.LogRecvPing(this.logger, this.ClientId);
-                        await this.stream.WriteAsync(PongLine, cancellationToken);
-                        break;
-
-                    case Pong:
-                        Log.LogRecvPong(this.logger, this.ClientId);
-                        break;
-
-                    default:
-                        Log.LogRecvUnknown(this.logger, this.ClientId, text);
-                        break;
+                    break;
                 }
-            }
+                else if (text == Ping)
+                {
+                    Log.LogRecvPing(this.logger, this.ClientId);
+                    await this.stream.WriteAsync(PongLine, cancellationToken);
+                }
+                else if (text == Pong)
+                {
+                    Log.LogRecvPong(this.logger, this.ClientId);
+                }
+                else
+                {
+                    Log.LogRecvUnknown(this.logger, this.ClientId, text);
+                }
+            } 
         }
 
         public async ValueTask DisposeAsync()
