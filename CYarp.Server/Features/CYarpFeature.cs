@@ -89,7 +89,7 @@ namespace CYarp.Server.Features
             {
                 var stream = await http2Feature.AcceptAsync();
                 context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
-                return new HttpStream(context, stream);
+                return stream;
             }
         }
 
@@ -122,7 +122,7 @@ namespace CYarp.Server.Features
             {
                 var stream = await http11Feature.UpgradeAsync();
                 context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
-                return new HttpStream(context, stream);
+                return stream;
             }
         }
 

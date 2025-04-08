@@ -59,6 +59,9 @@ namespace CYarp.Server.Middlewares
                 {
                     httpTunnel.Dispose();
                 }
+
+                // 关闭通道的连接
+                context.Abort();
             }
             else
             {

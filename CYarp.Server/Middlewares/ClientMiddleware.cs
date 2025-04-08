@@ -100,6 +100,9 @@ namespace CYarp.Server.Middlewares
             {
                 Log.LogDisconnected(this.logger, clientId, cyarpFeature.Protocol, this.clientManager.Count);
             }
+
+            // 关闭连接
+            context.Abort();
         }
 
         private void LogFailureStatus(HttpContext context, string message)
