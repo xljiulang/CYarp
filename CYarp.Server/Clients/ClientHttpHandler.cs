@@ -41,6 +41,7 @@ namespace CYarp.Server.Clients
                 ConnectCallback = ConnectAsync,
                 EnableMultipleHttp2Connections = true,
                 PooledConnectionLifetime = this.httpTunnelConfig.LifeTime,
+                PooledConnectionIdleTimeout = this.httpTunnelConfig.IdleTimeout,
                 AutomaticDecompression = DecompressionMethods.None,
                 RequestHeaderEncodingSelector = (header, context) => Encoding.UTF8,
                 ResponseHeaderEncodingSelector = (header, context) => Encoding.UTF8,

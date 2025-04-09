@@ -17,17 +17,18 @@ namespace CYarp.Server.Middlewares
 
         public Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            var feature = new CYarpFeature(context);  
-            if (IsAllowProtocol(this.cyarpOptions.CurrentValue.Protocols, feature.Protocol))
+            var feature = new CYarpFeature(context);
+            if (feature.IsCYarpRequest)
             {
-                context.Features.Set<ICYarpFeature>(feature);
-                return next(context);
+                if (!IsAllowProtocol(this.cyarpOptions.CurrentValue.Protocols, feature.Protocol))
+                {
+                    context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                    return Task.CompletedTask;
+                }
             }
-            else
-            {
-                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
-                return Task.CompletedTask;
-            }
+
+            context.Features.Set<ICYarpFeature>(feature);
+            return next(context);
         }
 
         private static bool IsAllowProtocol(Protocols protocols, TransportProtocol protocol)

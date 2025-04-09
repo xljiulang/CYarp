@@ -8,10 +8,16 @@ namespace CYarp.Server.Configs
     public class HttpTunnelConfig
     {
         /// <summary>
-        /// 隧道的生命周期，到期后等待其空闲时就关闭
+        /// 隧道的生命周期，到期时完成请求后就关闭
+        /// 默认为10分钟，要求必须大于0秒
+        /// </summary>
+        public TimeSpan LifeTime { get; set; } = TimeSpan.FromMinutes(10d);
+
+        /// <summary>
+        /// 隧道的空闲超时时长，空闲超时后将关闭隧道
         /// 默认为1分钟，要求必须大于0秒
         /// </summary>
-        public TimeSpan LifeTime { get; set; } = TimeSpan.FromMinutes(1d);
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(1d);
 
         /// <summary>
         /// 每个客户端的最大http隧道数量
