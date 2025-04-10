@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +13,7 @@ namespace CYarp.Client
     {
         private readonly Stream stream;
         private readonly ILogger logger;
+        private readonly StreamReader streamReader;
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
         private readonly CancellationTokenSource closedTokenSource;
@@ -33,6 +32,7 @@ namespace CYarp.Client
         {
             this.stream = stream;
             this.logger = logger;
+            this.streamReader = new StreamReader(stream, leaveOpen: true);
 
             if (keepAliveInterval > TimeSpan.Zero)
             {
@@ -65,22 +65,44 @@ namespace CYarp.Client
             }
         }
 
-        public async IAsyncEnumerable<Guid> ReadTunnelIdAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        /// <summary>
+        /// 读取tunnelId
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<Guid?> ReadTunnelIdAsync(CancellationToken cancellationToken)
         {
-            using var textReader = new StreamReader(this.stream, leaveOpen: true);
+            try
+            {
+                return await this.ReadTunnelIdCoreAsync(cancellationToken);
+            }
+            catch (Exception)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return null;
+            }
+            finally
+            {
+                this.closedTokenSource.Cancel();
+            }
+        }
+
+
+        private async Task<Guid?> ReadTunnelIdCoreAsync(CancellationToken cancellationToken)
+        {
             while (cancellationToken.IsCancellationRequested == false)
             {
-                var textTask = textReader.ReadLineAsync(cancellationToken);
+                var textTask = this.streamReader.ReadLineAsync(cancellationToken);
                 var text = this.keepAliveTimeout <= TimeSpan.Zero
                     ? await textTask
                     : await textTask.AsTask().WaitAsync(this.keepAliveTimeout, cancellationToken);
 
                 if (text == null)
                 {
-                    this.closedTokenSource.Cancel();
-                    yield break;
+                    return null;
                 }
-                else if (text == Ping)
+
+                if (text == Ping)
                 {
                     Log.LogRecvPing(this.logger);
                     await this.stream.WriteAsync(PongLine, cancellationToken);
@@ -91,13 +113,14 @@ namespace CYarp.Client
                 }
                 else if (Guid.TryParse(text, out var tunnelId))
                 {
-                    yield return tunnelId;
+                    return tunnelId;
                 }
                 else
                 {
                     Log.LogRecvUnknown(this.logger, text);
                 }
             }
+            return null;
         }
 
         public ValueTask DisposeAsync()
@@ -106,6 +129,7 @@ namespace CYarp.Client
             this.closedTokenSource.Dispose();
 
             this.keepAliveTimer?.Dispose();
+            this.streamReader.Dispose();
             return this.stream.DisposeAsync();
         }
 

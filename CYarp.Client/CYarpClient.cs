@@ -80,7 +80,17 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 连接到CYarp服务器并开始隧道传输
+        /// 连接到CYarp服务器，创建用于接受CYarp服务器传输连接的监听器
+        /// </summary> 
+        /// <returns></returns>
+        public async Task<ICYarpListener> ListenAsync(CancellationToken cancellationToken = default)
+        {
+            var connection = await this.CreateServerConnectionAsync(cancellationToken);
+            return new CYarpListener(this.connectionFactory, connection);
+        }
+
+        /// <summary>
+        /// 连接到CYarp服务器，并将CYarp服务器的传输绑定到目标服务器
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -96,7 +106,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 连接到CYarp服务器并开始隧道传输
+        /// 连接到CYarp服务器，并将CYarp服务器的传输绑定到目标服务器
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -104,7 +114,22 @@ namespace CYarp.Client
         /// <exception cref="OperationCanceledException"></exception>
         private async Task TransportCoreAsync(CancellationToken cancellationToken)
         {
-            await using var connection = await this.connectionFactory.CreateServerConnectionAsync(cancellationToken);
+            await using var connection = await this.CreateServerConnectionAsync(cancellationToken);
+
+            Guid? tunnelId;
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connection.Closed);
+
+            while ((tunnelId = await connection.ReadTunnelIdAsync(cancellationToken)) != null)
+            {
+                _ = this.BindTunnelIOAsync(tunnelId.Value, linkedTokenSource.Token);
+            }
+
+            Log.LogDisconnected(this.logger, this.options.ServerUri);
+        }
+
+        private async Task<CYarpConnection> CreateServerConnectionAsync(CancellationToken cancellationToken)
+        {
+            var connection = await this.connectionFactory.CreateServerConnectionAsync(cancellationToken);
             if (this.connectionFactory.ServerHttp2Supported)
             {
                 Log.LogHttp2Connected(this.logger, this.options.ServerUri);
@@ -113,19 +138,7 @@ namespace CYarp.Client
             {
                 Log.LogHttp11Connected(this.logger, this.options.ServerUri);
             }
-
-            try
-            {
-                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connection.Closed);
-                await foreach (var tunnelId in connection.ReadTunnelIdAsync(cancellationToken))
-                {
-                    _ = this.BindTunnelIOAsync(tunnelId, linkedTokenSource.Token);
-                }
-            }
-            finally
-            {
-                Log.LogDisconnected(this.logger, this.options.ServerUri);
-            }
+            return connection;
         }
 
         /// <summary>
