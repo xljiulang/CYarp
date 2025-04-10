@@ -10,11 +10,14 @@ namespace CYarp.Client
         /// <summary>
         /// 自动刷新的Stream
         /// </summary>
-        private class ForceFlushStream : DelegatingStream
+        private class ServerTunnelStream : DelegatingStream
         {
-            public ForceFlushStream(Stream inner)
+            private readonly Guid tunnelId;
+
+            public ServerTunnelStream(Guid tunnelId, Stream inner)
                 : base(inner)
             {
+                this.tunnelId = tunnelId;
             }
 
             public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
@@ -30,7 +33,12 @@ namespace CYarp.Client
 
             protected override void Dispose(bool disposing)
             {
-                throw new InvalidOperationException($"只能调用{nameof(DisposeAsync)}()方法");
+                this.Inner.Dispose();
+            }
+
+            public override string ToString()
+            {
+                return this.tunnelId.ToString();
             }
         }
     }

@@ -86,7 +86,7 @@ namespace CYarp.Client
         public async Task<Stream> CreateServerTunnelAsync(Guid tunnelId, CancellationToken cancellationToken)
         {
             var stream = await this.ConnectServerAsync(tunnelId, cancellationToken);
-            return new ForceFlushStream(stream);
+            return new ServerTunnelStream(tunnelId, stream);
         }
 
         /// <summary>
