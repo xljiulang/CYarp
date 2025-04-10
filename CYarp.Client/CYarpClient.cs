@@ -114,21 +114,16 @@ namespace CYarp.Client
                 Log.LogHttp11Connected(this.logger, this.options.ServerUri);
             }
 
-            using var connectionTokenSource = new CancellationTokenSource();
             try
             {
-                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionTokenSource.Token);
+                using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connection.Closed);
                 await foreach (var tunnelId in connection.ReadTunnelIdAsync(cancellationToken))
                 {
-                    this.BindTunnelIOAsync(tunnelId, linkedTokenSource.Token);
+                    _ = this.BindTunnelIOAsync(tunnelId, linkedTokenSource.Token);
                 }
-            }
-            catch (Exception)
-            {
             }
             finally
             {
-                connectionTokenSource.Cancel();
                 Log.LogDisconnected(this.logger, this.options.ServerUri);
             }
         }
@@ -138,7 +133,7 @@ namespace CYarp.Client
         /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
-        private async void BindTunnelIOAsync(Guid tunnelId, CancellationToken cancellationToken)
+        private async Task BindTunnelIOAsync(Guid tunnelId, CancellationToken cancellationToken)
         {
             try
             {

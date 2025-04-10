@@ -17,11 +17,17 @@ namespace CYarp.Client
         private readonly ILogger logger;
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
+        private readonly CancellationTokenSource closedTokenSource;
 
         private static readonly string Ping = "PING";
         private static readonly string Pong = "PONG";
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
+
+        /// <summary>
+        /// 获取关闭凭证
+        /// </summary>
+        public CancellationToken Closed { get; }
 
         public CYarpConnection(Stream stream, TimeSpan keepAliveInterval, ILogger logger)
         {
@@ -37,6 +43,9 @@ namespace CYarp.Client
             {
                 this.keepAliveTimeout = Timeout.InfiniteTimeSpan;
             }
+
+            this.closedTokenSource = new CancellationTokenSource();
+            this.Closed = this.closedTokenSource.Token;
         }
 
         /// <summary>
@@ -68,6 +77,7 @@ namespace CYarp.Client
 
                 if (text == null)
                 {
+                    this.closedTokenSource.Cancel();
                     yield break;
                 }
                 else if (text == Ping)
@@ -92,6 +102,9 @@ namespace CYarp.Client
 
         public ValueTask DisposeAsync()
         {
+            this.closedTokenSource.Cancel();
+            this.closedTokenSource.Dispose();
+
             this.keepAliveTimer?.Dispose();
             return this.stream.DisposeAsync();
         }
