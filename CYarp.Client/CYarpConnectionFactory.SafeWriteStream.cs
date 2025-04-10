@@ -47,7 +47,8 @@ namespace CYarp.Client
 
             protected override void Dispose(bool disposing)
             {
-                throw new InvalidOperationException($"只能调用{nameof(DisposeAsync)}()方法");
+                this.semaphoreSlim.Dispose();
+                this.Inner.Dispose();
             }
         }
     }

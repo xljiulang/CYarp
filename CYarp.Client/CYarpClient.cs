@@ -82,11 +82,16 @@ namespace CYarp.Client
         /// <summary>
         /// 连接到CYarp服务器，创建用于接受CYarp服务器传输连接的监听器
         /// </summary> 
+        /// <exception cref="CYarpConnectException"></exception>
+        /// <exception cref="ObjectDisposedException"></exception>
+        /// <exception cref="OperationCanceledException"></exception>
         /// <returns></returns>
         public async Task<ICYarpListener> ListenAsync(CancellationToken cancellationToken = default)
         {
+            ObjectDisposedException.ThrowIf(this.disposeTokenSource.IsCancellationRequested, this);
+
             var connection = await this.CreateServerConnectionAsync(cancellationToken);
-            return new CYarpListener(this.connectionFactory, connection);
+            return new CYarpListener(this.connectionFactory, connection, this.logger);
         }
 
         /// <summary>
@@ -97,11 +102,11 @@ namespace CYarp.Client
         /// <exception cref="CYarpConnectException"></exception>
         /// <exception cref="ObjectDisposedException"></exception>
         /// <exception cref="OperationCanceledException"></exception>
-        public async Task TransportAsync(CancellationToken cancellationToken)
+        public async Task TransportAsync(CancellationToken cancellationToken = default)
         {
             ObjectDisposedException.ThrowIf(this.disposeTokenSource.IsCancellationRequested, this);
 
-            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disposeTokenSource.Token);
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disposeTokenSource.Token);
             await this.TransportCoreAsync(linkedTokenSource.Token);
         }
 
