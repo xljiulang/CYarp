@@ -14,6 +14,7 @@ namespace CYarp.Client.AspNetCore
         private readonly CYarpEndPoint endPoint;
         private readonly ILogger logger;
         private readonly CYarpClient client;
+        private readonly CancellationTokenSource closedTokenSource = new();
         private IAsyncEnumerator<ConnectionContext>? connnections;
 
         public EndPoint EndPoint => this.endPoint;
@@ -26,6 +27,12 @@ namespace CYarp.Client.AspNetCore
         }
 
         public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
+        {
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.closedTokenSource.Token);
+            return await this.AcceptCoreAsync(linkedTokenSource.Token);
+        }
+
+        private async ValueTask<ConnectionContext?> AcceptCoreAsync(CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -44,11 +51,19 @@ namespace CYarp.Client.AspNetCore
                     {
                         await this.connnections.DisposeAsync();
                         this.connnections = null;
-                        Log.LogConnectError(this.logger, this.endPoint, "连接被断开");
+
+                        Log.LogConnectError(this.logger, this.endPoint, "连接被中断");
+                        await Task.Delay(this.endPoint.ReconnectInterval, cancellationToken);
                     }
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    Log.LogConnectError(this.logger, this.endPoint, "操作被用户取消");
+                    return null;
                 }
                 catch (CYarpConnectException ex) when (ex.ErrorCode == CYarpConnectError.Unauthorized)
                 {
+                    Log.LogConnectError(this.logger, this.endPoint, "连接的身份认证不通过");
                     throw;
                 }
                 catch (Exception ex)
@@ -76,20 +91,24 @@ namespace CYarp.Client.AspNetCore
             }
         }
 
+        public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+        {
+            this.closedTokenSource.Cancel();
+            return ValueTask.CompletedTask;
+        }
+
+
         public async ValueTask DisposeAsync()
         {
+            this.closedTokenSource.Cancel();
+            this.closedTokenSource.Dispose();
+
             if (this.connnections != null)
             {
                 await this.connnections.DisposeAsync();
             }
 
             this.client.Dispose();
-        }
-
-
-        public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
-        {
-            return ValueTask.CompletedTask;
         }
 
 
