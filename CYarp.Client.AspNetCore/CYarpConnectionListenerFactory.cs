@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace CYarp.Client.AspNetCore
 {
-    sealed class CYarpListenerFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
+    sealed class CYarpConnectionListenerFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
     {
         private readonly ILoggerFactory loggerFactory;
         private readonly SocketTransportFactory socketTransportFactory;
 
-        public CYarpListenerFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory)
+        public CYarpConnectionListenerFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory)
         {
             this.loggerFactory = loggerFactory;
             this.socketTransportFactory = new SocketTransportFactory(options, loggerFactory);
@@ -28,8 +28,8 @@ namespace CYarp.Client.AspNetCore
         {
             if (endpoint is CYarpEndPoint cyarpEndPoint)
             {
-                var logger = this.loggerFactory.CreateLogger<CYarpListener>();
-                return new CYarpListener(cyarpEndPoint, logger);
+                var logger = this.loggerFactory.CreateLogger<CYarpConnectionListener>();
+                return new CYarpConnectionListener(cyarpEndPoint, logger);
             }
 
             return await this.socketTransportFactory.BindAsync(endpoint, cancellationToken);

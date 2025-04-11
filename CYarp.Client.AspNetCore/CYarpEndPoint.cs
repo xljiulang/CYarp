@@ -1,11 +1,12 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace CYarp.Client.AspNetCore
 {
     /// <summary>
     /// Cyarp终结点
     /// </summary>
-    public class CYarpEndPoint : EndPoint
+    public sealed class CYarpEndPoint : EndPoint
     {
         /// <summary>
         /// 获取选项
@@ -13,12 +14,18 @@ namespace CYarp.Client.AspNetCore
         public CYarpClientOptions Options { get; }
 
         /// <summary>
+        /// 获取或设置断线重连间隔间隔
+        /// 默认5s
+        /// </summary>
+        public TimeSpan ReconnectInterval { get; set; } = TimeSpan.FromSeconds(5d);
+
+        /// <summary>
         /// Cyarp终结点
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="options">连接选项</param> 
         public CYarpEndPoint(CYarpClientOptions options)
         {
-            Options = options;
+            this.Options = options;
         }
 
         /// <summary>

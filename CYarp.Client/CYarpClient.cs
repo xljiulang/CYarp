@@ -90,7 +90,7 @@ namespace CYarp.Client
         {
             ObjectDisposedException.ThrowIf(this.disposeTokenSource.IsCancellationRequested, this);
 
-            var connection = await this.CreateServerConnectionAsync(cancellationToken);
+            var connection = await this.connectionFactory.CreateServerConnectionAsync(cancellationToken);
             return new CYarpListener(this.connectionFactory, connection, this.logger);
         }
 
@@ -119,7 +119,15 @@ namespace CYarp.Client
         /// <exception cref="OperationCanceledException"></exception>
         private async Task TransportCoreAsync(CancellationToken cancellationToken)
         {
-            await using var connection = await this.CreateServerConnectionAsync(cancellationToken);
+            await using var connection = await this.connectionFactory.CreateServerConnectionAsync(cancellationToken);
+            if (this.connectionFactory.ServerHttp2Supported)
+            {
+                Log.LogHttp2Connected(this.logger, this.options.ServerUri);
+            }
+            else
+            {
+                Log.LogHttp11Connected(this.logger, this.options.ServerUri);
+            }
 
             Guid? tunnelId;
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connection.Closed);
@@ -132,19 +140,6 @@ namespace CYarp.Client
             Log.LogDisconnected(this.logger, this.options.ServerUri);
         }
 
-        private async Task<CYarpConnection> CreateServerConnectionAsync(CancellationToken cancellationToken)
-        {
-            var connection = await this.connectionFactory.CreateServerConnectionAsync(cancellationToken);
-            if (this.connectionFactory.ServerHttp2Supported)
-            {
-                Log.LogHttp2Connected(this.logger, this.options.ServerUri);
-            }
-            else
-            {
-                Log.LogHttp11Connected(this.logger, this.options.ServerUri);
-            }
-            return connection;
-        }
 
         /// <summary>
         /// 绑定tunnel的IO

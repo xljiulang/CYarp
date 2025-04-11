@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddCYarpListener(this IServiceCollection services)
         {
             services.AddLogging();
-            services.AddSingleton<IConnectionListenerFactory, CYarpListenerFactory>();
+            services.AddSingleton<IConnectionListenerFactory, CYarpConnectionListenerFactory>();
             return services;
         }
     }

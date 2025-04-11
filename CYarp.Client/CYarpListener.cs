@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,11 +13,6 @@ namespace CYarp.Client
         private readonly CYarpConnectionFactory connectionFactory;
         private readonly CYarpConnection connection;
         private readonly ILogger logger;
-
-        /// <summary>
-        /// 获取关闭凭证
-        /// </summary>
-        public CancellationToken Closed => this.connection.Closed;
 
         public CYarpListener(
             CYarpConnectionFactory connectionFactory,
@@ -52,6 +49,25 @@ namespace CYarp.Client
                 {
                     Log.LogTunnelError(this.logger, tunnelId.Value, ex.Message);
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// 接收CYarp服务器的所有传输连接
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async IAsyncEnumerable<Stream> AcceptAllAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            while (true)
+            {
+                var stream = await this.AcceptAsync(cancellationToken);
+                if (stream == null)
+                {
+                    break;
+                }
+                yield return stream;
             }
         }
 
