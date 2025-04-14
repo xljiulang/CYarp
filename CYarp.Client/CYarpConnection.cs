@@ -79,18 +79,15 @@ namespace CYarp.Client
             catch (Exception)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                return null;
-            }
-            finally
-            {
                 this.closedTokenSource.Cancel();
+                return null;
             }
         }
 
 
         private async Task<Guid?> ReadTunnelIdCoreAsync(CancellationToken cancellationToken)
         {
-            while (cancellationToken.IsCancellationRequested == false)
+            while (true)
             {
                 var textTask = this.streamReader.ReadLineAsync(cancellationToken);
                 var text = this.keepAliveTimeout <= TimeSpan.Zero
@@ -99,6 +96,7 @@ namespace CYarp.Client
 
                 if (text == null)
                 {
+                    this.closedTokenSource.Cancel();
                     return null;
                 }
 
@@ -120,7 +118,6 @@ namespace CYarp.Client
                     Log.LogRecvUnknown(this.logger, text);
                 }
             }
-            return null;
         }
 
         public ValueTask DisposeAsync()

@@ -130,11 +130,9 @@ namespace CYarp.Client
             }
 
             Guid? tunnelId;
-            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connection.Closed);
-
             while ((tunnelId = await connection.ReadTunnelIdAsync(cancellationToken)) != null)
             {
-                _ = this.BindTunnelIOAsync(tunnelId.Value, linkedTokenSource.Token);
+                _ = this.BindTunnelIOAsync(tunnelId.Value, [connection.Closed, cancellationToken]);
             }
 
             Log.LogDisconnected(this.logger, this.options.ServerUri);
@@ -145,8 +143,19 @@ namespace CYarp.Client
         /// 绑定tunnel的IO
         /// </summary> 
         /// <param name="tunnelId"></param>
+        /// <param name="cancellationTokens"></param>
+        private async Task BindTunnelIOAsync(Guid tunnelId, CancellationToken[] cancellationTokens)
+        {
+            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokens);
+            await this.BindTunnelIOCoreAsync(tunnelId, linkedTokenSource.Token);
+        }
+
+        /// <summary>
+        /// 绑定tunnel的IO
+        /// </summary> 
+        /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
-        private async Task BindTunnelIOAsync(Guid tunnelId, CancellationToken cancellationToken)
+        private async Task BindTunnelIOCoreAsync(Guid tunnelId, CancellationToken cancellationToken)
         {
             try
             {
