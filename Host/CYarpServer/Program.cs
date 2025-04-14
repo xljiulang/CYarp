@@ -49,11 +49,20 @@ namespace CYarpServer
 
             var app = builder.Build();
 
+            app.Use(next => context =>
+            {
+                var path = context.Request.Path;
+                Console.WriteLine($"Request: {path}");
+                return next(context);
+            });
+
             app.UseAuthentication();
             app.UseCYarp();
 
+            app.MapCYarp();
+
             // 传统的web服务
-            app.UseRouting();          
+            app.UseRouting();
             app.UseAuthorization();
             app.MapControllers();
 

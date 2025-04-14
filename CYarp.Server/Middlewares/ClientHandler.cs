@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Yarp.ReverseProxy.Forwarder;
 
@@ -44,9 +43,17 @@ namespace CYarp.Server.Middlewares
         public async Task InvokeAsync(HttpContext context)
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
+            if (cyarpFeature.IsCYarpRequest == false)
+            {
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                this.LogFailureStatus(context, "不是有效的CYarp请求");
+                return;
+            }
+
             if (cyarpFeature.IsCYarpRequest == false || context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
             {
-                await next(context);
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                this.LogFailureStatus(context, $"请求头{CYarpTargetUriHeader}不存在");
                 return;
             }
 
@@ -55,17 +62,6 @@ namespace CYarp.Server.Middlewares
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 this.LogFailureStatus(context, $"请求头{CYarpTargetUriHeader}的值不是Uri格式");
-                return;
-            }
-
-            // 授权验证
-            var authorizationResult = await this.clientPolicyService.AuthorizeAsync(context);
-            if (authorizationResult.Succeeded == false)
-            {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                var failedItem = authorizationResult.AuthorizationFailure?.FailedRequirements.FirstOrDefault();
-                var message = failedItem?.ToString() ?? "请求者的身份验证不通过";
-                this.LogFailureStatus(context, message);
                 return;
             }
 

@@ -9,7 +9,7 @@ namespace CYarp.Server.Clients
     /// <summary>
     /// 安全的隧道Id
     /// </summary>
-    readonly struct TunnelId : IParsable<TunnelId>, IEquatable<TunnelId>
+    public readonly struct TunnelId : IParsable<TunnelId>, IEquatable<TunnelId>
     {
         private readonly Guid guid;
         private readonly bool isValid;

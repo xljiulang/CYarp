@@ -1,10 +1,10 @@
-﻿using CYarp.Server.Middlewares;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Patterns;
+﻿using CYarp.Server;
+using CYarp.Server.Middlewares;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Routing;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -24,13 +24,30 @@ namespace Microsoft.AspNetCore.Builder
             return app.UseMiddleware<CYarpMiddleware>();
         }
 
-
+        /// <summary>
+        /// 注册CYarp的路由
+        /// </summary>
+        /// <param name="endpoints"></param>
+        /// <returns></returns>
         public static IEndpointConventionBuilder MapCYarp(this IEndpointRouteBuilder endpoints)
-        {
-            var routeGroup = endpoints.MapGroup(string.Empty);
-            routeGroup.MapGet("/",)
+        { 
+            var httpTunnelHandler = endpoints.ServiceProvider.GetRequiredService<HttpTunnelHanlder>();
+            endpoints.MapGet("/{tunnelId}", httpTunnelHandler.InvokeAsync).AllowAnonymous();
 
-            return routeGroup.RequireAuthorization(;
+            var clientHandler = endpoints.ServiceProvider.GetRequiredService<ClientHandler>();
+            var clientBuilder = endpoints.MapGet("/cyarp", clientHandler.InvokeAsync);
+
+            clientBuilder.Finally(endpoint =>
+            {
+                if (!endpoint.Metadata.Any((object meta) => meta is IAuthorizeData))
+                {
+                    var options = endpoints.ServiceProvider.GetRequiredService<IOptions<CYarpOptions>>();
+                    endpoint.Metadata.Add(new AuthorizeAttribute());
+                    endpoint.Metadata.Add(options.Value.Authorization.GetAuthorizationPolicy());
+                }
+            });
+
+            return clientBuilder;
         }
     }
 }
