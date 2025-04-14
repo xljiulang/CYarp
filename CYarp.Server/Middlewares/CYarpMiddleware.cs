@@ -24,7 +24,7 @@ namespace CYarp.Server.Middlewares
                 {
                     context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                     return Task.CompletedTask;
-                }
+                } 
             }
 
             context.Features.Set<ICYarpFeature>(feature);

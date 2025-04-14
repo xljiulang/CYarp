@@ -28,12 +28,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IClientViewer>(serviceProvder => serviceProvder.GetRequiredService<ClientManager>());
 
             services.TryAddSingleton<HttpTunnelFactory>();
-            services.TryAddSingleton<ClientPolicyService>();
             services.TryAddSingleton<IClientIdProvider, DefaultClientIdProvider>();
 
             services.TryAddSingleton<CYarpMiddleware>();
-            services.TryAddSingleton<ClientMiddleware>();
-            services.TryAddSingleton<HttpTunnelMiddleware>();
+            services.TryAddSingleton<ClientHandler>();
+            services.TryAddSingleton<HttpTunnelHanlder>();
 
             services.AddHttpForwarder();
             services.AddAuthorization();
@@ -88,7 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             builder.Services.Replace(ServiceDescriptor.Singleton<IClientIdProvider, TProvider>());
             return builder;
-        }        
+        }
 
         private class CYarpBuilder(IServiceCollection services) : ICYarpBuilder
         {

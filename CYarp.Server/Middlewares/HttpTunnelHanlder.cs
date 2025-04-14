@@ -11,12 +11,12 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// HttpTunnel握手处理中间件
     /// </summary>
-    sealed partial class HttpTunnelMiddleware : IMiddleware
+    sealed partial class HttpTunnelHanlder : IMiddleware
     {
         private readonly HttpTunnelFactory httpTunnelFactory;
         private readonly ILogger<HttpTunnel> logger;
 
-        public HttpTunnelMiddleware(
+        public HttpTunnelHanlder(
             HttpTunnelFactory httpTunnelFactory,
             ILogger<HttpTunnel> logger)
         {

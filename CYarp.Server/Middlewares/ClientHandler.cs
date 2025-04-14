@@ -14,9 +14,8 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// IClient的授权验证、实例创建和生命周期管理中间件
     /// </summary>
-    sealed partial class ClientMiddleware : IMiddleware
+    sealed partial class ClientHandler
     {
-        private readonly ClientPolicyService clientPolicyService;
         private readonly IClientIdProvider clientIdProvider;
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpTunnelFactory httpTunnelFactory;
@@ -26,8 +25,7 @@ namespace CYarp.Server.Middlewares
 
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
 
-        public ClientMiddleware(
-            ClientPolicyService clientPolicyService,
+        public ClientHandler(
             IClientIdProvider clientIdProvider,
             IHttpForwarder httpForwarder,
             HttpTunnelFactory httpTunnelFactory,
@@ -35,7 +33,6 @@ namespace CYarp.Server.Middlewares
             IOptionsMonitor<CYarpOptions> yarpOptions,
             ILogger<Client> logger)
         {
-            this.clientPolicyService = clientPolicyService;
             this.clientIdProvider = clientIdProvider;
             this.httpForwarder = httpForwarder;
             this.httpTunnelFactory = httpTunnelFactory;
@@ -44,7 +41,7 @@ namespace CYarp.Server.Middlewares
             this.logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+        public async Task InvokeAsync(HttpContext context)
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false || context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
