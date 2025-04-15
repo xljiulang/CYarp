@@ -84,7 +84,7 @@ app.UseCYarp();
 app.UseAuthentication(); 
 app.UseAuthorization();
 
-app.MapCYarp<YourClientIdProvider>().RequireAuthorization(o => { ... });
+app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... });
 app.MapControllers();
 app.Run();
 ```

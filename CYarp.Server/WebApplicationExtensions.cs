@@ -44,7 +44,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp(this IEndpointRouteBuilder endpoints, Func<HttpContext, string?> clientIdProvider)
         {
-            return endpoints.MapCYarp(ctx => ValueTask.FromResult(clientIdProvider(ctx)));
+            ArgumentNullException.ThrowIfNull(clientIdProvider);
+            return endpoints.MapCYarp(context => ValueTask.FromResult(clientIdProvider(context)));
         }
 
         /// <summary>
@@ -55,6 +56,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp(this IEndpointRouteBuilder endpoints, Func<HttpContext, ValueTask<string?>> clientIdProvider)
         {
+            ArgumentNullException.ThrowIfNull(clientIdProvider);
+
             var cyarp = endpoints.MapGroup("/cyarp");
 
             // HttpTunnel的握手处理

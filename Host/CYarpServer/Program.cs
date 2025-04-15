@@ -55,7 +55,7 @@ namespace CYarpServer
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapCYarp(ctx => ctx.User.FindFirstValue(ClaimTypes.Sid)).RequireAuthorization(o => o.RequireRole("Client"));
+            app.MapCYarp(ctx => ctx.User.FindFirstValue(ClaimTypes.Sid)).RequireAuthorization(p => p.RequireRole("Client"));
             app.Map("/{**catchall}", HttpForwardHandler.HandleAsync).RequireAuthorization(p => p.RequireRole("Mobile"));
 
             app.Run();
