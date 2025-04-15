@@ -24,8 +24,7 @@ namespace CYarpBench
             builder.Services.AddHostedService<WebSocketWithHttp2Client>();
 
             builder.Services.AddCYarp()
-                .Configure(builder.Configuration.GetSection(nameof(CYarpOptions)))
-                .AddClientIdProvider<DomainClientIdProvider>();
+                .Configure(builder.Configuration.GetSection(nameof(CYarpOptions)));
 
             var clientNames = typeof(ClientBase).Assembly.GetTypes()
                 .Where(item => item.IsAbstract == false && typeof(ClientBase).IsAssignableFrom(item))
