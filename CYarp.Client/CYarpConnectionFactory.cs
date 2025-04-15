@@ -192,7 +192,7 @@ namespace CYarp.Client
                 {
                     return await this.Http20ConnectServerAsync(tunnelId, cancellationToken);
                 }
-                catch (CYarpConnectException ex) when (ex.ErrorCode == CYarpConnectError.Unauthorized)
+                catch (CYarpConnectException ex) when (ex.ErrorCode >= CYarpConnectError.Unauthorized)
                 {
                     throw;
                 }

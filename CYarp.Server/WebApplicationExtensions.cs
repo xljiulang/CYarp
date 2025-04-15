@@ -9,7 +9,7 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// 应用扩展
+    /// WebApplication扩展
     /// </summary>
     public static class WebApplicationExtensions
     {
@@ -25,26 +25,32 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// 注册CYarp的路由
+        /// 处理CYarp的客户端连接
         /// </summary>
         /// <param name="endpoints"></param>
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp(this IEndpointRouteBuilder endpoints)
         {
-            endpoints.Map("/cyarp/{tunnelId}", HttpTunnelHanlder.InvokeAsync).AllowAnonymous();
+            var cyarp = endpoints.MapGroup("/cyarp");
 
-            var clientBuilder = endpoints.Map("/cyarp", ClientHandler.InvokeAsync);
-            clientBuilder.Finally(endpoint =>
+            // HttpTunnel的握手处理
+            cyarp.Map("/{tunnelId}", HttpTunnelHanlder.InvokeAsync).AllowAnonymous();
+
+            // Client的连接处理
+            var client = cyarp.Map("/", ClientHandler.InvokeAsync);
+
+            // Client设置默认的授权策略
+            client.Finally(endpoint =>
             {
-                if (!endpoint.Metadata.Any((object meta) => meta is IAuthorizeData | meta is AllowAnonymousAttribute))
+                if (!endpoint.Metadata.Any(meta => meta is IAuthorizeData | meta is IAllowAnonymous))
                 {
-                    var options = endpoints.ServiceProvider.GetRequiredService<IOptions<CYarpOptions>>();
+                    var policy = endpoints.ServiceProvider.GetRequiredService<IOptions<CYarpOptions>>().Value.Authorization.GetAuthorizationPolicy();
                     endpoint.Metadata.Add(new AuthorizeAttribute());
-                    endpoint.Metadata.Add(options.Value.Authorization.GetAuthorizationPolicy());
+                    endpoint.Metadata.Add(policy);
                 }
             });
 
-            return clientBuilder;
+            return client;
         }
     }
 }

@@ -15,6 +15,7 @@ namespace CYarp.Client
             { CYarpConnectError.Failure,"Connect failure" },
             { CYarpConnectError.Timedout,"Connect timed out" },
             { CYarpConnectError.Unauthorized,"Connect unauthorized" },
+            { CYarpConnectError.Forbid ,"Connect forbid" },
         };
 
         /// <summary>

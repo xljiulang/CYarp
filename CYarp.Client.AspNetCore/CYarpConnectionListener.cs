@@ -61,9 +61,8 @@ namespace CYarp.Client.AspNetCore
                     Log.LogConnectError(this.logger, this.endPoint, "操作被用户取消");
                     return null;
                 }
-                catch (CYarpConnectException ex) when (ex.ErrorCode == CYarpConnectError.Unauthorized)
+                catch (CYarpConnectException ex) when (ex.ErrorCode >= CYarpConnectError.Unauthorized)
                 {
-                    Log.LogConnectError(this.logger, this.endPoint, "连接的身份认证不通过");
                     throw;
                 }
                 catch (Exception ex)

@@ -54,7 +54,7 @@ namespace CYarpServer
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapCYarp();
+            app.MapCYarp();            
             app.MapControllers();
 
             app.Run();

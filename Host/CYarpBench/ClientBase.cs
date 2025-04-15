@@ -49,9 +49,9 @@ namespace CYarpBench
                 {
                     break;
                 }
-                catch (CYarpConnectException ex) when (ex.ErrorCode == CYarpConnectError.Unauthorized)
+                catch (CYarpConnectException ex) when (ex.ErrorCode >= CYarpConnectError.Unauthorized)
                 {
-                    this.logger.LogError(ex, "身份认证失败");
+                    this.logger.LogError(ex, ex.Message);
                     break;
                 }
                 catch (Exception ex)

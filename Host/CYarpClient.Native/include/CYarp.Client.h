@@ -16,7 +16,10 @@ enum CYarpErrorCode
 	ConnectTimedout = 2,
 
 	// 连接到服务身份认证不通过
-	ConnectUnauthorized = 3
+	ConnectUnauthorized = 3,	
+ 
+	// 连接被拒绝(授权不通过)
+	ConnectForbid = 4,
 };
 
 // CYarp客户端

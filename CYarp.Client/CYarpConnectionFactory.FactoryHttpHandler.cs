@@ -27,10 +27,21 @@ namespace CYarp.Client
 
                 if (httpResponse.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    var inner = new HttpRequestException(httpResponse.ReasonPhrase, null, httpResponse.StatusCode);
-                    throw new CYarpConnectException(CYarpConnectError.Unauthorized, inner);
+                    Throw(httpResponse, CYarpConnectError.Unauthorized);
                 }
+
+                if (httpResponse.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    Throw(httpResponse, CYarpConnectError.Forbid);
+                }
+
                 return httpResponse;
+            }
+
+            private static void Throw(HttpResponseMessage httpResponse, CYarpConnectError error)
+            {
+                var inner = new HttpRequestException(httpResponse.ReasonPhrase, null, httpResponse.StatusCode);
+                throw new CYarpConnectException(error, inner);
             }
         }
     }

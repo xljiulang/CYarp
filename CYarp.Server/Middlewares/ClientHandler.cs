@@ -50,7 +50,7 @@ namespace CYarp.Server.Middlewares
             if (clientIdProvider.TryGetClientId(context, out var clientId) == false)
             {
                 Log.LogInvalidRequest(logger, context.Connection.Id, $"{clientIdProvider.Name}无法获取到IClient的Id");
-                return Results.Unauthorized();
+                return Results.Forbid();
             }
 
             var options = yarpOptions.CurrentValue;

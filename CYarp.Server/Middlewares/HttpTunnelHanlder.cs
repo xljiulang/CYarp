@@ -36,7 +36,7 @@ namespace CYarp.Server.Middlewares
             if (!tunnelId.IsValid || !httpTunnelFactory.Contains(tunnelId))
             {
                 Log.LogInvalidTunnelId(logger, context.Connection.Id, tunnelId);
-                return Results.Unauthorized();
+                return Results.Forbid();
             }
 
             var stream = await cyarpFeature.AcceptAsStreamAsync();

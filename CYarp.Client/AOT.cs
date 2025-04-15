@@ -39,6 +39,11 @@ namespace CYarp.Client
             /// 连接到服务身份认证不通过
             /// </summary>
             ConnectUnauthorized = 3,
+
+            /// <summary>
+          	/// 连接被拒绝(授权不通过)
+            /// </summary>
+            ConnectForbid = 4,
         }
 
         /// <summary>

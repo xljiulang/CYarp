@@ -19,5 +19,10 @@
         /// 连接的身份认证不通过
         /// </summary>
         Unauthorized = 3,
+
+        /// <summary>
+        /// 连接的被拒绝(授权不通过)
+        /// </summary>
+        Forbid = 4,
     }
 }

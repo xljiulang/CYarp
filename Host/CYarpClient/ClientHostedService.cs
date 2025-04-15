@@ -28,7 +28,7 @@ namespace CYarpServer
                 try
                 {
                     var options = this.clientOptions.CurrentValue;
-                    using var client = new CYarp.Client.CYarpClient(options,this.logger);
+                    using var client = new CYarp.Client.CYarpClient(options, this.logger);
                     await client.TransportAsync(stoppingToken);
 
                     this.logger.LogInformation($"传输已被关闭，5秒后重新连接");
@@ -38,9 +38,9 @@ namespace CYarpServer
                 {
                     break;
                 }
-                catch (CYarpConnectException ex) when (ex.ErrorCode == CYarpConnectError.Unauthorized)
+                catch (CYarpConnectException ex) when (ex.ErrorCode >= CYarpConnectError.Unauthorized)
                 {
-                    this.logger.LogError(ex, "身份认证失败");
+                    this.logger.LogError(ex, ex.Message);
                     break;
                 }
                 catch (Exception ex)
