@@ -13,13 +13,18 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// IClient的授权验证、实例创建和生命周期管理中间件
     /// </summary>
-    static partial class ClientHandler
+    sealed partial class ClientHandler
     {
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
+        private readonly Func<HttpContext, ValueTask<string?>> clientIdProvider;
 
-        public static async Task<IResult> HandleClientAsync(
+        public ClientHandler(Func<HttpContext, ValueTask<string?>> clientIdProvider)
+        {
+            this.clientIdProvider = clientIdProvider;
+        }
+
+        public async Task<IResult> HandleClientAsync(
             HttpContext context,
-            IClientIdProvider clientIdProvider,
             IHttpForwarder httpForwarder,
             HttpTunnelFactory httpTunnelFactory,
             ClientManager clientManager,
@@ -47,9 +52,10 @@ namespace CYarp.Server.Middlewares
             }
 
             // 查找clientId
-            if (clientIdProvider.TryGetClientId(context, out var clientId) == false)
+            var clientId = await this.clientIdProvider.Invoke(context);
+            if (string.IsNullOrEmpty(clientId))
             {
-                Log.LogInvalidRequest(logger, context.Connection.Id, $"{clientIdProvider.Name}无法获取到IClient的Id");
+                Log.LogInvalidRequest(logger, context.Connection.Id, "无法获取到IClient的Id");
                 return Results.Forbid();
             }
 

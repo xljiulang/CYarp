@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CYarpServer
 {
-    public partial class CYarpHandler
+    public partial class HttpForwardHandler
     {
         private static readonly string clientIdClaimType = "ClientId";
 
@@ -22,7 +22,7 @@ namespace CYarpServer
         /// <param name="context"></param>
         /// <param name="logger"></param>
         /// <returns></returns> 
-        public static async Task HandleCYarpAsync(HttpContext context, IClientViewer clientViewer, ILogger<Program> logger)
+        public static async Task HandleAsync(HttpContext context, IClientViewer clientViewer, ILogger<Program> logger)
         {
             var clientId = context.User.FindFirstValue(clientIdClaimType);
             if (clientId != null && clientViewer.TryGetValue(clientId, out var client))

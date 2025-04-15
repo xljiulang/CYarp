@@ -19,11 +19,6 @@ namespace CYarp.Server
         public Protocols Protocols { get; set; } = Protocols.All;
 
         /// <summary>
-        /// 认证配置
-        /// </summary>
-        public AuthorizationConfig Authorization { get; set; } = new AuthorizationConfig();
-
-        /// <summary>
         /// 连接配置
         /// </summary>
         public ConnectionConfig Connection { get; set; } = new ConnectionConfig();

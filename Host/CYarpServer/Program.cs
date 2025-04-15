@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using System;
 using System.IO;
+using System.Security.Claims;
 
 namespace CYarpServer
 {
@@ -54,8 +55,8 @@ namespace CYarpServer
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapCYarp();
-            app.Map("/{**catchall}", CYarpHandler.HandleCYarpAsync).RequireAuthorization(p => p.RequireRole("Mobile"));
+            app.MapCYarp(ctx => ctx.User.FindFirstValue(ClaimTypes.Sid)).RequireAuthorization(o => o.RequireRole("Client").RequireClaim(ClaimTypes.Sid));
+            app.Map("/{**catchall}", HttpForwardHandler.HandleAsync).RequireAuthorization(p => p.RequireRole("Mobile"));
 
             app.Run();
         }

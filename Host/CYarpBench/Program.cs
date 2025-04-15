@@ -54,7 +54,7 @@ namespace CYarpBench
             var app = builder.Build();
 
             app.UseCYarp();
-            app.MapCYarp().AllowAnonymous();
+            app.MapCYarp<DomainClientIdProvider>();
             app.Map("/{**any}", HttpForwardHandler.HandlerAsync);
 
             app.Run();
