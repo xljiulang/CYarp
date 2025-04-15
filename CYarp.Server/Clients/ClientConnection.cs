@@ -31,7 +31,7 @@ namespace CYarp.Server.Clients
 
         public int HttpTunnelCount => this.httpTunnelCount;
 
-        public ClientConnection(string clientId, Stream stream, ConnectionConfig config, ILogger logger)
+        public ClientConnection(string clientId, Stream stream, ClientConfig config, ILogger logger)
         {
             this.ClientId = clientId;
             this.stream = stream;

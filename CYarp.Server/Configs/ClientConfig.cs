@@ -3,9 +3,9 @@
 namespace CYarp.Server.Configs
 {
     /// <summary>
-    /// 连接配置
+    /// 客户端配置
     /// </summary>
-    public class ConnectionConfig
+    public class ClientConfig
     {
         /// <summary>
         /// 是否启用 KeepAlive 功能

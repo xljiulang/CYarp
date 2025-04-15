@@ -61,7 +61,7 @@ namespace CYarp.Server.Middlewares
 
             var options = yarpOptions.CurrentValue;
             var stream = await cyarpFeature.AcceptAsSafeWriteStreamAsync();
-            var connection = new ClientConnection(clientId, stream, options.Connection, logger);
+            var connection = new ClientConnection(clientId, stream, options.Client, logger);
 
             var disconnected = false;
             await using (var client = new Client(connection, httpForwarder, options.HttpTunnel, httpTunnelFactory, clientTargetUri, context))

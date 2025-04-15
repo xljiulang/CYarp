@@ -19,9 +19,9 @@ namespace CYarp.Server
         public Protocols Protocols { get; set; } = Protocols.All;
 
         /// <summary>
-        /// 连接配置
+        /// 客户端配置
         /// </summary>
-        public ConnectionConfig Connection { get; set; } = new ConnectionConfig();
+        public ClientConfig Client { get; set; } = new ClientConfig();
 
         /// <summary>
         /// http隧道配置
