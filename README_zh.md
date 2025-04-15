@@ -79,11 +79,13 @@ builder.Services.AddAuthentication(<DefaultScheme>).AddYourScheme();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseAuthentication();
+
 app.UseCYarp();
-...
-// app.UseAuthorization();
-// app.MapControllers();
+app.UseAuthentication(); 
+app.UseAuthorization();
+
+app.MapCYarp<YourClientIdProvider>().RequireAuthorization(o => { ... });
+app.MapControllers();
 app.Run();
 ```
 
@@ -92,12 +94,15 @@ app.Run();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp().AllowAnonymous();
-... 
+app.UseCYarp();
+
+app.MapCYarp<YourClientIdProvider>();
+app.MapControllers();
+app.Run();
 ```
 
 
-最后在Controller、endpoint处理者或者最后一个中间件中处理http转发
+最后在Controller或者endpoint处理者中处理http转发
 ```c#
 // 请求者的授权验证
 [Authorize(Roles = "Mobile")]
@@ -160,7 +165,7 @@ C和C++客户端，可以将CYarp.Client项目的源代码[AOT编译](https://le
 
 Client发起如下请求
 ```
-Get / HTTP/1.1
+Get /cyarp HTTP/1.1
 Host: {host}
 Connection: Upgrade
 Upgrade: CYarp
@@ -192,7 +197,7 @@ Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc844
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
-:path = /
+:path = /cyarp
 authorization = {客户端身份信息}
 cyarp-targeturi = {目标httpServer的访问Uri}
 ```
@@ -215,7 +220,7 @@ set-cookie = <load balancer cookie>
 
 > WebSocket
 
-WebSocket连接需要如下请求头，请求到`/`路径，连接成功后使用多个binary帧来承载CYarp的Stream。
+WebSocket连接需要如下请求头，请求到`/cyarp`路径，连接成功后使用多个binary帧来承载CYarp的Stream。
 | 请求头名称             | 请求头值                |
 | ---------------------- | ----------------------- |
 | Authorization          | 客户端身份信息          |
@@ -229,7 +234,7 @@ WebSocket连接需要如下请求头，请求到`/`路径，连接成功后使�
 
 Client发起如下请求
 ```
-Get /{tunnelId} HTTP/1.1
+Get /cyarp/{tunnelId} HTTP/1.1
 Host: {host}
 Connection: Upgrade
 Upgrade: CYarp
@@ -253,7 +258,7 @@ Client发起如下请求，参考[rfc8441](https://www.rfc-editor.org/rfc/rfc844
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
-:path = /{tunnelId}
+:path = /cyarp/{tunnelId}
 cookie = <if have set-cookie>
 ```
 
@@ -267,7 +272,7 @@ set-cookie = <load balancer cookie>
 
 > WebSocket
 
-WebSocket连接需要如下请求头，请求到`/{tunnelId}`路径，连接成功后使用多个binary帧来承载CYarp的Stream。
+WebSocket连接需要如下请求头，请求到`/cyarp/{tunnelId}`路径，连接成功后使用多个binary帧来承载CYarp的Stream。
 
 | 请求头名称             | 请求头值 |
 | ---------------------- | -------- |
@@ -281,20 +286,3 @@ WebSocket连接需要如下请求头，请求到`/{tunnelId}`路径，连接成�
 如果目标服务httpServer的TargetUri也是https，则HttpTunnel里面的流量表现为tls in tls。
 
 CYarp不涉及到任何业务协议，Client的身份认证依赖于asp.net core平台的身份认证中间件，而http转发部分(例如`Host\CYarpServer.CYarpController`)是由开发者自行开发来决定是否要转发，涉及的授权验证逻辑由开发者自行验证。
-
-###  负载均衡
-负载均衡的主要作用是将海量的Client端由多个CYarp.Server服务器实例来直接或间接分担承载。
-
-![balance](images/balance.png)
-
-**SLB层**
-
-SLB层需要开启基于IP地址的TCP会话保持，即来自同一IP地址的访问请求会转发到同一台后端CYarp.Server服务器上。如果没有SLB层，也可以让Client端实现客户端负载均衡，即客户端自行决定直接连接到后端的哪台CYarp.Server服务器上。
-
-**CYarp.Server层**
-
-CYarp.Server服务器需要基于redis等实现`IClientStateStorage`服务，即以IClient的Id值做为RedisKey、Node值做RedisValue持久化。当存在SLB时，这些CYarp.Server服务不再要求有从公网访问的要求。
-
-**http网关层**
-
-需要基于YARP自主开发CYarp.Server服务的http网关，从http请求上下文获取ClientId，然后从redis以ClientId值做为RedisKey反查得到Node值，最后把http请求上下文转发到这个Node对应的CYarp.Server服务。http网关一般不需要自身再做负载均衡，虽然只有一个http网关时它承载了所有用户端的http请求流量，但它的功能单一性能强悍。

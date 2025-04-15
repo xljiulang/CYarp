@@ -77,11 +77,12 @@ builder.Services.AddAuthentication(<DefaultScheme>).AddYourScheme();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseAuthentication();
 app.UseCYarp();
-...
-// app.UseAuthorization();
-// app.MapControllers();
+app.UseAuthentication(); 
+app.UseAuthorization();
+
+app.MapCYarp<YourClientIdProvider>().RequireAuthorization(o => { ... });
+app.MapControllers();
 app.Run();
 ```
 Authentication and authorization when connecting to IClient can be skipped using the following method
@@ -89,8 +90,11 @@ Authentication and authorization when connecting to IClient can be skipped using
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp().AllowAnonymous();
-... 
+app.UseCYarp();
+
+app.MapCYarp<YourClientIdProvider>();
+app.MapControllers();
+app.Run();
 ```
 
 Finally, handle the http forwarding in the Controller, endpoint handler or the last custom middleware.
@@ -155,7 +159,7 @@ The following are the dynamic shared library commands exported by AOT compilatio
 
 Client initiates the following request
 ```
-Get / HTTP/1.1
+Get /cyarp HTTP/1.1
 Connection: Upgrade
 Host: {host}
 Upgrade: CYarp
@@ -187,7 +191,7 @@ Client initiates the following request
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
-:path = /
+:path = /cyarp
 authorization = {Client identity information}
 cyarp-targeturi = {Access Uri of target httpServer}
 ```
@@ -208,7 +212,7 @@ At this time, the long connection based on `HTTP/2` has been completed. Then the
 
 > by WebSocket
 
-WebSocket connection requires the following request header, requesting the `/` path. After the connection is successful, multiple binary frames are used to carry CYarp's Stream.
+WebSocket connection requires the following request header, requesting the `/cyarp` path. After the connection is successful, multiple binary frames are used to carry CYarp's Stream.
 | HeaderName             | HeaderValue                       |
 | ---------------------- | --------------------------------- |
 | Authorization          | {Client identity information}     |
@@ -221,7 +225,7 @@ WebSocket connection requires the following request header, requesting the `/` p
 
 Client send the following request
 ```
-Get /{tunnelId} HTTP/1.1
+Get /cyarp/{tunnelId} HTTP/1.1
 Host: {host}
 Connection: Upgrade
 Upgrade: CYarp
@@ -245,7 +249,7 @@ Client send the following request
 :method = CONNECT
 :protocol = CYarp
 :scheme = https
-:path = /{tunnelId}
+:path = /cyarp/{tunnelId}
 cookie = <if have set-cookie>
 ```
 
@@ -259,7 +263,7 @@ At this time, the creation of the HttpTunnel over `HTTP/2` has been completed, a
 
 > by WebSocket
 
-WebSocket connection requires the following request header, requesting the `/{tunnelId}` path. After the connection is successful, multiple binary frames are used to carry CYarp's Stream.
+WebSocket connection requires the following request header, requesting the `/cyarp/{tunnelId}` path. After the connection is successful, multiple binary frames are used to carry CYarp's Stream.
 
 | HeaderName             | HeaderValue                       |
 | ---------------------- | --------------------------------- |
