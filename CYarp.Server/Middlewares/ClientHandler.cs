@@ -13,18 +13,12 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// IClient的授权验证、实例创建和生命周期管理中间件
     /// </summary>
-    sealed partial class ClientHandler
+    static partial class ClientHandler
     {
-        private readonly IClientIdProvider clientIdProvider;
-        private readonly IHttpForwarder httpForwarder;
-        private readonly HttpTunnelFactory httpTunnelFactory;
-        private readonly ClientManager clientManager;
-        private readonly IOptionsMonitor<CYarpOptions> yarpOptions;
-        private readonly ILogger<Client> logger;
-
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
 
-        public ClientHandler(
+        public static async Task<IResult> InvokeAsync(
+            HttpContext context,
             IClientIdProvider clientIdProvider,
             IHttpForwarder httpForwarder,
             HttpTunnelFactory httpTunnelFactory,
@@ -32,81 +26,62 @@ namespace CYarp.Server.Middlewares
             IOptionsMonitor<CYarpOptions> yarpOptions,
             ILogger<Client> logger)
         {
-            this.clientIdProvider = clientIdProvider;
-            this.httpForwarder = httpForwarder;
-            this.httpTunnelFactory = httpTunnelFactory;
-            this.clientManager = clientManager;
-            this.yarpOptions = yarpOptions;
-            this.logger = logger;
-        }
-
-        public async Task InvokeAsync(HttpContext context)
-        {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false)
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                this.LogFailureStatus(context, "不是有效的CYarp请求");
-                return;
+                Log.LogInvalidRequest(logger, context.Connection.Id, "不是有效的CYarp请求");
+                return Results.BadRequest();
             }
 
             if (cyarpFeature.IsCYarpRequest == false || context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                this.LogFailureStatus(context, $"请求头{CYarpTargetUriHeader}不存在");
-                return;
+                Log.LogInvalidRequest(logger, context.Connection.Id, $"请求头{CYarpTargetUriHeader}不存在");
+                return Results.BadRequest();
             }
 
             // CYarp-TargetUri头格式验证
             if (Uri.TryCreate(targetUri, UriKind.Absolute, out var clientTargetUri) == false)
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                this.LogFailureStatus(context, $"请求头{CYarpTargetUriHeader}的值不是Uri格式");
-                return;
+                Log.LogInvalidRequest(logger, context.Connection.Id, $"请求头{CYarpTargetUriHeader}的值不是Uri格式");
+                return Results.BadRequest();
             }
 
             // 查找clientId
-            if (this.clientIdProvider.TryGetClientId(context, out var clientId) == false)
+            if (clientIdProvider.TryGetClientId(context, out var clientId) == false)
             {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                var message = $"{this.clientIdProvider.Name}无法获取到IClient的Id";
-                this.LogFailureStatus(context, message);
-                return;
+                Log.LogInvalidRequest(logger, context.Connection.Id, $"{clientIdProvider.Name}无法获取到IClient的Id");
+                return Results.Unauthorized();
             }
 
             var options = yarpOptions.CurrentValue;
             var stream = await cyarpFeature.AcceptAsSafeWriteStreamAsync();
-            var connection = new ClientConnection(clientId, stream, options.Connection, this.logger);
+            var connection = new ClientConnection(clientId, stream, options.Connection, logger);
 
             var disconnected = false;
-            await using (var client = new Client(connection, this.httpForwarder, options.HttpTunnel, httpTunnelFactory, clientTargetUri, context))
+            await using (var client = new Client(connection, httpForwarder, options.HttpTunnel, httpTunnelFactory, clientTargetUri, context))
             {
-                if (await this.clientManager.AddAsync(client, default))
+                if (await clientManager.AddAsync(client, default))
                 {
-                    Log.LogConnected(this.logger, clientId, cyarpFeature.Protocol, this.clientManager.Count);
+                    Log.LogConnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
                     await connection.WaitForCloseAsync();
-                    disconnected = await this.clientManager.RemoveAsync(client, default);
+                    disconnected = await clientManager.RemoveAsync(client, default);
                 }
             }
 
             if (disconnected)
             {
-                Log.LogDisconnected(this.logger, clientId, cyarpFeature.Protocol, this.clientManager.Count);
+                Log.LogDisconnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
             }
 
             // 关闭连接
             context.Abort();
-        }
-
-        private void LogFailureStatus(HttpContext context, string message)
-        {
-            Log.LogFailureStatus(this.logger, context.Connection.Id, context.Response.StatusCode, message);
+            return Results.Empty;
         }
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Warning, "连接{connectionId}触发{statusCode}状态码: {message}")]
-            public static partial void LogFailureStatus(ILogger logger, string connectionId, int statusCode, string message);
+            [LoggerMessage(LogLevel.Warning, "连接{connectionId}请求无效：{message}")]
+            public static partial void LogInvalidRequest(ILogger logger, string connectionId, string message);
 
             [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，系统当前客户端总数为{count}")]
             public static partial void LogConnected(ILogger logger, string clientId, TransportProtocol protocol, int count);

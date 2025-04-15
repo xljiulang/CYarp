@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// 应用扩展
     /// </summary>
-    public static class ApplicationBuilderExtensions
+    public static class WebApplicationExtensions
     {
         /// <summary>
         /// 使用CYarp中间件 
@@ -29,17 +29,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="endpoints"></param>
         /// <returns></returns>
-        public static IEndpointConventionBuilder MapCYarp(this IEndpointRouteBuilder endpoints)
-        { 
-            var httpTunnelHandler = endpoints.ServiceProvider.GetRequiredService<HttpTunnelHanlder>();
-            endpoints.MapGet("/{tunnelId}", httpTunnelHandler.InvokeAsync).AllowAnonymous();
+        public static RouteHandlerBuilder MapCYarp(this IEndpointRouteBuilder endpoints)
+        {
+            endpoints.Map("/cyarp/{tunnelId}", HttpTunnelHanlder.InvokeAsync).AllowAnonymous();
 
-            var clientHandler = endpoints.ServiceProvider.GetRequiredService<ClientHandler>();
-            var clientBuilder = endpoints.MapGet("/cyarp", clientHandler.InvokeAsync);
-
+            var clientBuilder = endpoints.Map("/cyarp", ClientHandler.InvokeAsync);
             clientBuilder.Finally(endpoint =>
             {
-                if (!endpoint.Metadata.Any((object meta) => meta is IAuthorizeData))
+                if (!endpoint.Metadata.Any((object meta) => meta is IAuthorizeData | meta is AllowAnonymousAttribute))
                 {
                     var options = endpoints.ServiceProvider.GetRequiredService<IOptions<CYarpOptions>>();
                     endpoint.Metadata.Add(new AuthorizeAttribute());

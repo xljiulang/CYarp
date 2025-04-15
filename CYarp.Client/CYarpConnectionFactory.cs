@@ -136,7 +136,7 @@ namespace CYarp.Client
 
             try
             {
-                var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
+                var serverUri = this.CreateServerUri(tunnelId);
                 await webSocket.ConnectAsync(serverUri, this.httpClient, cancellationToken);
                 return new WebSocketStream(webSocket);
             }
@@ -206,7 +206,7 @@ namespace CYarp.Client
 
         private async Task<Stream> Http20ConnectServerAsync(Guid? tunnelId, CancellationToken cancellationToken)
         {
-            var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
+            var serverUri = this.CreateServerUri(tunnelId);
             var request = new HttpRequestMessage(HttpMethod.Connect, serverUri);
             request.Headers.Protocol = CYarp;
             request.Version = HttpVersion.Version20;
@@ -231,7 +231,7 @@ namespace CYarp.Client
 
         private async Task<Stream> Http11ConnectServerAsync(Guid? tunnelId, CancellationToken cancellationToken)
         {
-            var serverUri = new Uri(this.options.ServerUri, $"/{tunnelId}");
+            var serverUri = this.CreateServerUri(tunnelId);
             var request = new HttpRequestMessage(HttpMethod.Get, serverUri);
             request.Headers.Connection.TryParseAdd("Upgrade");
             request.Headers.Upgrade.TryParseAdd(CYarp);
@@ -261,6 +261,13 @@ namespace CYarp.Client
             var targetUri = this.options.TargetUri.ToString();
             request.Headers.TryAddWithoutValidation(CYarpTargetUri, targetUri);
             request.Headers.Authorization = AuthenticationHeaderValue.Parse(this.options.Authorization);
+        }
+
+        private Uri CreateServerUri(Guid? tunnelId)
+        {
+            return tunnelId == null
+                ? new Uri(this.options.ServerUri, "/cyarp")
+                : new Uri(this.options.ServerUri, $"/cyarp/{tunnelId}");
         }
 
         public void Dispose()

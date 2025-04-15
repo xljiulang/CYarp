@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     sealed class CYarpMiddleware : IMiddleware
-    {
-        private readonly static PathString cyarpRootPath = "/cyarp";
+    { 
         private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
 
         public CYarpMiddleware(IOptionsMonitor<CYarpOptions> cyarpOptions)
@@ -25,12 +24,7 @@ namespace CYarp.Server.Middlewares
                 {
                     context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                     return Task.CompletedTask;
-                }
-
-                if (context.Request.Path == "/")
-                {
-                    context.Request.Path = cyarpRootPath;
-                }
+                } 
             }
 
             context.Features.Set<ICYarpFeature>(feature);

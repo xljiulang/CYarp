@@ -31,8 +31,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IClientIdProvider, DefaultClientIdProvider>();
 
             services.TryAddSingleton<CYarpMiddleware>();
-            services.TryAddSingleton<ClientHandler>();
-            services.TryAddSingleton<HttpTunnelHanlder>();
 
             services.AddHttpForwarder();
             services.AddAuthorization();

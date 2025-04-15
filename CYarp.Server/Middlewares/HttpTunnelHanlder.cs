@@ -10,46 +10,39 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// HttpTunnel握手处理中间件
     /// </summary>
-    sealed partial class HttpTunnelHanlder
+    static partial class HttpTunnelHanlder
     {
-        private readonly HttpTunnelFactory httpTunnelFactory;
-        private readonly ILogger<HttpTunnel> logger;
-
-        public HttpTunnelHanlder(
-            HttpTunnelFactory httpTunnelFactory,
-            ILogger<HttpTunnel> logger)
-        {
-            this.httpTunnelFactory = httpTunnelFactory;
-            this.logger = logger;
-        }
-
         /// <summary>
         /// HttpTunnel不需要身份验证和授权，tunnelId本身具有随机性和服务端可校验性来保证安全
         /// </summary>
+        /// <param name="httpTunnelFactory"></param>
+        /// <param name="logger"></param>
         /// <param name="context"></param>
         /// <param name="tunnelId"></param> 
         /// <returns></returns>
-        public async Task InvokeAsync(HttpContext context, TunnelId tunnelId)
+        public static async Task<IResult> InvokeAsync(
+            HttpTunnelFactory httpTunnelFactory,
+            ILogger<HttpTunnel> logger,
+            HttpContext context,
+            TunnelId tunnelId)
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false)
             {
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                Log.LogFailureStatus(this.logger, context.Connection.Id, context.Response.StatusCode, "不是有效的CYarp请求");
-                return;
+                Log.LogInvalidRequest(logger, context.Connection.Id, "不是有效的CYarp请求");
+                return Results.BadRequest();
             }
 
-            if (!tunnelId.IsValid || !this.httpTunnelFactory.Contains(tunnelId))
+            if (!tunnelId.IsValid || !httpTunnelFactory.Contains(tunnelId))
             {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                Log.LogInvalidTunnelId(this.logger, context.Connection.Id, tunnelId);
-                return;
+                Log.LogInvalidTunnelId(logger, context.Connection.Id, tunnelId);
+                return Results.Unauthorized();
             }
 
             var stream = await cyarpFeature.AcceptAsStreamAsync();
-            var httpTunnel = new HttpTunnel(stream, tunnelId, cyarpFeature.Protocol, this.logger);
+            var httpTunnel = new HttpTunnel(stream, tunnelId, cyarpFeature.Protocol, logger);
 
-            if (this.httpTunnelFactory.SetResult(httpTunnel))
+            if (httpTunnelFactory.SetResult(httpTunnel))
             {
                 await httpTunnel.Closed;
             }
@@ -60,13 +53,14 @@ namespace CYarp.Server.Middlewares
 
             // 关闭通道的连接
             context.Abort();
+            return Results.Empty;
         }
 
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Warning, "连接{connectionId}触发{statusCode}状态码: {message}")]
-            public static partial void LogFailureStatus(ILogger logger, string connectionId, int statusCode, string message);
+            [LoggerMessage(LogLevel.Warning, "连接{connectionId}请求无效：{message}")]
+            public static partial void LogInvalidRequest(ILogger logger, string connectionId, string message);
 
             [LoggerMessage(LogLevel.Warning, "连接{connectionId}传递了无效的tunnelId：{tunnelId}")]
             public static partial void LogInvalidTunnelId(ILogger logger, string connectionId, TunnelId tunnelId);
