@@ -34,10 +34,10 @@ namespace Microsoft.AspNetCore.Builder
             var cyarp = endpoints.MapGroup("/cyarp");
 
             // HttpTunnel的握手处理
-            cyarp.Map("/{tunnelId}", HttpTunnelHanlder.InvokeAsync).AllowAnonymous();
+            cyarp.Map("/{tunnelId}", HttpTunnelHanlder.HandleHttpTunnelAsync).AllowAnonymous();
 
             // Client的连接处理
-            var client = cyarp.Map("/", ClientHandler.InvokeAsync);
+            var client = cyarp.Map("/", ClientHandler.HandleClientAsync);
 
             // Client设置默认的授权策略
             client.Finally(endpoint =>

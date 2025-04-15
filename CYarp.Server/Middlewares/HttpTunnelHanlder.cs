@@ -20,7 +20,7 @@ namespace CYarp.Server.Middlewares
         /// <param name="context"></param>
         /// <param name="tunnelId"></param> 
         /// <returns></returns>
-        public static async Task<IResult> InvokeAsync(
+        public static async Task<IResult> HandleHttpTunnelAsync(
             HttpTunnelFactory httpTunnelFactory,
             ILogger<HttpTunnel> logger,
             HttpContext context,

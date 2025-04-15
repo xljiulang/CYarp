@@ -17,7 +17,7 @@ namespace CYarp.Server.Middlewares
     {
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
 
-        public static async Task<IResult> InvokeAsync(
+        public static async Task<IResult> HandleClientAsync(
             HttpContext context,
             IClientIdProvider clientIdProvider,
             IHttpForwarder httpForwarder,

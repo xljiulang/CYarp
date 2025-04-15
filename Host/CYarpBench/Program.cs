@@ -17,7 +17,6 @@ namespace CYarpBench
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddSingleton<HttpForwardMiddleware>();
             builder.Services.AddHostedService<DefaultClient>();
             builder.Services.AddHostedService<Http11Client>();
             builder.Services.AddHostedService<Http2Client>();
@@ -54,8 +53,9 @@ namespace CYarpBench
 
             var app = builder.Build();
 
-            app.UseCYarp().AllowAnonymous();
-            app.UseMiddleware<HttpForwardMiddleware>();
+            app.UseCYarp();
+            app.MapCYarp().AllowAnonymous();
+            app.Map("/{**any}", HttpForwardHandler.HandlerAsync);
 
             app.Run();
         }

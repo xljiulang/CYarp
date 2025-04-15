@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Serilog;
 using System;
@@ -22,8 +23,7 @@ namespace CYarpServer
                 .Configure(builder.Configuration.GetSection(nameof(CYarpOptions)))
                 .AddRedisClientStateStorage(builder.Configuration.GetSection(nameof(RedisClientStateStorageOptions)));
 
-            // asp.net的jwt认证、控制器等
-            builder.Services.AddControllers();
+            // asp.net的jwt认证等 
             builder.Services.AddAuthorization();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
             builder.Services.Configure<JwtTokenOptions>(builder.Configuration.GetSection(nameof(JwtTokenOptions)));
@@ -49,13 +49,13 @@ namespace CYarpServer
 
             var app = builder.Build();
 
-            app.UseCYarp(); 
+            app.UseCYarp();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapCYarp();            
-            app.MapControllers();
+            app.MapCYarp();
+            app.Map("/{**catchall}", CYarpHandler.HandleCYarpAsync).RequireAuthorization(p => p.RequireRole("Mobile"));
 
             app.Run();
         }
