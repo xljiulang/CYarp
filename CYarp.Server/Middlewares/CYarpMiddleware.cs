@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     sealed class CYarpMiddleware : IMiddleware
-    { 
+    {
+        private static readonly PathString cyarpPath = "/cyarp";
         private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
 
         public CYarpMiddleware(IOptionsMonitor<CYarpOptions> cyarpOptions)
@@ -17,14 +18,17 @@ namespace CYarp.Server.Middlewares
 
         public Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            var feature = new CYarpFeature(context);
+            var feature = context.Request.Path.StartsWithSegments(cyarpPath)
+                ? new CYarpFeature(context)
+                : CYarpFeature.NotCYarp;
+
             if (feature.IsCYarpRequest)
             {
                 if (!IsAllowProtocol(this.cyarpOptions.CurrentValue.Protocols, feature.Protocol))
                 {
                     context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                     return Task.CompletedTask;
-                } 
+                }
             }
 
             context.Features.Set<ICYarpFeature>(feature);

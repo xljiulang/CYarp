@@ -14,6 +14,8 @@ namespace CYarp.Server.Features
         private const string CYarp = "CYarp";
         private readonly Func<Task<Stream>>? acceptAsyncFunc;
 
+        public static readonly ICYarpFeature NotCYarp = new NotCYarpFeature();
+
         public bool IsCYarpRequest => this.acceptAsyncFunc != null;
 
         public TransportProtocol Protocol { get; }
@@ -137,6 +139,24 @@ namespace CYarp.Server.Features
         {
             var stream = await this.AcceptAsStreamAsync();
             return new SafeWriteStream(stream);
+        }
+
+
+        private class NotCYarpFeature : ICYarpFeature
+        {
+            public bool IsCYarpRequest => false;
+
+            public TransportProtocol Protocol => default;
+
+            public Task<Stream> AcceptAsSafeWriteStreamAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<Stream> AcceptAsStreamAsync()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
