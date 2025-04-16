@@ -1,6 +1,5 @@
 ﻿using CYarp.Server;
 using Microsoft.AspNetCore.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace CYarpBench
@@ -10,25 +9,15 @@ namespace CYarpBench
     /// </summary>
     sealed class DomainClientIdProvider : IClientIdProvider
     {
-        private const string Scheme = "CustomDomain";
-
         /// <summary>
-        /// 使用Authorization的域名参数做IClient的Id
+        /// 使用请求头的X-Domain值做IClient的Id
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         public ValueTask<string?> GetClientIdAsync(HttpContext context)
         {
-            string? clientId = null;
-            if (AuthenticationHeaderValue.TryParse(context.Request.Headers.Authorization, out var authorization))
-            {
-                if (authorization.Scheme == Scheme)
-                {
-                    clientId = authorization.Parameter;
-                }
-            }
-
-            return ValueTask.FromResult(clientId);
+            var domain = context.Request.Headers["X-Domain"].ToString();
+            return ValueTask.FromResult<string?>(domain);
         }
     }
 }
