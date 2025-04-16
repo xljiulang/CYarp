@@ -48,7 +48,7 @@ namespace CYarp.Server.Middlewares
             }
             else
             {
-                httpTunnel.Dispose();
+                await httpTunnel.DisposeAsync();
             }
 
             // 关闭通道的连接
