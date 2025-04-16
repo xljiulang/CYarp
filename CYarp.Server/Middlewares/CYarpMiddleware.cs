@@ -27,7 +27,7 @@ namespace CYarp.Server.Middlewares
                 }
             }
 
-            context.Features.Set(feature);
+            context.Features.Set<ICYarpFeature>(feature);
             return next(context);
         }
 

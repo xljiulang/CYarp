@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
@@ -131,7 +130,10 @@ namespace CYarp.Client
             {
                 var targetUri = this.options.TargetUri.ToString();
                 webSocket.Options.SetRequestHeader(CYarpTargetUri, targetUri);
-                webSocket.Options.SetRequestHeader("Authorization", this.options.Authorization);
+                foreach (var header in this.options.ConnectHeaders)
+                {
+                    webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                }
             }
 
             try
@@ -260,7 +262,10 @@ namespace CYarp.Client
         {
             var targetUri = this.options.TargetUri.ToString();
             request.Headers.TryAddWithoutValidation(CYarpTargetUri, targetUri);
-            request.Headers.Authorization = AuthenticationHeaderValue.Parse(this.options.Authorization);
+            foreach (var header in this.options.ConnectHeaders)
+            {
+                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
         }
 
         private Uri CreateServerUri(Guid? tunnelId)

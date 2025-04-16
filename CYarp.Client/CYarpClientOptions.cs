@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Http.Headers;
 
 namespace CYarp.Client
 {
@@ -33,10 +33,28 @@ namespace CYarp.Client
         public string? TargetUnixDomainSocket { get; set; }
 
         /// <summary>
-        /// 连接到CYarp服务器的Authorization请求头的值
+        /// 获取或设置ConnectHeaders的Authorization头
+        /// </summary> 
+        public string? Authorization
+        {
+            get
+            {
+                return this.ConnectHeaders.TryGetValue(nameof(Authorization), out var vlaue) ? vlaue : null;
+            }
+            set
+            {
+                this.ConnectHeaders.Remove(nameof(Authorization));
+                if (value != null)
+                {
+                    this.ConnectHeaders[nameof(Authorization)] = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 连接到CYarp服务器的请求头
         /// </summary>
-        [AllowNull]
-        public string Authorization { get; set; }
+        public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// 与server或target的连接超时时长
@@ -63,7 +81,6 @@ namespace CYarp.Client
         {
             ArgumentNullException.ThrowIfNull(TargetUri);
             ArgumentNullException.ThrowIfNull(ServerUri);
-            ArgumentException.ThrowIfNullOrEmpty(Authorization);
             ArgumentOutOfRangeException.ThrowIfLessThan(ConnectTimeout, TimeSpan.Zero);
 
             if (targetSchemes.Contains(this.TargetUri.Scheme) == false)
@@ -74,11 +91,6 @@ namespace CYarp.Client
             if (serverSchemes.Contains(this.ServerUri.Scheme) == false)
             {
                 throw new ArgumentException($"Scheme must be {string.Join(", ", serverSchemes)}", nameof(ServerUri));
-            }
-
-            if (AuthenticationHeaderValue.TryParse(this.Authorization, out _) == false)
-            {
-                throw new ArgumentException("Authorization format is incorrect", nameof(Authorization));
             }
         }
     }
