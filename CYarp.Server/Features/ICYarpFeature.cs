@@ -6,7 +6,7 @@ namespace CYarp.Server.Features
     /// <summary>
     /// CYarp特征
     /// </summary>
-    interface ICYarpFeature
+    public interface ICYarpFeature
     {
         /// <summary>
         /// 获取当前是否为CYarp请求
