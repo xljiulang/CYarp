@@ -70,7 +70,6 @@ namespace CYarp.Client
             if (clientOptions == null ||
                 clientOptions->ServerUri == default ||
                 clientOptions->TargetUri == default ||
-                clientOptions->Authorization == default ||
                 Uri.TryCreate(Marshal.PtrToStringUni(clientOptions->ServerUri), UriKind.Absolute, out var serverUri) == false ||
                 Uri.TryCreate(Marshal.PtrToStringUni(clientOptions->TargetUri), UriKind.Absolute, out var targetUri) == false)
             {
@@ -83,9 +82,10 @@ namespace CYarp.Client
                 TargetUri = targetUri,
             };
 
-            if (clientOptions->Authorization != default)
+            var authorization = Marshal.PtrToStringUni(clientOptions->Authorization);
+            if (!string.IsNullOrEmpty(authorization))
             {
-                options.ConnectHeaders[nameof(ClientOptions.Authorization)] = Marshal.PtrToStringUni(clientOptions->Authorization) ?? string.Empty;
+                options.ConnectHeaders[nameof(ClientOptions.Authorization)] = authorization;
             }
 
             if (clientOptions->TargetUnixDomainSocket != default)
