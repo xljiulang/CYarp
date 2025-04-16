@@ -13,7 +13,7 @@ enum CYarpErrorCode
 	ConnectFailure = 1,
 
 	// 连接到服务器已超时
-	ConnectTimedout = 2,
+	ConnectTimeout = 2,
 
 	// 连接到服务身份认证不通过
 	ConnectUnauthorized = 3,	

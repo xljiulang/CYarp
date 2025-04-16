@@ -33,7 +33,7 @@ namespace CYarp.Client
             /// <summary>
             /// 连接到服务器已超时
             /// </summary>
-            ConnectTimedout = 2,
+            ConnectTimeout = 2,
 
             /// <summary>
             /// 连接到服务身份认证不通过
