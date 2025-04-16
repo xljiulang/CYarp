@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace CYarp.Client.AspNetCore
 {
@@ -15,6 +16,7 @@ namespace CYarp.Client.AspNetCore
         , IConnectionTransportFeature
     {
         private readonly FeatureCollection features = new();
+        private readonly Stream stream;
 
         public CYarpConnectionContext(Stream stream, EndPoint remoteEndPoint)
         {
@@ -26,6 +28,12 @@ namespace CYarp.Client.AspNetCore
             this.features.Set<IConnectionItemsFeature>(this);
             this.features.Set<IConnectionEndPointFeature>(this);
             this.features.Set<IConnectionTransportFeature>(this);
+            this.stream = stream;
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            return this.stream.DisposeAsync();
         }
 
         public override string ConnectionId { get; set; }

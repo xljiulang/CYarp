@@ -32,6 +32,7 @@ namespace CYarp.Client.AspNetCore
 
         /// <summary>
         /// 连接到CYarp服务器的请求头的工厂
+        /// 当ConnectHeadersFactory不为null时，ConnectHeaders将会被忽略
         /// </summary>
         public Func<ValueTask<Dictionary<string, string>>>? ConnectHeadersFactory { get; set; } = null;
 

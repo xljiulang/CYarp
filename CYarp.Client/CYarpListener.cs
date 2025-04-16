@@ -45,8 +45,9 @@ namespace CYarp.Client
                 {
                     return await this.connectionFactory.CreateServerTunnelAsync(tunnelId.Value, cancellationToken);
                 }
-                catch (CYarpConnectException ex)
+                catch (Exception ex)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     Log.LogTunnelError(this.logger, tunnelId.Value, ex.Message);
                 }
             }

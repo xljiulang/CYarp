@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Builder
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <typeparam name="TClientIdProvider">客户端id的提供者</typeparam>
         /// <param name="endpoints"></param>
         /// <returns></returns>
-        public static RouteHandlerBuilder MapCYarp<TClientIdProvider>(this IEndpointRouteBuilder endpoints) where TClientIdProvider : IClientIdProvider
+        public static RouteHandlerBuilder MapCYarp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClientIdProvider>(this IEndpointRouteBuilder endpoints) where TClientIdProvider : IClientIdProvider
         {
             var clientIdProvider = ActivatorUtilities.CreateInstance<TClientIdProvider>(endpoints.ServiceProvider);
             return endpoints.MapCYarp(clientIdProvider.GetClientIdAsync);
