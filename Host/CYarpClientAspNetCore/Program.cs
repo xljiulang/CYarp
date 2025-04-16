@@ -1,4 +1,3 @@
-using CYarp.Client;
 using CYarp.Client.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,7 +12,7 @@ namespace CYarpClientAspNetCore
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            builder.Services.Configure<CYarpClientOptions>(builder.Configuration.GetSection(nameof(CYarpClientOptions)));
+            builder.Services.Configure<CYarpEndPoint>(builder.Configuration.GetSection(nameof(CYarpEndPoint)));
 
             // ×¢²ácyarpµÄ¼àÌýÆ÷
             builder.Services.AddCYarpListener();
@@ -23,7 +22,7 @@ namespace CYarpClientAspNetCore
                 kestrel.ListenLocalhost(5000);
 
                 // ¼àÌýÒ»¸öcyarp
-                var endPoint = new CYarpEndPoint(kestrel.ApplicationServices.GetRequiredService<IOptions<CYarpClientOptions>>().Value);
+                var endPoint = kestrel.ApplicationServices.GetRequiredService<IOptions<CYarpEndPoint>>().Value;
                 kestrel.Listen(endPoint);
             });
 

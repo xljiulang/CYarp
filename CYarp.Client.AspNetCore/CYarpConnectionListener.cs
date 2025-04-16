@@ -13,7 +13,6 @@ namespace CYarp.Client.AspNetCore
     {
         private readonly CYarpEndPoint endPoint;
         private readonly ILogger logger;
-        private readonly CYarpClient client;
         private readonly CancellationTokenSource closedTokenSource = new();
         private IAsyncEnumerator<ConnectionContext>? connnections;
 
@@ -23,7 +22,6 @@ namespace CYarp.Client.AspNetCore
         {
             this.endPoint = endPoint;
             this.logger = logger;
-            this.client = new CYarpClient(endPoint.Options, logger);
         }
 
         public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
@@ -81,7 +79,22 @@ namespace CYarp.Client.AspNetCore
 
         private async IAsyncEnumerable<ConnectionContext> AcceptAllAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            await using var listener = await this.client.ListenAsync(cancellationToken);
+            var options = new CYarpClientOptions
+            {
+                ConnectHeaders = this.endPoint.ConnectHeaders,
+                ConnectTimeout = this.endPoint.ConnectTimeout,
+                KeepAliveInterval = this.endPoint.KeepAliveInterval,
+                ServerUri = this.endPoint.ServerUri,
+                TargetUri = this.endPoint.TargetUri,
+            };
+
+            if (this.endPoint.ConnectHeadersFactory != null)
+            {
+                options.ConnectHeaders = await this.endPoint.ConnectHeadersFactory.Invoke();
+            }
+
+            using var client = new CYarpClient(options);
+            await using var listener = await client.ListenAsync(cancellationToken);
             Log.LogConnected(this.logger, this.endPoint);
 
             await foreach (var stream in listener.AcceptAllAsync(cancellationToken))
@@ -106,8 +119,6 @@ namespace CYarp.Client.AspNetCore
             {
                 await this.connnections.DisposeAsync();
             }
-
-            this.client.Dispose();
         }
 
 

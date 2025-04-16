@@ -33,25 +33,6 @@ namespace CYarp.Client
         public string? TargetUnixDomainSocket { get; set; }
 
         /// <summary>
-        /// 获取或设置ConnectHeaders的Authorization头
-        /// </summary> 
-        public string? Authorization
-        {
-            get
-            {
-                return this.ConnectHeaders.TryGetValue(nameof(Authorization), out var vlaue) ? vlaue : null;
-            }
-            set
-            {
-                this.ConnectHeaders.Remove(nameof(Authorization));
-                if (value != null)
-                {
-                    this.ConnectHeaders[nameof(Authorization)] = value;
-                }
-            }
-        }
-
-        /// <summary>
         /// 连接到CYarp服务器的请求头
         /// </summary>
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
