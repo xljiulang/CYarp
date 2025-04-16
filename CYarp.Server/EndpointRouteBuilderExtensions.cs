@@ -9,21 +9,10 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// WebApplication扩展
+    /// 终结点路由扩展
     /// </summary>
-    public static class WebApplicationExtensions
+    public static class EndpointRouteBuilderExtensions
     {
-        /// <summary>
-        /// 使用CYarp中间件 
-        /// </summary>
-        /// <param name="app"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseCYarp(this IApplicationBuilder app)
-        {
-            app.UseWebSockets();
-            return app.UseMiddleware<CYarpMiddleware>();
-        }
-
         /// <summary>
         /// 处理CYarp的客户端连接
         /// </summary>
