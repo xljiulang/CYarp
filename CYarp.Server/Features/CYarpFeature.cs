@@ -12,9 +12,8 @@ namespace CYarp.Server.Features
     sealed partial class CYarpFeature : ICYarpFeature
     {
         private const string CYarp = "CYarp";
-        private readonly Func<Task<Stream>>? acceptAsyncFunc;
-
-        public static readonly ICYarpFeature NotCYarp = new NotCYarpFeature();
+        private static readonly PathString cyarpPath = "/cyarp";
+        private readonly Func<Task<Stream>>? acceptAsyncFunc;         
 
         public bool IsCYarpRequest => this.acceptAsyncFunc != null;
 
@@ -22,12 +21,15 @@ namespace CYarp.Server.Features
 
         public CYarpFeature(HttpContext context)
         {
-            if (TryGetWebSocketFeature(context, out var protocol, out var acceptAsync) ||
-                TryGetHttp2Feature(context, out protocol, out acceptAsync) ||
-                TryGetHttp11Feature(context, out protocol, out acceptAsync))
+            if (context.Request.Path.StartsWithSegments(cyarpPath))
             {
-                this.Protocol = protocol;
-                this.acceptAsyncFunc = acceptAsync;
+                if (TryGetWebSocketFeature(context, out var protocol, out var acceptAsync) ||
+                    TryGetHttp2Feature(context, out protocol, out acceptAsync) ||
+                    TryGetHttp11Feature(context, out protocol, out acceptAsync))
+                {
+                    this.Protocol = protocol;
+                    this.acceptAsyncFunc = acceptAsync;
+                }
             }
         }
 
@@ -139,24 +141,6 @@ namespace CYarp.Server.Features
         {
             var stream = await this.AcceptAsStreamAsync();
             return new SafeWriteStream(stream);
-        }
-
-
-        private class NotCYarpFeature : ICYarpFeature
-        {
-            public bool IsCYarpRequest => false;
-
-            public TransportProtocol Protocol => default;
-
-            public Task<Stream> AcceptAsSafeWriteStreamAsync()
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<Stream> AcceptAsStreamAsync()
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }
