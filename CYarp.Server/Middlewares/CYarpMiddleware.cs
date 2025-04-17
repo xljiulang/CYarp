@@ -6,10 +6,17 @@ using System.Threading.Tasks;
 
 namespace CYarp.Server.Middlewares
 {
+    /// <summary>
+    /// cyarp协议分析中间件
+    /// </summary>
     sealed class CYarpMiddleware : IMiddleware
     {
         private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
 
+        /// <summary>
+        /// cyarp协议分析中间件
+        /// </summary>
+        /// <param name="cyarpOptions"></param>
         public CYarpMiddleware(IOptionsMonitor<CYarpOptions> cyarpOptions)
         {
             this.cyarpOptions = cyarpOptions;

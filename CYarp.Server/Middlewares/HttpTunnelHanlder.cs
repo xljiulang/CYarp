@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// HttpTunnel握手处理中间件
+    /// HttpTunnel握手处理者
     /// </summary>
     static partial class HttpTunnelHanlder
     {

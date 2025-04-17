@@ -11,13 +11,17 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// IClient的授权验证、实例创建和生命周期管理中间件
+    /// IClient的的处理者
     /// </summary>
     sealed partial class ClientHandler
     {
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
         private readonly Func<HttpContext, ValueTask<string?>> clientIdProvider;
 
+        /// <summary>
+        /// IClient的的处理者
+        /// </summary>
+        /// <param name="clientIdProvider"></param>
         public ClientHandler(Func<HttpContext, ValueTask<string?>> clientIdProvider)
         {
             this.clientIdProvider = clientIdProvider;

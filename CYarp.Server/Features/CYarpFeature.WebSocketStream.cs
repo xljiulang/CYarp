@@ -8,6 +8,9 @@ namespace CYarp.Server.Features
 {
     sealed partial class CYarpFeature
     {
+        /// <summary>
+        /// WebSocket流
+        /// </summary>
         private class WebSocketStream : Stream
         {
             private readonly WebSocket webSocket;

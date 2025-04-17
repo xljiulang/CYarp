@@ -9,13 +9,22 @@ using System.Threading.Tasks;
 
 namespace CYarp.Server.Features
 {
+    /// <summary>
+    /// cyarp协议分析特征
+    /// </summary>
     sealed partial class CYarpFeature : ICYarpFeature
     {
         private const string CYarp = "CYarp";
         private readonly Func<Task<Stream>>? acceptAsyncFunc;
 
+        /// <summary>
+        /// 是否为cyarp请求
+        /// </summary>
         public bool IsCYarpRequest => this.acceptAsyncFunc != null;
 
+        /// <summary>
+        /// 传输协议
+        /// </summary>
         public TransportProtocol Protocol { get; }
 
         public CYarpFeature(HttpContext context)

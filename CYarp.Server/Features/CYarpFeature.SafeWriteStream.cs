@@ -7,6 +7,9 @@ namespace CYarp.Server.Features
 {
     sealed partial class CYarpFeature
     {
+        /// <summary>
+        /// 安全写入流
+        /// </summary>
         private class SafeWriteStream : DelegatingStream
         {
             private readonly SemaphoreSlim semaphoreSlim = new(1, 1);
