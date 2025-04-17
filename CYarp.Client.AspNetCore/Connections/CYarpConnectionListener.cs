@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYarp.Client.AspNetCore
+namespace CYarp.Client.AspNetCore.Connections
 {
     sealed partial class CYarpConnectionListener : IConnectionListener
     {

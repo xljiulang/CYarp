@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CYarp.Client.AspNetCore
+namespace CYarp.Client.AspNetCore.Connections
 {
     sealed class CYarpConnectionListenerFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
     {
@@ -16,23 +16,23 @@ namespace CYarp.Client.AspNetCore
         public CYarpConnectionListenerFactory(IOptions<SocketTransportOptions> options, ILoggerFactory loggerFactory)
         {
             this.loggerFactory = loggerFactory;
-            this.socketTransportFactory = new SocketTransportFactory(options, loggerFactory);
+            socketTransportFactory = new SocketTransportFactory(options, loggerFactory);
         }
 
         public bool CanBind(EndPoint endpoint)
         {
-            return this.socketTransportFactory.CanBind(endpoint) || endpoint is CYarpEndPoint;
+            return socketTransportFactory.CanBind(endpoint) || endpoint is CYarpEndPoint;
         }
 
         public async ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
             if (endpoint is CYarpEndPoint cyarpEndPoint)
             {
-                var logger = this.loggerFactory.CreateLogger<CYarpConnectionListener>();
+                var logger = loggerFactory.CreateLogger<CYarpConnectionListener>();
                 return new CYarpConnectionListener(cyarpEndPoint, logger);
             }
 
-            return await this.socketTransportFactory.BindAsync(endpoint, cancellationToken);
+            return await socketTransportFactory.BindAsync(endpoint, cancellationToken);
         }
     }
 }

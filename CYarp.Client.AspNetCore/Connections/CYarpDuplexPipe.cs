@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.IO.Pipelines;
 
-namespace CYarp.Client.AspNetCore
+namespace CYarp.Client.AspNetCore.Connections
 {
     sealed class CYarpDuplexPipe : IDuplexPipe
     {
@@ -11,8 +11,8 @@ namespace CYarp.Client.AspNetCore
 
         public CYarpDuplexPipe(Stream stream)
         {
-            this.Input = PipeReader.Create(stream);
-            this.Output = PipeWriter.Create(stream);
+            Input = PipeReader.Create(stream);
+            Output = PipeWriter.Create(stream);
         }
     }
 }

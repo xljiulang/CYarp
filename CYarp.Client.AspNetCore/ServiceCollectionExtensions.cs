@@ -1,4 +1,4 @@
-﻿using CYarp.Client.AspNetCore;
+﻿using CYarp.Client.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.Extensions.DependencyInjection
