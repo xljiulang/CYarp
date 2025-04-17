@@ -30,8 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<HttpTunnelFactory>();
             services.TryAddSingleton<CYarpMiddleware>();
 
-            services.AddHttpForwarder();
-            services.AddAuthorization();
+            services.AddHttpForwarder();          
             return new CYarpBuilder(services);
         }
 
