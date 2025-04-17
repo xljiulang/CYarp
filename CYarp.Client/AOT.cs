@@ -55,7 +55,6 @@ namespace CYarp.Client
             public nint ServerUri;
             public nint TargetUri;
             public nint TargetUnixDomainSocket;
-            public nint Authorization;
             public int ConnectTimeout;
             public unsafe delegate* unmanaged[Cdecl]<nint, nint, void> TunnelErrorCallback;
         }
@@ -81,12 +80,6 @@ namespace CYarp.Client
                 ServerUri = serverUri,
                 TargetUri = targetUri,
             };
-
-            var authorization = Marshal.PtrToStringUni(clientOptions->Authorization);
-            if (!string.IsNullOrEmpty(authorization))
-            {
-                options.ConnectHeaders[nameof(ClientOptions.Authorization)] = authorization;
-            }
 
             if (clientOptions->TargetUnixDomainSocket != default)
             {
@@ -120,6 +113,28 @@ namespace CYarp.Client
             {
                 return nint.Zero;
             }
+        }
+
+        /// <summary>
+        /// 设置连接时的请求头
+        /// </summary>
+        /// <param name="clientPtr">客户端句柄</param>
+        /// <param name="headerName">请求头名称</param>
+        /// <param name="headerValue">请求头的值</param>
+        /// <returns></returns>
+        [UnmanagedCallersOnly(EntryPoint = "CYarpClientSetConnectHeader", CallConvs = [typeof(CallConvCdecl)])]
+        public static ErrorCode CYarpClientSetConnectHeader(nint clientPtr, nint headerName, nint headerValue)
+        {
+            var gcHandle = GCHandle.FromIntPtr(clientPtr);
+            if (gcHandle.IsAllocated == false || gcHandle.Target is not CYarpClient client)
+            {
+                return ErrorCode.InvalidHandle;
+            }
+
+            var name = Marshal.PtrToStringUni(headerName);
+            var value = Marshal.PtrToStringUni(headerValue);
+            client.SetConnectHeader(name, value);
+            return ErrorCode.NoError;
         }
 
         /// <summary>

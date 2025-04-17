@@ -79,6 +79,21 @@ namespace CYarp.Client
             };
         }
 
+        internal void SetConnectHeader(string? name, string? value)
+        {
+            if (string.IsNullOrEmpty(name) == false)
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    this.options.ConnectHeaders.Remove(name);
+                }
+                else
+                {
+                    this.options.ConnectHeaders[name] = value;
+                }
+            }
+        }
+
         /// <summary>
         /// 连接到CYarp服务器，创建用于接受CYarp服务器传输连接的监听器
         /// </summary> 
