@@ -93,7 +93,7 @@ namespace CYarp.Client.AspNetCore.Connections
                 options.ConnectHeaders = await this.endPoint.ConnectHeadersFactory.Invoke();
             }
 
-            using var client = new CYarpClient(options);
+            using var client = new CYarpClient(options, this.logger);
             await using var listener = await client.ListenAsync(cancellationToken);
             Log.LogConnected(this.logger, this.endPoint);
 

@@ -34,6 +34,10 @@ namespace CYarpServer
                     this.logger.LogInformation($"传输已被关闭，5秒后重新连接");
                     await Task.Delay(TimeSpan.FromSeconds(5d), stoppingToken);
                 }
+                catch (ArgumentException)
+                {
+                    throw;
+                }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
                     break;
