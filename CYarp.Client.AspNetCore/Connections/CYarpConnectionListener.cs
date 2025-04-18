@@ -14,7 +14,7 @@ namespace CYarp.Client.AspNetCore.Connections
         private readonly CYarpEndPoint endPoint;
         private readonly ILogger logger;
         private readonly CancellationTokenSource closedTokenSource = new();
-        private IAsyncEnumerator<ConnectionContext>? connnections;
+        private IAsyncEnumerator<ConnectionContext>? connections;
 
         public EndPoint EndPoint => this.endPoint;
 
@@ -34,29 +34,29 @@ namespace CYarp.Client.AspNetCore.Connections
         {
             while (true)
             {
-                if (this.connnections == null)
+                if (this.connections == null)
                 {
-                    this.connnections = this.AcceptAllAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
+                    this.connections = this.AcceptAllAsync(cancellationToken).GetAsyncEnumerator(cancellationToken);
                 }
 
                 try
                 {
-                    if (await this.connnections.MoveNextAsync())
+                    if (await this.connections.MoveNextAsync())
                     {
-                        return this.connnections.Current;
+                        return this.connections.Current;
                     }
                     else
                     {
-                        await this.connnections.DisposeAsync();
-                        this.connnections = null;
+                        await this.connections.DisposeAsync();
+                        this.connections = null;
 
-                        Log.LogConnectError(this.logger, this.endPoint, "连接被中断");
+                        Log.LogConnectError(this.logger, this.endPoint.ServerUri, "连接被中断");
                         await Task.Delay(this.endPoint.ReconnectInterval, cancellationToken);
                     }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    Log.LogConnectError(this.logger, this.endPoint, "操作被用户取消");
+                    Log.LogConnectError(this.logger, this.endPoint.ServerUri, "操作被用户取消");
                     return null;
                 }
                 catch (CYarpConnectException ex) when (ex.ErrorCode >= CYarpConnectError.Unauthorized)
@@ -65,13 +65,13 @@ namespace CYarp.Client.AspNetCore.Connections
                 }
                 catch (Exception ex)
                 {
-                    if (this.connnections != null)
+                    if (this.connections != null)
                     {
-                        await this.connnections.DisposeAsync();
+                        await this.connections.DisposeAsync();
                     }
-                    this.connnections = null;
+                    this.connections = null;
 
-                    Log.LogConnectError(this.logger, this.endPoint, ex.Message);
+                    Log.LogConnectError(this.logger, this.endPoint.ServerUri, ex.Message);
                     await Task.Delay(this.endPoint.ReconnectInterval, cancellationToken);
                 }
             }
@@ -95,7 +95,7 @@ namespace CYarp.Client.AspNetCore.Connections
 
             using var client = new CYarpClient(options, this.logger);
             await using var listener = await client.ListenAsync(cancellationToken);
-            Log.LogConnected(this.logger, this.endPoint);
+            Log.LogConnected(this.logger, this.endPoint.ServerUri);
 
             var localEndPoint = new DnsEndPoint(this.endPoint.TargetUri.Host, this.endPoint.TargetUri.Port);
             var remoteEndPoint = new DnsEndPoint(this.endPoint.ServerUri.Host, this.endPoint.ServerUri.Port);
@@ -121,23 +121,23 @@ namespace CYarp.Client.AspNetCore.Connections
             this.closedTokenSource.Cancel();
             this.closedTokenSource.Dispose();
 
-            if (this.connnections != null)
+            if (this.connections != null)
             {
-                await this.connnections.DisposeAsync();
+                await this.connections.DisposeAsync();
             }
         }
 
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "连接到服务器{endPoint}成功")]
-            public static partial void LogConnected(ILogger logger, EndPoint endPoint);
+            [LoggerMessage(LogLevel.Information, "连接到服务器{serverUri}成功")]
+            public static partial void LogConnected(ILogger logger, Uri serverUri);
 
-            [LoggerMessage(LogLevel.Warning, "已断开与服务器{endPoint}的连接")]
-            public static partial void LogDisconnected(ILogger logger, EndPoint endPoint);
+            [LoggerMessage(LogLevel.Warning, "已断开与服务器{serverUri}的连接")]
+            public static partial void LogDisconnected(ILogger logger, Uri serverUri);
 
-            [LoggerMessage(LogLevel.Warning, "连接到服务器{endPoint}异常：{reason}")]
-            public static partial void LogConnectError(ILogger logger, EndPoint endPoint, string? reason);
+            [LoggerMessage(LogLevel.Warning, "连接到服务器{serverUri}异常：{reason}")]
+            public static partial void LogConnectError(ILogger logger, Uri serverUri, string? reason);
         }
     }
 }

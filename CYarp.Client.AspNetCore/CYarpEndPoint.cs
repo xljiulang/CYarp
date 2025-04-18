@@ -60,7 +60,7 @@ namespace CYarp.Client.AspNetCore
         /// <returns></returns>
         public override string ToString()
         {
-            return this.ServerUri.ToString();
+            return $"{this.TargetUri.Authority} <- {this.ServerUri}";
         }
     }
 }
