@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,10 +13,12 @@ namespace CYarp.Server.Clients
     /// 客户端管理器
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
-    sealed class ClientManager : IClientViewer
+    sealed class ClientManager : IClientViewer, IDisposable
     {
-        private readonly ConcurrentDictionary<string, IClient> dictionary = new();
+        private readonly SemaphoreSlim semaphore = new(1, 1);
         private readonly ClientStateChannel clientStateChannel;
+        private readonly ConcurrentDictionary<string, IClient> dictionary = new();
+
 
         /// <inheritdoc/>
         public int Count => this.dictionary.Count;
@@ -35,9 +38,21 @@ namespace CYarp.Server.Clients
         /// 添加客户端实例
         /// </summary>
         /// <param name="client">客户端实例</param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async ValueTask<bool> AddAsync(IClient client, CancellationToken cancellationToken)
+        public async ValueTask<bool> AddAsync(IClient client)
+        {
+            try
+            {
+                await this.semaphore.WaitAsync();
+                return await this.AddCoreAsync(client);
+            }
+            finally
+            {
+                this.semaphore.Release();
+            }
+        }
+
+        private async ValueTask<bool> AddCoreAsync(IClient client)
         {
             var clientId = client.Id;
             if (this.dictionary.TryRemove(clientId, out var existClient))
@@ -47,26 +62,40 @@ namespace CYarp.Server.Clients
 
             if (this.dictionary.TryAdd(clientId, client))
             {
-                await this.clientStateChannel.WriteAsync(client, connected: true, cancellationToken);
+                await this.clientStateChannel.WriteAsync(client, connected: true, default);
                 return true;
             }
             return false;
         }
 
+
         /// <summary>
         /// 移除客户端实例
         /// </summary>
-        /// <param name="client">客户端实例</param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="client">客户端实例</param> 
         /// <returns></returns>
-        public async ValueTask<bool> RemoveAsync(IClient client, CancellationToken cancellationToken)
+        public async ValueTask<bool> RemoveAsync(IClient client)
+        {
+            try
+            {
+                await this.semaphore.WaitAsync();
+                return await this.RemoveCoreAsync(client);
+            }
+            finally
+            {
+                this.semaphore.Release();
+            }
+        }
+
+
+        private async ValueTask<bool> RemoveCoreAsync(IClient client)
         {
             var clientId = client.Id;
             if (this.dictionary.TryRemove(clientId, out var existClient))
             {
                 if (ReferenceEquals(existClient, client))
                 {
-                    await this.clientStateChannel.WriteAsync(client, connected: false, cancellationToken);
+                    await this.clientStateChannel.WriteAsync(client, connected: false, default);
                     return true;
                 }
                 else
@@ -76,7 +105,6 @@ namespace CYarp.Server.Clients
             }
             return false;
         }
-
 
         /// <inheritdoc/>
         public IEnumerator<IClient> GetEnumerator()
@@ -90,6 +118,12 @@ namespace CYarp.Server.Clients
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
+        }
+
+
+        public void Dispose()
+        {
+            this.semaphore.Dispose();
         }
     }
 }

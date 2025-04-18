@@ -95,6 +95,11 @@ namespace CYarp.Server.Clients
             return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig, transformer ?? HttpTransformer.Default);
         }
 
+        public Task WaitForCloseAsync()
+        {
+            return this.connection.WaitForCloseAsync();
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (this.disposed == false)
@@ -108,6 +113,7 @@ namespace CYarp.Server.Clients
                 await this.connection.DisposeAsync();
             }
         }
+
 
         public override string ToString()
         {

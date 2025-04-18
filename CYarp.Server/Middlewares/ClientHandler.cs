@@ -67,20 +67,18 @@ namespace CYarp.Server.Middlewares
             var stream = await cyarpFeature.AcceptAsSafeWriteStreamAsync();
             var connection = new ClientConnection(clientId, stream, options.Client, logger);
 
-            var disconnected = false;
             await using (var client = new Client(connection, httpForwarder, options.HttpTunnel, httpTunnelFactory, clientTargetUri, context))
             {
-                if (await clientManager.AddAsync(client, default))
+                if (await clientManager.AddAsync(client))
                 {
                     Log.LogConnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
-                    await connection.WaitForCloseAsync();
-                    disconnected = await clientManager.RemoveAsync(client, default);
-                }
-            }
+                    await client.WaitForCloseAsync();
 
-            if (disconnected)
-            {
-                Log.LogDisconnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
+                    if (await clientManager.RemoveAsync(client))
+                    {
+                        Log.LogDisconnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
+                    }
+                }
             }
 
             // 关闭连接

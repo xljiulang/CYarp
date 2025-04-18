@@ -114,7 +114,8 @@ namespace CYarp.Server.Clients
                 {
                     break;
                 }
-                else if (text == Ping)
+
+                if (text == Ping)
                 {
                     Log.LogRecvPing(this.logger, this.ClientId);
                     await this.stream.WriteAsync(PongLine, cancellationToken);
@@ -127,13 +128,15 @@ namespace CYarp.Server.Clients
                 {
                     Log.LogRecvUnknown(this.logger, this.ClientId, text);
                 }
-            } 
+            }
         }
 
         public async ValueTask DisposeAsync()
         {
             if (this.disposeTokenSource.IsCancellationRequested == false)
             {
+                this.keepAliveTimer?.Dispose();
+
                 this.disposeTokenSource.Cancel();
                 this.disposeTokenSource.Dispose();
 
