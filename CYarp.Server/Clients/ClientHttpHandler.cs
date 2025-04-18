@@ -56,16 +56,9 @@ namespace CYarp.Server.Clients
             return handler;
         }
 
-
         private async ValueTask<Stream> ConnectAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
         {
             return await this.httpTunnelFactory.CreateHttpTunnelAsync(this.connection, cancellationToken);
-        }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            request.Headers.Host = null;
-            return base.SendAsync(request, cancellationToken);
         }
     }
 }

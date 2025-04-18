@@ -26,6 +26,7 @@ namespace CYarp.Server.Clients
         private readonly HttpContext httpContext;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
 
+        private static readonly ClientHttpTransformer httpTransformer = new();
         private static readonly ForwarderRequestConfig httpRequestConfig = new()
         {
             Version = HttpVersion.Version11,
@@ -92,7 +93,7 @@ namespace CYarp.Server.Clients
             var httpClient = this.httpClientLazy.Value;
             var destination = this.TargetUri.OriginalString;
             var requestConfig = this.TargetUri.Scheme == Uri.UriSchemeHttp ? httpRequestConfig : httpsRequestConfig;
-            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig, transformer ?? HttpTransformer.Empty);
+            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig, transformer ?? httpTransformer);
         }
 
         public async ValueTask DisposeAsync()
