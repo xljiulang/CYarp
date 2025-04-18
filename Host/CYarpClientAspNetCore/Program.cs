@@ -23,7 +23,7 @@ namespace CYarpClientAspNetCore
 
                 // ¼àÌýÒ»¸öcyarp
                 var endPoint = kestrel.ApplicationServices.GetRequiredService<IOptions<CYarpEndPoint>>().Value;
-                kestrel.Listen(endPoint);
+                kestrel.ListenCYarp(endPoint);
             });
 
             var app = builder.Build();
