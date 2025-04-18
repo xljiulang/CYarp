@@ -12,38 +12,38 @@ namespace CYarp.Client.AspNetCore
     public sealed class CYarpEndPoint : EndPoint
     {
         /// <summary>
-        /// CYarp服务器Uri
+        /// 获取或设置CYarp服务器Uri
         /// 支持http、https、 ws和wss
         /// </summary>
         [AllowNull]
         public Uri ServerUri { get; set; }
 
         /// <summary>
-        /// 目标服务器Uri
+        /// 获取或设置访问目标服务器（即本服务）使用的Uri
         /// 支持http和https
         /// </summary>
         [AllowNull]
         public Uri TargetUri { get; set; } = new Uri("http://localhost");
 
         /// <summary>
-        /// 连接到CYarp服务器的请求头
+        /// 获取或设置连接到CYarp服务器的请求头
         /// </summary>
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// 连接到CYarp服务器的请求头的工厂
+        /// 获取或设置连接到CYarp服务器的请求头的工厂
         /// 当ConnectHeadersFactory不为null时，ConnectHeaders将会被忽略
         /// </summary>
         public Func<ValueTask<Dictionary<string, string>>>? ConnectHeadersFactory { get; set; } = null;
 
         /// <summary>
-        /// 与server或target的连接超时时长
+        /// 获取或设置与CYarp服务器的连接超时时长
         /// 默认为5s
         /// </summary>
         public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// 心跳包周期
+        /// 获取或设置连接心跳包周期
         /// 默认30s
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);

@@ -14,42 +14,42 @@ namespace CYarp.Client
         private static readonly string[] serverSchemes = [Uri.UriSchemeHttp, Uri.UriSchemeHttps, Uri.UriSchemeWs, Uri.UriSchemeWss];
 
         /// <summary>
-        /// CYarp服务器Uri
+        /// 获取或设置CYarp服务器Uri
         /// 支持http、https、 ws和wss
         /// </summary>
         [AllowNull]
         public Uri ServerUri { get; set; }
 
         /// <summary>
-        /// 目标服务器Uri
+        /// 获取或设置访问目标服务器使用的Uri
         /// 支持http和https
         /// </summary>
         [AllowNull]
         public Uri TargetUri { get; set; }
 
         /// <summary>
-        /// 目标服务器的UnixDomainSocket路径[可选]
+        ///获取或设置目标服务器的UnixDomainSocket路径[可选]
         /// </summary>
         public string? TargetUnixDomainSocket { get; set; }
 
         /// <summary>
-        /// 连接到CYarp服务器的请求头
+        /// 获取或设置连接到CYarp服务器的请求头
         /// </summary>
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// 与server或target的连接超时时长
+        /// 获取或设置与server或target的连接超时时长
         /// 默认为5s
         /// </summary>
         public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// 隧道传输错误回调
+        /// 获取或设置隧道传输错误回调
         /// </summary>
         public Action<Exception>? TunnelErrorCallback;
 
         /// <summary>
-        /// 心跳包周期
+        /// 获取或设置心跳包周期
         /// 默认30s
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
