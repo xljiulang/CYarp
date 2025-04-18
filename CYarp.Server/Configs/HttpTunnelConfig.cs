@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace CYarp.Server.Configs
 {
@@ -36,5 +37,10 @@ namespace CYarp.Server.Configs
         /// 默认为true
         /// </summary>
         public bool DangerousAcceptAnyServerCertificate { get; set; } = true;
+
+        /// <summary>
+        /// 在传播分布式跟踪和上下文时使用的<see cref="DistributedContextPropagator"/>
+        /// </summary>
+        public DistributedContextPropagator? ActivityHeadersPropagator { get; set; }
     }
 }
