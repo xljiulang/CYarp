@@ -44,7 +44,7 @@ namespace CYarp.Server.Middlewares
 
             if (httpTunnelFactory.SetResult(httpTunnel))
             {
-                await httpTunnel.Closed;
+                await httpTunnel.WaitForDisposeAsync();
             }
             else
             {

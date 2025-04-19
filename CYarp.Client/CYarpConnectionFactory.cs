@@ -216,7 +216,7 @@ namespace CYarp.Client
 
             if (tunnelId == null)
             {
-                this.SetRequestHeaders(request);
+                this.SetConnectHeader(request);
             }
 
             using var timeoutTokenSource = new CancellationTokenSource(this.options.ConnectTimeout);
@@ -242,7 +242,7 @@ namespace CYarp.Client
 
             if (tunnelId == null)
             {
-                this.SetRequestHeaders(request);
+                this.SetConnectHeader(request);
             }
 
             using var timeoutTokenSource = new CancellationTokenSource(this.options.ConnectTimeout);
@@ -258,7 +258,7 @@ namespace CYarp.Client
             return await httpResponse.Content.ReadAsStreamAsync(linkedTokenSource.Token);
         }
 
-        private void SetRequestHeaders(HttpRequestMessage request)
+        private void SetConnectHeader(HttpRequestMessage request)
         {
             var targetUri = this.options.TargetUri.ToString();
             request.Headers.TryAddWithoutValidation(CYarpTargetUri, targetUri);

@@ -12,13 +12,8 @@ namespace CYarp.Server.Clients
     {
         private ClientConnection? connection;
         private readonly ILogger logger;
-        private readonly long tickCout = Environment.TickCount64;
-        private readonly TaskCompletionSource closeTaskCompletionSource = new();
-
-        /// <summary>
-        /// 等待HttpClient对其关闭
-        /// </summary>
-        public Task Closed => this.closeTaskCompletionSource.Task;
+        private readonly long tickCount = Environment.TickCount64;
+        private readonly TaskCompletionSource disposeTaskCompletionSource = new();
 
         /// <summary>
         /// 隧道标识
@@ -43,6 +38,11 @@ namespace CYarp.Server.Clients
             this.connection = connection;
         }
 
+        public Task WaitForDisposeAsync()
+        {
+            return this.disposeTaskCompletionSource.Task;
+        }
+
         public override ValueTask DisposeAsync()
         {
             this.SetClosedResult();
@@ -57,10 +57,10 @@ namespace CYarp.Server.Clients
 
         private void SetClosedResult()
         {
-            if (this.closeTaskCompletionSource.TrySetResult())
+            if (this.disposeTaskCompletionSource.TrySetResult())
             {
                 var httpTunnelCount = this.connection?.DecrementHttpTunnelCount();
-                var lifeTime = TimeSpan.FromMilliseconds(Environment.TickCount64 - this.tickCout);
+                var lifeTime = TimeSpan.FromMilliseconds(Environment.TickCount64 - this.tickCount);
                 Log.LogTunnelClosed(this.logger, this.connection?.ClientId, this.Protocol, this.Id, lifeTime, httpTunnelCount);
             }
         }
