@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -10,8 +9,6 @@ namespace CYarp.Server.Clients
     /// </summary>
     sealed partial class Tunnel : DelegatingStream
     {
-        private ClientConnection? connection;
-        private readonly ILogger logger;
         private readonly long tickCount = Environment.TickCount64;
         private readonly TaskCompletionSource disposeTaskCompletionSource = new();
 
@@ -25,17 +22,22 @@ namespace CYarp.Server.Clients
         /// </summary>
         public TransportProtocol Protocol { get; }
 
-        public Tunnel(Stream inner, TunnelId tunnelId, TransportProtocol protocol, ILogger logger)
+        /// <summary>
+        /// 获取生命周期
+        /// </summary>
+        public TimeSpan Lifetime => TimeSpan.FromMilliseconds(Environment.TickCount64 - this.tickCount);
+
+        /// <summary>
+        /// 获取或设置释放回调
+        /// </summary>
+        public Action<Tunnel>? DisposeCallback { get; set; }
+
+
+        public Tunnel(Stream inner, TunnelId tunnelId, TransportProtocol protocol)
             : base(inner)
         {
             this.Id = tunnelId;
             this.Protocol = protocol;
-            this.logger = logger;
-        }
-
-        public void BindConnection(ClientConnection connection)
-        {
-            this.connection = connection;
         }
 
         public Task WaitForDisposeAsync()
@@ -45,35 +47,27 @@ namespace CYarp.Server.Clients
 
         public override ValueTask DisposeAsync()
         {
-            this.SetClosedResult();
+            this.SetDisposed();
             return this.Inner.DisposeAsync();
         }
 
         protected override void Dispose(bool disposing)
         {
-            this.SetClosedResult();
+            this.SetDisposed();
             this.Inner.Dispose();
         }
 
-        private void SetClosedResult()
+        private void SetDisposed()
         {
             if (this.disposeTaskCompletionSource.TrySetResult())
             {
-                var httpTunnelCount = this.connection?.DecrementHttpTunnelCount();
-                var lifeTime = TimeSpan.FromMilliseconds(Environment.TickCount64 - this.tickCount);
-                Log.LogTunnelClosed(this.logger, this.connection?.ClientId, this.Protocol, this.Id, lifeTime, httpTunnelCount);
+                this.DisposeCallback?.Invoke(this);
             }
         }
 
         public override string ToString()
         {
             return this.Id.ToString();
-        }
-
-        static partial class Log
-        {
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 关闭了{protocol}协议隧道{tunnelId}，生命周期为{lifeTime}，其当前隧道总数为{tunnelCount}")]
-            public static partial void LogTunnelClosed(ILogger logger, string? clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan lifeTime, int? tunnelCount);
         }
     }
 }

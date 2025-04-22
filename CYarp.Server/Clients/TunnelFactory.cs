@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,12 +11,13 @@ namespace CYarp.Server.Clients
     /// </summary> 
     sealed partial class TunnelFactory
     {
-        private readonly ILogger<Tunnel> logger;
         private readonly ConcurrentDictionary<TunnelId, TaskCompletionSource<Tunnel>> httpTunnelCompletionSources = new();
+
+        public ILogger<Tunnel> Logger { get; }
 
         public TunnelFactory(ILogger<Tunnel> logger)
         {
-            this.logger = logger;
+            this.Logger = logger;
         }
 
         /// <summary>
@@ -37,26 +37,18 @@ namespace CYarp.Server.Clients
 
             try
             {
-                var stopwatch = Stopwatch.StartNew();
-                Log.LogTunnelCreating(this.logger, connection.ClientId, tunnelId);
+                Log.LogTunnelCreating(this.Logger, connection.ClientId, tunnelId);
                 await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
-                var httpTunnel = await httpTunnelSource.Task.WaitAsync(cancellationToken);
-
-                var httpTunnelCount = connection.IncrementHttpTunnelCount();
-                httpTunnel.BindConnection(connection);
-
-                stopwatch.Stop();
-                Log.LogTunnelCreateSuccess(this.logger, connection.ClientId, httpTunnel.Protocol, tunnelId, stopwatch.Elapsed, httpTunnelCount);
-                return httpTunnel;
+                return await httpTunnelSource.Task.WaitAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {
-                Log.LogTunnelCreateFailure(this.logger, connection.ClientId, tunnelId, "远程端操作超时");
+                Log.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, "远程端操作超时");
                 throw;
             }
             catch (Exception ex)
             {
-                Log.LogTunnelCreateFailure(this.logger, connection.ClientId, tunnelId, ex.Message);
+                Log.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, ex.Message);
                 throw;
             }
             finally
@@ -82,9 +74,6 @@ namespace CYarp.Server.Clients
 
             [LoggerMessage(LogLevel.Warning, "[{clientId}] 创建隧道{tunnelId}失败：{reason}")]
             public static partial void LogTunnelCreateFailure(ILogger logger, string clientId, TunnelId tunnelId, string? reason);
-
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 创建了{protocol}协议隧道{tunnelId}，过程耗时{elapsed}，其当前隧道总数为{tunnelCount}")]
-            public static partial void LogTunnelCreateSuccess(ILogger logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan elapsed, int tunnelCount);
         }
     }
 }
