@@ -11,16 +11,16 @@ namespace CYarp.Server.Clients
     sealed class ClientHttpHandler : DelegatingHandler
     {
         private readonly HttpTunnelConfig httpTunnelConfig;
-        private readonly HttpTunnelFactory httpTunnelFactory;
+        private readonly TunnelFactory tunnelFactory;
         private readonly ClientConnection connection;
 
         public ClientHttpHandler(
             HttpTunnelConfig httpTunnelConfig,
-            HttpTunnelFactory httpTunnelFactory,
+            TunnelFactory tunnelFactory,
             ClientConnection connection)
         {
             this.httpTunnelConfig = httpTunnelConfig;
-            this.httpTunnelFactory = httpTunnelFactory;
+            this.tunnelFactory = tunnelFactory;
             this.connection = connection;
 
             this.InnerHandler = CreatePrimitiveHandler();
@@ -56,7 +56,7 @@ namespace CYarp.Server.Clients
 
         private async ValueTask<Stream> ConnectAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
         {
-            return await this.httpTunnelFactory.CreateHttpTunnelAsync(this.connection, cancellationToken);
+            return await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
         }
     }
 }

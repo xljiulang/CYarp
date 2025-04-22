@@ -30,7 +30,7 @@ namespace CYarp.Server.Middlewares
         public async Task<IResult> HandleClientAsync(
             HttpContext context,
             IHttpForwarder httpForwarder,
-            HttpTunnelFactory httpTunnelFactory,
+            TunnelFactory tunnelFactory,
             ClientManager clientManager,
             IOptionsMonitor<CYarpOptions> yarpOptions,
             ILogger<Client> logger)
@@ -67,7 +67,7 @@ namespace CYarp.Server.Middlewares
             var stream = await cyarpFeature.AcceptAsSafeWriteStreamAsync();
             var connection = new ClientConnection(clientId, stream, options.Client, logger);
 
-            await using (var client = new Client(connection, httpForwarder, options.HttpTunnel, httpTunnelFactory, clientTargetUri, context))
+            await using (var client = new Client(connection, httpForwarder, options.HttpTunnel, tunnelFactory, clientTargetUri, context))
             {
                 if (await clientManager.AddAsync(client))
                 {

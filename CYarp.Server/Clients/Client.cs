@@ -22,7 +22,7 @@ namespace CYarp.Server.Clients
         private readonly ClientConnection connection;
         private readonly IHttpForwarder httpForwarder;
         private readonly HttpTunnelConfig httpTunnelConfig;
-        private readonly HttpTunnelFactory httpTunnelFactory;
+        private readonly TunnelFactory tunnelFactory;
         private readonly HttpContext httpContext;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
 
@@ -64,14 +64,14 @@ namespace CYarp.Server.Clients
             ClientConnection connection,
             IHttpForwarder httpForwarder,
             HttpTunnelConfig httpTunnelConfig,
-            HttpTunnelFactory httpTunnelFactory,
+            TunnelFactory tunnelFactory,
             Uri clientTargetUri,
             HttpContext httpContext)
         {
             this.connection = connection;
             this.httpForwarder = httpForwarder;
             this.httpTunnelConfig = httpTunnelConfig;
-            this.httpTunnelFactory = httpTunnelFactory;
+            this.tunnelFactory = tunnelFactory;
             this.TargetUri = clientTargetUri;
             this.httpContext = httpContext;
 
@@ -80,7 +80,7 @@ namespace CYarp.Server.Clients
 
         private HttpMessageInvoker CreateHttpClient()
         {
-            var httpHandler = new ClientHttpHandler(this.httpTunnelConfig, this.httpTunnelFactory, this.connection);
+            var httpHandler = new ClientHttpHandler(this.httpTunnelConfig, this.tunnelFactory, this.connection);
             return new HttpMessageInvoker(httpHandler);
         }
 

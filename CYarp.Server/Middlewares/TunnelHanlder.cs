@@ -8,21 +8,21 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// HttpTunnel握手处理者
+    /// Tunnel握手处理者
     /// </summary>
-    static partial class HttpTunnelHanlder
+    static partial class TunnelHanlder
     {
         /// <summary>
-        /// HttpTunnel不需要身份验证和授权，tunnelId本身具有随机性和服务端可校验性来保证安全
+        /// Tunnel不需要身份验证和授权，tunnelId本身具有随机性和服务端可校验性来保证安全
         /// </summary>
-        /// <param name="httpTunnelFactory"></param>
+        /// <param name="tunnelFactory"></param>
         /// <param name="logger"></param>
         /// <param name="context"></param>
         /// <param name="tunnelId"></param> 
         /// <returns></returns>
-        public static async Task<IResult> HandleHttpTunnelAsync(
-            HttpTunnelFactory httpTunnelFactory,
-            ILogger<HttpTunnel> logger,
+        public static async Task<IResult> HandleTunnelAsync(
+            TunnelFactory tunnelFactory,
+            ILogger<Tunnel> logger,
             HttpContext context,
             TunnelId tunnelId)
         {
@@ -33,16 +33,16 @@ namespace CYarp.Server.Middlewares
                 return Results.BadRequest();
             }
 
-            if (!tunnelId.IsValid || !httpTunnelFactory.Contains(tunnelId))
+            if (!tunnelId.IsValid || !tunnelFactory.Contains(tunnelId))
             {
                 Log.LogInvalidTunnelId(logger, context.Connection.Id, tunnelId);
                 return Results.Forbid();
             }
 
             var stream = await cyarpFeature.AcceptAsStreamAsync();
-            var httpTunnel = new HttpTunnel(stream, tunnelId, cyarpFeature.Protocol, logger);
+            var httpTunnel = new Tunnel(stream, tunnelId, cyarpFeature.Protocol, logger);
 
-            if (httpTunnelFactory.SetResult(httpTunnel))
+            if (tunnelFactory.SetResult(httpTunnel))
             {
                 await httpTunnel.WaitForDisposeAsync();
             }

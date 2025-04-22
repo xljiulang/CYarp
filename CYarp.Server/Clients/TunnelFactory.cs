@@ -8,28 +8,28 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// HttpTunnel工厂
+    /// Tunnel工厂
     /// </summary> 
-    sealed partial class HttpTunnelFactory
+    sealed partial class TunnelFactory
     {
-        private readonly ILogger<HttpTunnel> logger;
-        private readonly ConcurrentDictionary<TunnelId, TaskCompletionSource<HttpTunnel>> httpTunnelCompletionSources = new();
+        private readonly ILogger<Tunnel> logger;
+        private readonly ConcurrentDictionary<TunnelId, TaskCompletionSource<Tunnel>> httpTunnelCompletionSources = new();
 
-        public HttpTunnelFactory(ILogger<HttpTunnel> logger)
+        public TunnelFactory(ILogger<Tunnel> logger)
         {
             this.logger = logger;
         }
 
         /// <summary>
-        /// 创建HttpTunnel
+        /// 创建Tunnel
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<HttpTunnel> CreateHttpTunnelAsync(ClientConnection connection, CancellationToken cancellationToken)
+        public async Task<Tunnel> CreateTunnelAsync(ClientConnection connection, CancellationToken cancellationToken)
         {
             var tunnelId = TunnelId.NewTunnelId(connection.ClientId);
-            var httpTunnelSource = new TaskCompletionSource<HttpTunnel>();
+            var httpTunnelSource = new TaskCompletionSource<Tunnel>();
             if (this.httpTunnelCompletionSources.TryAdd(tunnelId, httpTunnelSource) == false)
             {
                 throw new SystemException($"系统中已存在{tunnelId}的tunnelId");
@@ -70,7 +70,7 @@ namespace CYarp.Server.Clients
             return this.httpTunnelCompletionSources.ContainsKey(tunnelId);
         }
 
-        public bool SetResult(HttpTunnel httpTunnel)
+        public bool SetResult(Tunnel httpTunnel)
         {
             return this.httpTunnelCompletionSources.TryRemove(httpTunnel.Id, out var source) && source.TrySetResult(httpTunnel);
         }

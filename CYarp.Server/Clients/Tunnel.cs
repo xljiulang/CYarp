@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// http隧道
+    /// 隧道
     /// </summary>
-    sealed partial class HttpTunnel : DelegatingStream
+    sealed partial class Tunnel : DelegatingStream
     {
         private ClientConnection? connection;
         private readonly ILogger logger;
@@ -25,7 +25,7 @@ namespace CYarp.Server.Clients
         /// </summary>
         public TransportProtocol Protocol { get; }
 
-        public HttpTunnel(Stream inner, TunnelId tunnelId, TransportProtocol protocol, ILogger logger)
+        public Tunnel(Stream inner, TunnelId tunnelId, TransportProtocol protocol, ILogger logger)
             : base(inner)
         {
             this.Id = tunnelId;
