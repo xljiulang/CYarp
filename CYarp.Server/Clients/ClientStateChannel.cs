@@ -60,24 +60,25 @@ namespace CYarp.Server.Clients
             return this.channel.Reader.ReadAllAsync(cancellationToken);
         }
 
+
         [DebuggerDisplay("Id = {Id}, Protocol = {Protocol}")]
         private sealed class ReadOnlyClient(IClient client) : IClient
         {
-            public string Id { get; } = client.Id;
+            public string Id => client.Id;
 
-            public Uri TargetUri { get; } = client.TargetUri;
+            public Uri TargetUri => client.TargetUri;
 
-            public ClaimsPrincipal User { get; } = client.User;
+            public ClaimsPrincipal User => client.User;
 
-            public TransportProtocol Protocol { get; } = client.Protocol;
+            public TransportProtocol Protocol => client.Protocol;
 
-            public IPEndPoint? RemoteEndpoint { get; } = client.RemoteEndpoint;
+            public IPEndPoint? RemoteEndpoint => client.RemoteEndpoint;
 
-            public int TcpTunnelCount { get; } = client.TcpTunnelCount;
+            public int TcpTunnelCount => client.TcpTunnelCount;
 
-            public int HttpTunnelCount { get; } = client.HttpTunnelCount;
+            public int HttpTunnelCount => client.HttpTunnelCount;
 
-            public DateTimeOffset CreationTime { get; } = client.CreationTime;
+            public DateTimeOffset CreationTime => client.CreationTime;
 
 
             public Task<Stream> CreateTcpTunnelAsync(CancellationToken cancellationToken = default)
@@ -93,6 +94,11 @@ namespace CYarp.Server.Clients
             public ValueTask DisposeAsync()
             {
                 throw new InvalidOperationException();
+            }
+
+            public override string ToString()
+            {
+                return this.Id;
             }
         }
     }

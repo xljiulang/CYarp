@@ -1,7 +1,5 @@
 ﻿using CYarp.Server.Configs;
-using CYarp.Server.Features;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -26,7 +24,6 @@ namespace CYarp.Server.Clients
         private readonly IHttpForwarder httpForwarder;
         private readonly TunnelFactory tunnelFactory;
         private readonly HttpTunnelConfig httpTunnelConfig;
-        private readonly HttpContext httpContext;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
 
         private static readonly ForwarderRequestConfig httpRequestConfig = new()
@@ -41,44 +38,40 @@ namespace CYarp.Server.Clients
             VersionPolicy = HttpVersionPolicy.RequestVersionOrLower
         };
 
-        public string Id => this.connection.ClientId;
 
         public Uri TargetUri { get; }
 
-        public ClaimsPrincipal User => this.httpContext.User;
+        public ClaimsPrincipal User { get; }
 
-        public TransportProtocol Protocol => this.httpContext.Features.GetRequiredFeature<ICYarpFeature>().Protocol;
+        public TransportProtocol Protocol { get; }
+
+        public IPEndPoint? RemoteEndpoint { get; set; }
+
+        public string Id => this.connection.ClientId;
 
         public int TcpTunnelCount => this.tcpTunnelCount;
 
         public int HttpTunnelCount => this.connection.HttpTunnelCount;
 
-        public IPEndPoint? RemoteEndpoint
-        {
-            get
-            {
-                var connection = this.httpContext.Connection;
-                return connection.RemoteIpAddress == null ? null : new IPEndPoint(connection.RemoteIpAddress, connection.RemotePort);
-            }
-        }
-
         public DateTimeOffset CreationTime { get; } = DateTimeOffset.Now;
-
 
         public Client(
             ClientConnection connection,
             IHttpForwarder httpForwarder,
             TunnelFactory tunnelFactory,
             HttpTunnelConfig httpTunnelConfig,
-            Uri clientTargetUri,
-            HttpContext httpContext)
+            Uri targetUri,
+            TransportProtocol protocol,
+            ClaimsPrincipal user)
         {
             this.connection = connection;
             this.httpForwarder = httpForwarder;
             this.tunnelFactory = tunnelFactory;
             this.httpTunnelConfig = httpTunnelConfig;
-            this.TargetUri = clientTargetUri;
-            this.httpContext = httpContext;
+
+            this.TargetUri = targetUri;
+            this.Protocol = protocol;
+            this.User = user;
 
             this.httpClientLazy = new Lazy<HttpMessageInvoker>(this.CreateHttpClient);
         }

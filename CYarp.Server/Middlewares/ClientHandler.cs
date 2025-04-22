@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 using Yarp.ReverseProxy.Forwarder;
 
@@ -66,9 +67,14 @@ namespace CYarp.Server.Middlewares
             var options = yarpOptions.CurrentValue;
             var stream = await cyarpFeature.AcceptAsSafeWriteStreamAsync();
             var connection = new ClientConnection(clientId, stream, options.Client, logger);
-
-            await using (var client = new Client(connection, httpForwarder, tunnelFactory, options.HttpTunnel, clientTargetUri, context))
+            await using (var client = new Client(connection, httpForwarder, tunnelFactory, options.HttpTunnel, clientTargetUri, cyarpFeature.Protocol, context.User))
             {
+                var httpConnection = context.Connection;
+                if (httpConnection != null && httpConnection.RemoteIpAddress != null)
+                {
+                    client.RemoteEndpoint = new IPEndPoint(httpConnection.RemoteIpAddress, httpConnection.RemotePort);
+                }
+
                 if (await clientManager.AddAsync(client))
                 {
                     Log.LogConnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
