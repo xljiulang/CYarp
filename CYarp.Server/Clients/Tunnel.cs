@@ -30,7 +30,7 @@ namespace CYarp.Server.Clients
         /// <summary>
         /// 获取或设置释放回调
         /// </summary>
-        public Action<Tunnel>? DisposeCallback { get; set; }
+        public Action<Tunnel>? DisposingCallback { get; set; }
 
 
         public Tunnel(Stream inner, TunnelId tunnelId, TransportProtocol protocol)
@@ -61,7 +61,7 @@ namespace CYarp.Server.Clients
         {
             if (this.disposeTaskCompletionSource.TrySetResult())
             {
-                this.DisposeCallback?.Invoke(this);
+                this.DisposingCallback?.Invoke(this);
             }
         }
 

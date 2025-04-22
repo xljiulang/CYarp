@@ -13,23 +13,21 @@ namespace CYarp.Server.Clients
 {
     sealed partial class ClientHttpHandler : DelegatingHandler
     {
-        private readonly HttpTunnelConfig httpTunnelConfig;
-        private readonly TunnelFactory tunnelFactory;
         private readonly ClientConnection connection;
+        private readonly TunnelFactory tunnelFactory;
 
         public ClientHttpHandler(
-            HttpTunnelConfig httpTunnelConfig,
+            ClientConnection connection,
             TunnelFactory tunnelFactory,
-            ClientConnection connection)
+            HttpTunnelConfig httpTunnelConfig)
         {
-            this.httpTunnelConfig = httpTunnelConfig;
-            this.tunnelFactory = tunnelFactory;
             this.connection = connection;
+            this.tunnelFactory = tunnelFactory;
 
-            this.InnerHandler = CreatePrimitiveHandler();
+            this.InnerHandler = CreatePrimitiveHandler(httpTunnelConfig);
         }
 
-        private SocketsHttpHandler CreatePrimitiveHandler()
+        private SocketsHttpHandler CreatePrimitiveHandler(HttpTunnelConfig httpTunnelConfig)
         {
             var handler = new SocketsHttpHandler
             {
@@ -37,19 +35,19 @@ namespace CYarp.Server.Clients
                 UseProxy = false,
                 UseCookies = false,
                 AllowAutoRedirect = false,
-                MaxConnectionsPerServer = this.httpTunnelConfig.MaxTunnelsPerClient,
-                ConnectTimeout = this.httpTunnelConfig.CreationTimeout,
-                ConnectCallback = ConnectAsync,
+                MaxConnectionsPerServer = httpTunnelConfig.MaxTunnelsPerClient,
+                ConnectTimeout = httpTunnelConfig.CreationTimeout,
+                ConnectCallback = CreateHttpTunnelAsync,
                 EnableMultipleHttp2Connections = true,
-                PooledConnectionLifetime = this.httpTunnelConfig.LifeTime,
-                PooledConnectionIdleTimeout = this.httpTunnelConfig.IdleTimeout,
+                PooledConnectionLifetime = httpTunnelConfig.LifeTime,
+                PooledConnectionIdleTimeout = httpTunnelConfig.IdleTimeout,
                 AutomaticDecompression = DecompressionMethods.None,
                 RequestHeaderEncodingSelector = (header, context) => Encoding.UTF8,
                 ResponseHeaderEncodingSelector = (header, context) => Encoding.UTF8,
-                ActivityHeadersPropagator = this.httpTunnelConfig.ActivityHeadersPropagator,
+                ActivityHeadersPropagator = httpTunnelConfig.ActivityHeadersPropagator,
             };
 
-            if (this.httpTunnelConfig.DangerousAcceptAnyServerCertificate)
+            if (httpTunnelConfig.DangerousAcceptAnyServerCertificate)
             {
                 handler.SslOptions.RemoteCertificateValidationCallback = (_, _, _, _) => true;
             }
@@ -57,7 +55,7 @@ namespace CYarp.Server.Clients
             return handler;
         }
 
-        private async ValueTask<Stream> ConnectAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
+        private async ValueTask<Stream> CreateHttpTunnelAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
         {
             var stopwatch = Stopwatch.StartNew();
             var httpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
@@ -66,11 +64,11 @@ namespace CYarp.Server.Clients
             var httpTunnelCount = this.connection.IncrementHttpTunnelCount();
             Log.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, httpTunnelCount);
 
-            httpTunnel.DisposeCallback = this.OnHttpTunnelDispose;
+            httpTunnel.DisposingCallback = this.OnHttpTunnelDisposing;
             return httpTunnel;
         }
 
-        private void OnHttpTunnelDispose(Tunnel tunnel)
+        private void OnHttpTunnelDisposing(Tunnel tunnel)
         {
             var httpTunnelCount = this.connection.DecrementHttpTunnelCount();
             Log.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, httpTunnelCount);
