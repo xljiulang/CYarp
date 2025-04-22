@@ -4,9 +4,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Yarp.ReverseProxy.Forwarder;
 
@@ -18,6 +20,7 @@ namespace CYarp.Server.Clients
     [DebuggerDisplay("Id = {Id}, Protocol = {Protocol}")]
     sealed class Client : IClient
     {
+        private int tcpTunnelCount = 0;
         private volatile bool disposed = false;
         private readonly ClientConnection connection;
         private readonly IHttpForwarder httpForwarder;
@@ -45,6 +48,8 @@ namespace CYarp.Server.Clients
         public ClaimsPrincipal User => this.httpContext.User;
 
         public TransportProtocol Protocol => this.httpContext.Features.GetRequiredFeature<ICYarpFeature>().Protocol;
+
+        public int TcpTunnelCount => this.tcpTunnelCount;
 
         public int HttpTunnelCount => this.connection.HttpTunnelCount;
 
@@ -82,6 +87,22 @@ namespace CYarp.Server.Clients
         {
             var httpHandler = new ClientHttpHandler(this.connection, this.tunnelFactory, this.httpTunnelConfig);
             return new HttpMessageInvoker(httpHandler, disposeHandler: true);
+        }
+
+        public async Task<Stream> CreateTcpTunnelAsync(CancellationToken cancellationToken)
+        {
+            ObjectDisposedException.ThrowIf(this.disposed, this);
+
+            var tcpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
+            Interlocked.Increment(ref this.tcpTunnelCount);
+
+            tcpTunnel.DisposingCallback = OnTcpTunnelDisposing;
+            return tcpTunnel;
+
+            void OnTcpTunnelDisposing(Tunnel tunnel)
+            {
+                Interlocked.Decrement(ref this.tcpTunnelCount);
+            }
         }
 
 

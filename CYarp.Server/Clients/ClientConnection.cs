@@ -78,14 +78,9 @@ namespace CYarp.Server.Clients
             await this.stream.WriteAsync(buffer, cancellationToken);
         }
 
-        public int IncrementHttpTunnelCount()
+        public int AddHttpTunnelCount(int value)
         {
-            return Interlocked.Increment(ref this.httpTunnelCount);
-        }
-
-        public int DecrementHttpTunnelCount()
-        {
-            return Interlocked.Decrement(ref this.httpTunnelCount);
+            return Interlocked.Add(ref this.httpTunnelCount, value);
         }
 
         public async Task WaitForCloseAsync()

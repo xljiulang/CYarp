@@ -61,7 +61,7 @@ namespace CYarp.Server.Clients
             var httpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
             stopwatch.Stop();
 
-            var httpTunnelCount = this.connection.IncrementHttpTunnelCount();
+            var httpTunnelCount = this.connection.AddHttpTunnelCount(1);
             Log.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, httpTunnelCount);
 
             httpTunnel.DisposingCallback = this.OnHttpTunnelDisposing;
@@ -70,7 +70,7 @@ namespace CYarp.Server.Clients
 
         private void OnHttpTunnelDisposing(Tunnel tunnel)
         {
-            var httpTunnelCount = this.connection.DecrementHttpTunnelCount();
+            var httpTunnelCount = this.connection.AddHttpTunnelCount(-1);
             Log.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, httpTunnelCount);
         }
 

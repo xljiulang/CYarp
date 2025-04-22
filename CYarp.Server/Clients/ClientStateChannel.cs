@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
@@ -72,18 +73,26 @@ namespace CYarp.Server.Clients
 
             public IPEndPoint? RemoteEndpoint { get; } = client.RemoteEndpoint;
 
+            public int TcpTunnelCount { get; } = client.TcpTunnelCount;
+
             public int HttpTunnelCount { get; } = client.HttpTunnelCount;
 
             public DateTimeOffset CreationTime { get; } = client.CreationTime;
 
-            public ValueTask DisposeAsync()
+
+            public Task<Stream> CreateTcpTunnelAsync(CancellationToken cancellationToken = default)
             {
-                throw new NotSupportedException();
+                throw new InvalidOperationException();
             }
 
             public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = null)
             {
-                throw new NotSupportedException();
+                throw new InvalidOperationException();
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                throw new InvalidOperationException();
             }
         }
     }

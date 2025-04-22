@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.IO;
 using System.Net;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Yarp.ReverseProxy.Forwarder;
 
@@ -38,6 +40,11 @@ namespace CYarp.Server
         IPEndPoint? RemoteEndpoint { get; }
 
         /// <summary>
+        /// 获取仍在连接的TcpTunnel数量
+        /// </summary>
+        int TcpTunnelCount { get; }
+
+        /// <summary>
         /// 获取仍在连接的HttpTunnel数量
         /// </summary>
         int HttpTunnelCount { get; }
@@ -48,7 +55,14 @@ namespace CYarp.Server
         DateTimeOffset CreationTime { get; }
 
         /// <summary>
-        /// 转发http请求
+        /// 创建一个可承载 TCP 流的传输隧道
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<Stream> CreateTcpTunnelAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 转发http请求到关联的<see cref="TargetUri"/>"/>
         /// </summary>
         /// <param name="context">http上下文</param> 
         /// <param name="transformer">http内容转换器</param>
