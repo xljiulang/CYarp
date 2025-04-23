@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Hashing;
 using System.Text;
@@ -37,8 +38,9 @@ namespace CYarp.Server.Clients
         /// 生成安全的tunnelId
         /// </summary>
         /// <param name="clientId"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        public static TunnelId NewTunnelId(string clientId)
+        public static TunnelId NewTunnelId(string clientId, long? value = null)
         {
             var hash32 = new XxHash32();
             Span<byte> span = stackalloc byte[16];
@@ -59,8 +61,9 @@ namespace CYarp.Server.Clients
             }
             hash32.GetHashAndReset(span);
 
-            // [4-11]  随机数 
-            Random.Shared.NextBytes(span.Slice(4, 8));
+            // [4-11]  value
+            value ??= Random.Shared.NextInt64();
+            BinaryPrimitives.WriteInt64BigEndian(span[4..], value.Value);
 
             // [12-15] 校验值
             hash32.Append(span[..12]);
