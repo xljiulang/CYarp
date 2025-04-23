@@ -11,7 +11,7 @@ namespace CYarp.Server.Clients
     /// </summary> 
     sealed partial class TunnelFactory
     {
-        private readonly ConcurrentDictionary<TunnelId, TaskCompletionSource<Tunnel>> httpTunnelCompletionSources = new();
+        private readonly ConcurrentDictionary<TunnelId, TaskCompletionSource<Tunnel>> tunnelCompletionSources = new();
 
         public ILogger<Tunnel> Logger { get; }
 
@@ -29,8 +29,8 @@ namespace CYarp.Server.Clients
         public async Task<Tunnel> CreateTunnelAsync(ClientConnection connection, CancellationToken cancellationToken)
         {
             var tunnelId = connection.NewTunnelId();
-            var httpTunnelSource = new TaskCompletionSource<Tunnel>();
-            if (this.httpTunnelCompletionSources.TryAdd(tunnelId, httpTunnelSource) == false)
+            var tunnelSource = new TaskCompletionSource<Tunnel>();
+            if (this.tunnelCompletionSources.TryAdd(tunnelId, tunnelSource) == false)
             {
                 throw new SystemException($"系统中已存在{tunnelId}的tunnelId");
             }
@@ -38,8 +38,8 @@ namespace CYarp.Server.Clients
             try
             {
                 Log.LogTunnelCreating(this.Logger, connection.ClientId, tunnelId);
-                await connection.CreateHttpTunnelAsync(tunnelId, cancellationToken);
-                return await httpTunnelSource.Task.WaitAsync(cancellationToken);
+                await connection.CreateTunnelAsync(tunnelId, cancellationToken);
+                return await tunnelSource.Task.WaitAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -53,18 +53,18 @@ namespace CYarp.Server.Clients
             }
             finally
             {
-                this.httpTunnelCompletionSources.TryRemove(tunnelId, out _);
+                this.tunnelCompletionSources.TryRemove(tunnelId, out _);
             }
         }
 
         public bool Contains(TunnelId tunnelId)
         {
-            return this.httpTunnelCompletionSources.ContainsKey(tunnelId);
+            return this.tunnelCompletionSources.ContainsKey(tunnelId);
         }
 
         public bool SetResult(Tunnel httpTunnel)
         {
-            return this.httpTunnelCompletionSources.TryRemove(httpTunnel.Id, out var source) && source.TrySetResult(httpTunnel);
+            return this.tunnelCompletionSources.TryRemove(httpTunnel.Id, out var source) && source.TrySetResult(httpTunnel);
         }
 
         static partial class Log

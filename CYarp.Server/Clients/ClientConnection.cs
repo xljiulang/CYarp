@@ -70,7 +70,7 @@ namespace CYarp.Server.Clients
             return TunnelId.NewTunnelId(this.ClientId, value);
         }
 
-        public async Task CreateHttpTunnelAsync(TunnelId tunnelId, CancellationToken cancellationToken)
+        public async Task CreateTunnelAsync(TunnelId tunnelId, CancellationToken cancellationToken)
         {
             const int size = 64;
             var tunnelIdLine = $"{tunnelId}\r\n";
