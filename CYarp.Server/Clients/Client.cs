@@ -18,13 +18,13 @@ namespace CYarp.Server.Clients
     [DebuggerDisplay("Id = {Id}, Protocol = {Protocol}")]
     sealed class Client : IClient
     {
-        private int tcpTunnelCount = 0;
         private volatile bool disposed = false;
         private readonly ClientConnection connection;
         private readonly IHttpForwarder httpForwarder;
         private readonly TunnelFactory tunnelFactory;
         private readonly HttpTunnelConfig httpTunnelConfig;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
+        private readonly ClientStatistics clientStatistics = new();
 
         private static readonly ForwarderRequestConfig httpRequestConfig = new()
         {
@@ -49,9 +49,9 @@ namespace CYarp.Server.Clients
 
         public string Id => this.connection.ClientId;
 
-        public int TcpTunnelCount => this.tcpTunnelCount;
+        public int TcpTunnelCount => this.clientStatistics.TcpTunnelCount;
 
-        public int HttpTunnelCount => this.connection.HttpTunnelCount;
+        public int HttpTunnelCount => this.clientStatistics.HttpTunnelCount;
 
         public DateTimeOffset CreationTime { get; } = DateTimeOffset.Now;
 
@@ -78,7 +78,7 @@ namespace CYarp.Server.Clients
 
         private HttpMessageInvoker CreateHttpClient()
         {
-            var httpHandler = new ClientHttpHandler(this.connection, this.tunnelFactory, this.httpTunnelConfig);
+            var httpHandler = new ClientHttpHandler(this.connection, this.tunnelFactory, this.httpTunnelConfig, this.clientStatistics);
             return new HttpMessageInvoker(httpHandler, disposeHandler: true);
         }
 
@@ -87,14 +87,14 @@ namespace CYarp.Server.Clients
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
             var tcpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
-            Interlocked.Increment(ref this.tcpTunnelCount);
+            this.clientStatistics.AddTcpTunnelCount(1);
 
             tcpTunnel.DisposingCallback = OnTcpTunnelDisposing;
             return tcpTunnel;
 
             void OnTcpTunnelDisposing(Tunnel tunnel)
             {
-                Interlocked.Decrement(ref this.tcpTunnelCount);
+                this.clientStatistics.AddTcpTunnelCount(-1);
             }
         }
 

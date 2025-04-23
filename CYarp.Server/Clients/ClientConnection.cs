@@ -13,8 +13,7 @@ namespace CYarp.Server.Clients
     /// 客户端的长连接
     /// </summary>
     sealed partial class ClientConnection : IAsyncDisposable
-    {
-        private int httpTunnelCount = 0;
+    { 
         private readonly Stream stream;
         private readonly ILogger logger;
         private readonly Timer? keepAliveTimer;
@@ -27,9 +26,7 @@ namespace CYarp.Server.Clients
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
-        public string ClientId { get; }
-
-        public int HttpTunnelCount => this.httpTunnelCount;
+        public string ClientId { get; }         
 
         public ClientConnection(string clientId, Stream stream, ClientConfig config, ILogger logger)
         {
@@ -77,11 +74,7 @@ namespace CYarp.Server.Clients
             var buffer = owner.Memory[..length];
             await this.stream.WriteAsync(buffer, cancellationToken);
         }
-
-        public int AddHttpTunnelCount(int value)
-        {
-            return Interlocked.Add(ref this.httpTunnelCount, value);
-        }
+         
 
         public async Task WaitForCloseAsync()
         {
