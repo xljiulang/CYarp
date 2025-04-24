@@ -14,7 +14,7 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// IClient的的处理者
     /// </summary>
-    sealed partial class ClientHandler
+    sealed class ClientHandler
     {
         private const string CYarpTargetUriHeader = "CYarp-TargetUri";
         private readonly Func<HttpContext, ValueTask<string?>> clientIdProvider;
@@ -39,20 +39,20 @@ namespace CYarp.Server.Middlewares
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false)
             {
-                Log.LogInvalidRequest(logger, context.Connection.Id, "不是有效的CYarp请求");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "不是有效的CYarp请求");
                 return Results.BadRequest();
             }
 
             if (cyarpFeature.IsCYarpRequest == false || context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
             {
-                Log.LogInvalidRequest(logger, context.Connection.Id, $"请求头{CYarpTargetUriHeader}不存在");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"请求头{CYarpTargetUriHeader}不存在");
                 return Results.BadRequest();
             }
 
             // CYarp-TargetUri头格式验证
             if (Uri.TryCreate(targetUri, UriKind.Absolute, out var clientTargetUri) == false)
             {
-                Log.LogInvalidRequest(logger, context.Connection.Id, $"请求头{CYarpTargetUriHeader}的值不是Uri格式");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"请求头{CYarpTargetUriHeader}的值不是Uri格式");
                 return Results.BadRequest();
             }
 
@@ -60,7 +60,7 @@ namespace CYarp.Server.Middlewares
             var clientId = await this.clientIdProvider.Invoke(context);
             if (string.IsNullOrEmpty(clientId))
             {
-                Log.LogInvalidRequest(logger, context.Connection.Id, "无法获取到IClient的Id");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "无法获取到IClient的Id");
                 return Results.Forbid();
             }
 
@@ -77,12 +77,12 @@ namespace CYarp.Server.Middlewares
 
                 if (await clientManager.AddAsync(client))
                 {
-                    Log.LogConnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
+                    ClientLog.LogConnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
                     await client.WaitForCloseAsync();
 
                     if (await clientManager.RemoveAsync(client))
                     {
-                        Log.LogDisconnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
+                        ClientLog.LogDisconnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
                     }
                 }
             }
@@ -90,18 +90,6 @@ namespace CYarp.Server.Middlewares
             // 关闭连接
             context.Abort();
             return Results.Empty;
-        }
-
-        static partial class Log
-        {
-            [LoggerMessage(LogLevel.Warning, "连接{connectionId}请求无效：{message}")]
-            public static partial void LogInvalidRequest(ILogger logger, string connectionId, string message);
-
-            [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，系统当前客户端总数为{count}")]
-            public static partial void LogConnected(ILogger logger, string clientId, TransportProtocol protocol, int count);
-
-            [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长连接断开，系统当前客户端总数为{count}")]
-            public static partial void LogDisconnected(ILogger logger, string clientId, TransportProtocol protocol, int count);
         }
     }
 }

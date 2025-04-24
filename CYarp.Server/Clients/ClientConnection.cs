@@ -12,11 +12,11 @@ namespace CYarp.Server.Clients
     /// <summary>
     /// 客户端的长连接
     /// </summary>
-    sealed partial class ClientConnection : IAsyncDisposable
+    sealed class ClientConnection : IAsyncDisposable
     {
         private long tunnelValue = 0L;
         private readonly Stream stream;
-        private readonly ILogger logger;
+        private readonly ILogger<Client> logger;
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
         private readonly CancellationTokenSource disposeTokenSource = new();
@@ -29,7 +29,11 @@ namespace CYarp.Server.Clients
 
         public string ClientId { get; }
 
-        public ClientConnection(string clientId, Stream stream, ClientConfig config, ILogger logger)
+        public ClientConnection(
+            string clientId,
+            Stream stream,
+            ClientConfig config,
+            ILogger<Client> logger)
         {
             this.ClientId = clientId;
             this.stream = stream;
@@ -56,7 +60,7 @@ namespace CYarp.Server.Clients
             try
             {
                 await this.stream.WriteAsync(PingLine);
-                Log.LogSendPing(this.logger, this.ClientId);
+                ClientLog.LogSendPing(this.logger, this.ClientId);
             }
             catch (Exception)
             {
@@ -112,16 +116,16 @@ namespace CYarp.Server.Clients
 
                 if (text == Ping)
                 {
-                    Log.LogRecvPing(this.logger, this.ClientId);
+                    ClientLog.LogRecvPing(this.logger, this.ClientId);
                     await this.stream.WriteAsync(PongLine, cancellationToken);
                 }
                 else if (text == Pong)
                 {
-                    Log.LogRecvPong(this.logger, this.ClientId);
+                    ClientLog.LogRecvPong(this.logger, this.ClientId);
                 }
                 else
                 {
-                    Log.LogRecvUnknown(this.logger, this.ClientId, text);
+                    ClientLog.LogRecvUnknown(this.logger, this.ClientId, text);
                 }
             }
         }
@@ -137,24 +141,6 @@ namespace CYarp.Server.Clients
 
                 await this.stream.DisposeAsync();
             }
-        }
-
-        static partial class Log
-        {
-            [LoggerMessage(LogLevel.Debug, "[{clientId}] 发出PING请求")]
-            public static partial void LogSendPing(ILogger logger, string clientId);
-
-            [LoggerMessage(LogLevel.Debug, "[{clientId}] 收到PING请求")]
-            public static partial void LogRecvPing(ILogger logger, string clientId);
-
-            [LoggerMessage(LogLevel.Debug, "[{clientId}] 收到PONG回应")]
-            public static partial void LogRecvPong(ILogger logger, string clientId);
-
-            [LoggerMessage(LogLevel.Debug, "[{clientId}] 收到未知数据: {text}")]
-            public static partial void LogRecvUnknown(ILogger logger, string clientId, string text);
-
-            [LoggerMessage(LogLevel.Debug, "[{clientId}] 连接已关闭")]
-            public static partial void LogClosed(ILogger logger, string clientId);
         }
     }
 }
