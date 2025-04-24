@@ -55,7 +55,7 @@ namespace CYarp.Server
         DateTimeOffset CreationTime { get; }
 
         /// <summary>
-        /// 创建一个可承载 TCP 流的传输隧道
+        /// 创建一个可承载 TCP 流的传输隧道到<see cref="TargetUri"/>的EndPoint
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
