@@ -9,7 +9,7 @@ namespace CYarp.Server.Clients
     /// <summary>
     /// Tunnel工厂
     /// </summary> 
-    sealed partial class TunnelFactory
+    sealed class TunnelFactory
     {
         private readonly ConcurrentDictionary<TunnelId, TaskCompletionSource<Tunnel>> tunnelCompletionSources = new();
 
@@ -37,18 +37,18 @@ namespace CYarp.Server.Clients
 
             try
             {
-                Log.LogTunnelCreating(this.Logger, connection.ClientId, tunnelId);
+                TunnelLog.LogTunnelCreating(this.Logger, connection.ClientId, tunnelId);
                 await connection.CreateTunnelAsync(tunnelId, cancellationToken);
                 return await tunnelSource.Task.WaitAsync(cancellationToken);
             }
             catch (OperationCanceledException)
             {
-                Log.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, "远程端操作超时");
+                TunnelLog.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, "远程端操作超时");
                 throw;
             }
             catch (Exception ex)
             {
-                Log.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, ex.Message);
+                TunnelLog.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, ex.Message);
                 throw;
             }
             finally
@@ -65,15 +65,6 @@ namespace CYarp.Server.Clients
         public bool SetResult(Tunnel httpTunnel)
         {
             return this.tunnelCompletionSources.TryRemove(httpTunnel.Id, out var source) && source.TrySetResult(httpTunnel);
-        }
-
-        static partial class Log
-        {
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 请求创建隧道{tunnelId}")]
-            public static partial void LogTunnelCreating(ILogger logger, string clientId, TunnelId tunnelId);
-
-            [LoggerMessage(LogLevel.Warning, "[{clientId}] 创建隧道{tunnelId}失败：{reason}")]
-            public static partial void LogTunnelCreateFailure(ILogger logger, string clientId, TunnelId tunnelId, string? reason);
         }
     }
 }

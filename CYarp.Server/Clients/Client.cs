@@ -86,18 +86,23 @@ namespace CYarp.Server.Clients
         {
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
+            var stopwatch = Stopwatch.StartNew();
             var tcpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
-            this.clientStatistics.AddTcpTunnelCount(1);
+            stopwatch.Stop();
+
+            const string TunnelType = "TcpTunnel";
+            var tcpTunnelCount = this.clientStatistics.AddTcpTunnelCount(1);
+            TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, tcpTunnel.Protocol, tcpTunnel.Id, stopwatch.Elapsed, TunnelType, tcpTunnelCount);
 
             tcpTunnel.DisposingCallback = OnTcpTunnelDisposing;
             return tcpTunnel;
 
             void OnTcpTunnelDisposing(Tunnel tunnel)
             {
-                this.clientStatistics.AddTcpTunnelCount(-1);
+                var tcpTunnelCount = this.clientStatistics.AddTcpTunnelCount(-1);
+                TunnelLog.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, TunnelType, tcpTunnelCount);
             }
         }
-
 
         public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer)
         {

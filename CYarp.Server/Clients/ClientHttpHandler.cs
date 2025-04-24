@@ -1,6 +1,4 @@
 ﻿using CYarp.Server.Configs;
-using Microsoft.Extensions.Logging;
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -11,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CYarp.Server.Clients
 {
-    sealed partial class ClientHttpHandler : DelegatingHandler
+    sealed class ClientHttpHandler : DelegatingHandler
     {
         private readonly ClientConnection connection;
         private readonly TunnelFactory tunnelFactory;
@@ -58,32 +56,24 @@ namespace CYarp.Server.Clients
         }
 
         private async ValueTask<Stream> CreateHttpTunnelAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
-        {
+        {            
             var stopwatch = Stopwatch.StartNew();
             var httpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
             stopwatch.Stop();
 
+            const string TunnelType = "HttpTunnel";
             var httpTunnelCount = this.clientStatistics.AddHttpTunnelCount(1);
-            Log.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, httpTunnelCount);
+            TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, TunnelType, httpTunnelCount);
 
-            httpTunnel.DisposingCallback = this.OnHttpTunnelDisposing;
+            httpTunnel.DisposingCallback = OnHttpTunnelDisposing;
             return httpTunnel;
-        }
-
-        private void OnHttpTunnelDisposing(Tunnel tunnel)
-        {
-            var httpTunnelCount = this.clientStatistics.AddHttpTunnelCount(-1);
-            Log.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, httpTunnelCount);
-        }
 
 
-        static partial class Log
-        {
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 创建了{protocol}协议隧道{tunnelId}，过程耗时{elapsed}，其当前http隧道总数为{tunnelCount}")]
-            public static partial void LogTunnelCreate(ILogger logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan elapsed, int tunnelCount);
-
-            [LoggerMessage(LogLevel.Information, "[{clientId}] 关闭了{protocol}协议隧道{tunnelId}，生命周期为{lifeTime}，其当前http隧道总数为{tunnelCount}")]
-            public static partial void LogTunnelClosed(ILogger logger, string? clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan lifeTime, int? tunnelCount);
+            void OnHttpTunnelDisposing(Tunnel tunnel)
+            {
+                var httpTunnelCount = this.clientStatistics.AddHttpTunnelCount(-1);
+                TunnelLog.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, TunnelType, httpTunnelCount);
+            }
         }
     }
 }
