@@ -12,15 +12,15 @@ namespace CYarp.Server.Middlewares
     static class TunnelHanlder
     {
         /// <summary>
-        /// Tunnel不需要身份验证和授权，tunnelId本身具有随机性和服务端可校验性来保证安全
+        /// Tunnel不需要身份验证和授权，tunnelId由其可校验性来保证安全
         /// </summary>
-        /// <param name="tunnelFactory"></param> 
         /// <param name="context"></param>
-        /// <param name="tunnelId"></param> 
+        /// <param name="tunnelFactory"></param>
+        /// <param name="tunnelId"></param>
         /// <returns></returns>
         public static async Task<IResult> HandleTunnelAsync(
-            TunnelFactory tunnelFactory,
             HttpContext context,
+            TunnelFactory tunnelFactory,
             TunnelId tunnelId)
         {
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();

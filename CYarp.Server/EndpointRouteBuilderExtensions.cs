@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class EndpointRouteBuilderExtensions
     {
+        private static readonly string[] cyarpMethods = [HttpMethods.Get, HttpMethods.Connect];
+
         /// <summary>
         /// 处理CYarp的客户端连接
         /// </summary>
@@ -50,12 +52,12 @@ namespace Microsoft.AspNetCore.Builder
 
             var cyarp = endpoints.MapGroup("/cyarp");
 
-            // HttpTunnel的握手处理
-            cyarp.Map("/{tunnelId}", TunnelHanlder.HandleTunnelAsync).AllowAnonymous();
+            // Tunnel的握手处理
+            cyarp.MapMethods("/{tunnelId}", cyarpMethods, TunnelHanlder.HandleTunnelAsync).AllowAnonymous();
 
             // Client的连接处理
             var clientHandler = new ClientHandler(clientIdProvider);
-            return cyarp.Map("/", clientHandler.HandleClientAsync);
+            return cyarp.MapMethods("/", cyarpMethods, clientHandler.HandleClientAsync);
         }
     }
 }
