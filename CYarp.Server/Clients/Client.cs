@@ -24,7 +24,7 @@ namespace CYarp.Server.Clients
         private readonly TunnelFactory tunnelFactory;
         private readonly HttpTunnelConfig httpTunnelConfig;
         private readonly Lazy<HttpMessageInvoker> httpClientLazy;
-        private readonly ClientStatistics clientStatistics = new();
+        private readonly TunnelStatistics tunnelStatistics = new();
 
         private static readonly ForwarderRequestConfig httpRequestConfig = new()
         {
@@ -49,9 +49,9 @@ namespace CYarp.Server.Clients
 
         public string Id => this.connection.ClientId;
 
-        public int TcpTunnelCount => this.clientStatistics.TcpTunnelCount;
+        public int TcpTunnelCount => this.tunnelStatistics.TcpTunnelCount;
 
-        public int HttpTunnelCount => this.clientStatistics.HttpTunnelCount;
+        public int HttpTunnelCount => this.tunnelStatistics.HttpTunnelCount;
 
         public DateTimeOffset CreationTime { get; } = DateTimeOffset.Now;
 
@@ -78,7 +78,7 @@ namespace CYarp.Server.Clients
 
         private HttpMessageInvoker CreateHttpClient()
         {
-            var httpHandler = new ClientHttpHandler(this.connection, this.tunnelFactory, this.httpTunnelConfig, this.clientStatistics);
+            var httpHandler = new ClientHttpHandler(this.connection, this.tunnelFactory, this.httpTunnelConfig, this.tunnelStatistics);
             return new HttpMessageInvoker(httpHandler, disposeHandler: true);
         }
 
@@ -90,17 +90,17 @@ namespace CYarp.Server.Clients
             var tcpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
             stopwatch.Stop();
 
-            const string TunnelType = "TcpTunnel";
-            var tcpTunnelCount = this.clientStatistics.AddTcpTunnelCount(1);
-            TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, tcpTunnel.Protocol, tcpTunnel.Id, stopwatch.Elapsed, TunnelType, tcpTunnelCount);
+            const TunnelType tunnelType = TunnelType.TcpTunnel;
+            var tcpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, 1);
+            TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, tcpTunnel.Protocol, tcpTunnel.Id, stopwatch.Elapsed, tunnelType, tcpTunnelCount);
 
             tcpTunnel.DisposingCallback = OnTcpTunnelDisposing;
             return tcpTunnel;
 
             void OnTcpTunnelDisposing(Tunnel tunnel)
             {
-                var tcpTunnelCount = this.clientStatistics.AddTcpTunnelCount(-1);
-                TunnelLog.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, TunnelType, tcpTunnelCount);
+                var tcpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, -1);
+                TunnelLog.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, tunnelType, tcpTunnelCount);
             }
         }
 

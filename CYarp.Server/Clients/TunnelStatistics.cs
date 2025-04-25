@@ -2,7 +2,7 @@
 
 namespace CYarp.Server.Clients
 {
-    sealed class ClientStatistics
+    sealed class TunnelStatistics
     {
         private int tcpTunnelCount = 0;
         private int httpTunnelCount = 0;
@@ -11,14 +11,11 @@ namespace CYarp.Server.Clients
 
         public int HttpTunnelCount => this.httpTunnelCount;
 
-        public int AddTcpTunnelCount(int value)
+        public int AddTunnelCount(TunnelType tunnelType, int value)
         {
-            return Interlocked.Add(ref this.tcpTunnelCount, value);
-        }
-
-        public int AddHttpTunnelCount(int value)
-        {
-            return Interlocked.Add(ref this.httpTunnelCount, value);
+            return tunnelType == TunnelType.HttpTunnel
+                ? Interlocked.Add(ref this.httpTunnelCount, value)
+                : Interlocked.Add(ref this.tcpTunnelCount, value);
         }
     }
 }

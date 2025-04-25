@@ -13,17 +13,17 @@ namespace CYarp.Server.Clients
     {
         private readonly ClientConnection connection;
         private readonly TunnelFactory tunnelFactory;
-        private readonly ClientStatistics clientStatistics;
+        private readonly TunnelStatistics tunnelStatistics;
 
         public ClientHttpHandler(
             ClientConnection connection,
             TunnelFactory tunnelFactory,
             HttpTunnelConfig httpTunnelConfig,
-            ClientStatistics clientStatistics)
+            TunnelStatistics tunnelStatistics)
         {
             this.connection = connection;
             this.tunnelFactory = tunnelFactory;
-            this.clientStatistics = clientStatistics;
+            this.tunnelStatistics = tunnelStatistics;
             this.InnerHandler = CreatePrimitiveHandler(httpTunnelConfig);
         }
 
@@ -56,14 +56,14 @@ namespace CYarp.Server.Clients
         }
 
         private async ValueTask<Stream> CreateHttpTunnelAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
-        {            
+        {
             var stopwatch = Stopwatch.StartNew();
             var httpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
             stopwatch.Stop();
 
-            const string TunnelType = "HttpTunnel";
-            var httpTunnelCount = this.clientStatistics.AddHttpTunnelCount(1);
-            TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, TunnelType, httpTunnelCount);
+            const TunnelType tunnelType = TunnelType.HttpTunnel;
+            var httpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, 1);
+            TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, tunnelType, httpTunnelCount);
 
             httpTunnel.DisposingCallback = OnHttpTunnelDisposing;
             return httpTunnel;
@@ -71,8 +71,8 @@ namespace CYarp.Server.Clients
 
             void OnHttpTunnelDisposing(Tunnel tunnel)
             {
-                var httpTunnelCount = this.clientStatistics.AddHttpTunnelCount(-1);
-                TunnelLog.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, TunnelType, httpTunnelCount);
+                var httpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, -1);
+                TunnelLog.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, tunnelType, httpTunnelCount);
             }
         }
     }

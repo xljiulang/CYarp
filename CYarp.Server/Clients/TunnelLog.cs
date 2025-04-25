@@ -19,9 +19,9 @@ namespace CYarp.Server.Clients
         public static partial void LogTunnelCreateFailure(ILogger<Tunnel> logger, string clientId, TunnelId tunnelId, string? reason);
 
         [LoggerMessage(LogLevel.Information, "[{clientId}] 创建了{protocol}协议Tunnel {tunnelId}，过程耗时{elapsed}，其当前{tunnelType}总数为{tunnelCount}")]
-        public static partial void LogTunnelCreate(ILogger<Tunnel> logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan elapsed, string tunnelType, int tunnelCount);
+        public static partial void LogTunnelCreate(ILogger<Tunnel> logger, string clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan elapsed, TunnelType tunnelType, int tunnelCount);
 
         [LoggerMessage(LogLevel.Information, "[{clientId}] 关闭了{protocol}协议Tunnel {tunnelId}，生命周期为{lifeTime}，其当前{tunnelType}总数为{tunnelCount}")]
-        public static partial void LogTunnelClosed(ILogger<Tunnel> logger, string? clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan lifeTime, string tunnelType, int tunnelCount);
+        public static partial void LogTunnelClosed(ILogger<Tunnel> logger, string? clientId, TransportProtocol protocol, TunnelId tunnelId, TimeSpan lifeTime, TunnelType tunnelType, int tunnelCount);
     }
 }
