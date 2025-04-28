@@ -77,11 +77,11 @@ builder.Services.AddAuthentication(<DefaultScheme>).AddYourScheme();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp();
+app.UseCYarp(); // Using CYarp middleware
 app.UseAuthentication(); 
 app.UseAuthorization();
 
-app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... });
+app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... }); // Handling CYarp's IClient connection
 app.MapControllers();
 app.Run();
 ```
@@ -90,14 +90,14 @@ Authentication and authorization when connecting to IClient can be skipped using
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp();
+app.UseCYarp(); // Using CYarp middleware
 
-app.MapCYarp<YourClientIdProvider>();
+app.MapCYarp<YourClientIdProvider>(); // Handling CYarp's IClient connection
 app.MapControllers();
 app.Run();
 ```
 
-Finally, handle the http forwarding in the Controller, endpoint handler or the last custom middleware.
+Finally, handle the http forwarding in the Controller or endpoint handler.
 ```c#
 // Authorization verification of the requester, here the role is verified
 [Authorize(Roles = "Mobile")]

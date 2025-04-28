@@ -80,11 +80,11 @@ builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
 
-app.UseCYarp();
+app.UseCYarp(); // 使用CYarp中间件
 app.UseAuthentication(); 
 app.UseAuthorization();
 
-app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... });
+app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... }); // 处理CYarp的IClient连接
 app.MapControllers();
 app.Run();
 ```
@@ -94,9 +94,9 @@ app.Run();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp();
+app.UseCYarp(); // 使用CYarp中间件
 
-app.MapCYarp<YourClientIdProvider>();
+app.MapCYarp<YourClientIdProvider>(); // 处理CYarp的IClient连接
 app.MapControllers();
 app.Run();
 ```
