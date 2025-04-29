@@ -1,0 +1,6 @@
+@Cyarp.Sample.PublicReverseProxy_HostAddress = http://localhost:5080
+
+GET {{Cyarp.Sample.PublicReverseProxy_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

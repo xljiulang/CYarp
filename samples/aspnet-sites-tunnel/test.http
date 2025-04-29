@@ -1,0 +1,9 @@
+
+### 访问siteA1.demo.com
+GET http://127.0.0.1:5080
+HOST: siteA1.demo.com
+
+### 访问siteA2.demo.com
+GET http://127.0.0.1:5080
+HOST: siteA2.demo.com
+
