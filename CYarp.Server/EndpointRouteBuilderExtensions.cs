@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class EndpointRouteBuilderExtensions
     {
-        private static readonly string[] cyarpMethods = [HttpMethods.Get, HttpMethods.Connect];
-
         /// <summary>
         /// 处理CYarp的客户端连接
         /// </summary>
@@ -50,14 +48,22 @@ namespace Microsoft.AspNetCore.Builder
         {
             ArgumentNullException.ThrowIfNull(clientIdProvider);
 
-            var cyarp = endpoints.MapGroup("/cyarp");
+            var cyarp = endpoints.MapGroup("/cyarp")
+                .WithGroupName("cyarp")
+                .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK))
+                .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status101SwitchingProtocols))
+                .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest))
+                .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status403Forbidden));
 
             // Tunnel的连接处理
-            cyarp.MapMethods("/{tunnelId}", cyarpMethods, TunnelHanlder.HandleTunnelAsync).AllowAnonymous();
+            cyarp.Map("/{tunnelId}", TunnelHanlder.HandleTunnelAsync)
+                .AllowAnonymous()
+                .WithDisplayName("CYarp tunnel endpoint");
 
             // Client的连接处理
             var clientHandler = new ClientHandler(clientIdProvider);
-            return cyarp.MapMethods("/", cyarpMethods, clientHandler.HandleClientAsync);
+            return cyarp.Map("/", clientHandler.HandleClientAsync)
+                .WithDisplayName("CYarp client endpoint"); ;
         }
     }
 }
