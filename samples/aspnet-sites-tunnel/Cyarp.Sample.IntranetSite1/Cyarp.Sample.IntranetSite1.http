@@ -1,0 +1,6 @@
+@Cyarp.Sample.IntranetSite1_HostAddress = http://localhost:5018
+
+GET {{Cyarp.Sample.IntranetSite1_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
