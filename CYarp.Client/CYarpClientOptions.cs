@@ -50,7 +50,7 @@ namespace CYarp.Client
 
         /// <summary>
         /// 获取或设置心跳包周期
-        /// 默认30s
+        /// 默认30s，小于等于0表示不发送心跳包
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 

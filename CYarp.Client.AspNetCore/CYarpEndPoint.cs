@@ -22,7 +22,6 @@ namespace CYarp.Client.AspNetCore
         /// 获取或设置访问目标服务器（即本服务）使用的Uri
         /// 支持http和https
         /// </summary>
-        [AllowNull]
         public Uri TargetUri { get; set; } = new Uri("http://localhost");
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace CYarp.Client.AspNetCore
 
         /// <summary>
         /// 获取或设置连接心跳包周期
-        /// 默认30s
+        /// 默认30s，小于等于0表示不发送心跳包
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 
