@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cyarp.Sample.IntranetSite2"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cyarp.Sample.IntranetSite1", "samples\aspnet-sites-tunnel\Cyarp.Sample.IntranetSite1\Cyarp.Sample.IntranetSite1.csproj", "{8E3050F0-476C-A49B-AC58-DDE859AAF6C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cyarp.Sample.IntranetClient", "samples\aspnet-sites-tunnel\Cyarp.Sample.IntranetClient\Cyarp.Sample.IntranetClient.csproj", "{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -187,6 +189,18 @@ Global
 		{8E3050F0-476C-A49B-AC58-DDE859AAF6C8}.Release|x64.Build.0 = Release|Any CPU
 		{8E3050F0-476C-A49B-AC58-DDE859AAF6C8}.Release|x86.ActiveCfg = Release|Any CPU
 		{8E3050F0-476C-A49B-AC58-DDE859AAF6C8}.Release|x86.Build.0 = Release|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Debug|x64.Build.0 = Debug|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Debug|x86.Build.0 = Debug|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Release|x64.ActiveCfg = Release|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Release|x64.Build.0 = Release|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Release|x86.ActiveCfg = Release|Any CPU
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -202,6 +216,7 @@ Global
 		{30C3562E-AA5E-4A40-B73A-1E3D1495AA58} = {1C045261-DF28-4C62-BED5-D1F32D2D116E}
 		{9FFE95F2-B577-4209-BA79-21161371DB26} = {1C045261-DF28-4C62-BED5-D1F32D2D116E}
 		{8E3050F0-476C-A49B-AC58-DDE859AAF6C8} = {1C045261-DF28-4C62-BED5-D1F32D2D116E}
+		{33FD524E-F2D7-4751-CDC3-13D46E3E54D1} = {1C045261-DF28-4C62-BED5-D1F32D2D116E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1AB70BBE-452D-4C89-870A-192AF6858391}

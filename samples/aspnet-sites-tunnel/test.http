@@ -7,3 +7,10 @@ HOST: siteA1.demo.com
 GET http://127.0.0.1:5080
 HOST: siteA2.demo.com
 
+### 访问 baidu.demo.com， 通过 Cyarp.Sample.IntranetClient 中转
+GET http://127.0.0.1:5080
+HOST: baidu.demo.com
+
+### 访问 qq.demo.com， 通过 Cyarp.Sample.IntranetClient 中转
+GET http://127.0.0.1:5080
+HOST: qq.demo.com
