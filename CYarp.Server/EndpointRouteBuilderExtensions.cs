@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Builder
             // Client的连接处理
             var clientHandler = new ClientHandler(clientIdProvider);
             return cyarp.Map("/", clientHandler.HandleClientAsync)
-                .WithDisplayName("CYarp client endpoint"); ;
+                .WithDisplayName("CYarp client endpoint");
         }
     }
 }
