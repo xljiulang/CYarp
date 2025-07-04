@@ -104,14 +104,24 @@ namespace CYarp.Server.Clients
             }
         }
 
-        public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer)
+
+        public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = default, bool useOriginalHost = default)
         {
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
             var httpClient = this.httpClientLazy.Value;
-            var destination = this.TargetUri.OriginalString;
+            var destination = this.TargetUri;
+            if (useOriginalHost)
+            {
+                var builder = new UriBuilder(destination)
+                {
+                    Host = context.Request.Host.Value
+                };
+                destination = builder.Uri;
+            }
+
             var requestConfig = this.TargetUri.Scheme == Uri.UriSchemeHttp ? httpRequestConfig : httpsRequestConfig;
-            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig, transformer ?? HttpTransformer.Default);
+            return this.httpForwarder.SendAsync(context, destination.OriginalString, httpClient, requestConfig, transformer ?? HttpTransformer.Default);
         }
 
         public Task WaitForCloseAsync()

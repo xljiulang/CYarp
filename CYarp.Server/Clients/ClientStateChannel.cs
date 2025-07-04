@@ -86,7 +86,7 @@ namespace CYarp.Server.Clients
                 throw new InvalidOperationException();
             }
 
-            public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = null)
+            public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = default, bool useOriginalHost = default)
             {
                 throw new InvalidOperationException();
             }

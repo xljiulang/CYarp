@@ -66,7 +66,8 @@ namespace CYarp.Server
         /// </summary>
         /// <param name="context">http上下文</param> 
         /// <param name="transformer">http内容转换器</param>
+        /// <param name="useOriginalHost">应用请求的主机头值到代理转发</param>
         /// <returns></returns>
-        ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = default);
+        ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = default, bool useOriginalHost = default);
     }
 }
