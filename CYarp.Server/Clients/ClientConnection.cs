@@ -14,7 +14,7 @@ namespace CYarp.Server.Clients
     /// </summary>
     sealed class ClientConnection : IAsyncDisposable
     {
-        private long tunnelValue = 0L;
+        private int tunnelValue = 0;
         private readonly Stream stream;
         private readonly ILogger<Client> logger;
         private readonly Timer? keepAliveTimer;

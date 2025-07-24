@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Hashing;
-using System.Text;
 
 namespace CYarp.Server.Clients
 {
@@ -40,32 +38,28 @@ namespace CYarp.Server.Clients
         /// <param name="clientId"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static TunnelId NewTunnelId(string clientId, long? value = null)
+        public static TunnelId NewTunnelId(string clientId, int? value = null)
         {
-            var hash32 = new XxHash32();
             Span<byte> span = stackalloc byte[16];
 
-            // [0-3]   clientId
-            var length = Encoding.UTF8.GetByteCount(clientId);
-            if (length <= 1024)
-            {
-                Span<byte> clientIdBytes = stackalloc byte[length];
-                Encoding.UTF8.GetBytes(clientId, clientIdBytes);
-                hash32.Append(clientIdBytes);
-            }
-            else
-            {
-                using var owner = MemoryPool<byte>.Shared.Rent(length);
-                Encoding.UTF8.GetBytes(clientId, owner.Memory.Span);
-                hash32.Append(owner.Memory.Span[..length]);
-            }
-            hash32.GetHashAndReset(span);
+            // [0-3]  clientId
+            BinaryPrimitives.WriteInt32BigEndian(span, clientId.GetHashCode());
 
-            // [4-11]  value
-            value ??= Random.Shared.NextInt64();
-            BinaryPrimitives.WriteInt64BigEndian(span[4..], value.Value);
+            // [4-5]  hValue
+            value ??= Random.Shared.Next();
+            var hValue = (short)(value.Value >> 16);
+            BinaryPrimitives.WriteInt16LittleEndian(span[4..], hValue);
+
+            // [6-7] lValue 
+            var lValue = (short)value.Value;
+            BinaryPrimitives.WriteInt16LittleEndian(span[6..], lValue);
+
+            // [8-11] ticks
+            var ticks = Environment.TickCount;
+            BinaryPrimitives.WriteInt32BigEndian(span[8..], ticks);
 
             // [12-15] 校验值
+            var hash32 = new XxHash32();
             hash32.Append(span[..12]);
             hash32.Append(secureSalt);
             hash32.GetCurrentHash(span[12..]);
