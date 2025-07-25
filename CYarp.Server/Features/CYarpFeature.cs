@@ -22,6 +22,8 @@ namespace CYarp.Server.Features
         /// </summary>
         public bool IsCYarpRequest => this.acceptAsyncFunc != null;
 
+        public bool HasAccepted { get; private set; }
+
         /// <summary>
         /// 传输协议
         /// </summary>
@@ -137,9 +139,18 @@ namespace CYarp.Server.Features
 
         public Task<Stream> AcceptAsStreamAsync()
         {
-            return this.acceptAsyncFunc == null
-                ? throw new InvalidOperationException("Not a CYarp request")
-                : this.acceptAsyncFunc();
+            if (this.acceptAsyncFunc == null)
+            {
+                throw new InvalidOperationException("Not a CYarp request.");
+            }
+
+            if (this.HasAccepted)
+            {
+                throw new InvalidOperationException("Already accepted.");
+            }
+
+            this.HasAccepted = true;
+            return this.acceptAsyncFunc();
         }
 
         public async Task<Stream> AcceptAsSafeWriteStreamAsync()
