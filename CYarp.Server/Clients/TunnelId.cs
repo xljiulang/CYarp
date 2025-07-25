@@ -38,25 +38,21 @@ namespace CYarp.Server.Clients
         /// <param name="clientId"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static TunnelId NewTunnelId(string clientId, int? value = null)
+        public static TunnelId NewTunnelId(string clientId, int value)
         {
             Span<byte> span = stackalloc byte[16];
 
             // [0-3]  clientId
             BinaryPrimitives.WriteInt32BigEndian(span, clientId.GetHashCode());
 
-            // [4-5]  hValue
-            value ??= Random.Shared.Next();
-            var hValue = (short)(value.Value >> 16);
-            BinaryPrimitives.WriteInt16LittleEndian(span[4..], hValue);
+            // [4-5]  highValue
+            BinaryPrimitives.WriteInt16LittleEndian(span[4..], (short)(value >> 16));
 
-            // [6-7] lValue 
-            var lValue = (short)value.Value;
-            BinaryPrimitives.WriteInt16LittleEndian(span[6..], lValue);
+            // [6-7] lowValue
+            BinaryPrimitives.WriteInt16LittleEndian(span[6..], (short)value);
 
             // [8-11] ticks
-            var ticks = Environment.TickCount;
-            BinaryPrimitives.WriteInt32BigEndian(span[8..], ticks);
+            BinaryPrimitives.WriteInt32BigEndian(span[8..], Environment.TickCount);
 
             // [12-15] 校验值
             var hash32 = new XxHash32();
