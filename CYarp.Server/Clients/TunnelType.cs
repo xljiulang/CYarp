@@ -1,8 +1,8 @@
 ﻿namespace CYarp.Server.Clients
 {
-    enum TunnelType
+    enum TunnelType : short
     {
-        TcpTunnel,
-        HttpTunnel
+        HttpTunnel = 0,
+        TcpTunnel = 1,
     }
 }

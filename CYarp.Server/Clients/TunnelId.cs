@@ -36,20 +36,21 @@ namespace CYarp.Server.Clients
         /// 生成安全的tunnelId
         /// </summary>
         /// <param name="clientId"></param>
-        /// <param name="value"></param>
+        /// <param name="tunnelType"></param>
+        /// <param name="serialNumber"></param>
         /// <returns></returns>
-        public static TunnelId NewTunnelId(string clientId, int value)
+        public static TunnelId NewTunnelId(string clientId, TunnelType tunnelType, short serialNumber)
         {
             Span<byte> span = stackalloc byte[16];
 
             // [0-3]  clientId
-            BinaryPrimitives.WriteInt32BigEndian(span, clientId.GetHashCode());
+            BinaryPrimitives.WriteInt32LittleEndian(span, clientId.GetHashCode());
 
-            // [4-5]  highValue
-            BinaryPrimitives.WriteInt16LittleEndian(span[4..], (short)(value >> 16));
+            // [4-5]  tunnelType
+            BinaryPrimitives.WriteInt16LittleEndian(span[4..], (short)tunnelType);
 
-            // [6-7] lowValue
-            BinaryPrimitives.WriteInt16LittleEndian(span[6..], (short)value);
+            // [6-7] serialNumber
+            BinaryPrimitives.WriteInt16LittleEndian(span[6..], serialNumber);
 
             // [8-11] ticks
             BinaryPrimitives.WriteInt32BigEndian(span[8..], Environment.TickCount);

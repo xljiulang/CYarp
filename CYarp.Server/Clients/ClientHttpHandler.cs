@@ -58,10 +58,10 @@ namespace CYarp.Server.Clients
         private async ValueTask<Stream> CreateHttpTunnelAsync(SocketsHttpConnectionContext context, CancellationToken cancellationToken)
         {
             var stopwatch = Stopwatch.StartNew();
-            var httpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
-            stopwatch.Stop();
-
             const TunnelType tunnelType = TunnelType.HttpTunnel;
+            var httpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, tunnelType, cancellationToken);
+            stopwatch.Stop();
+                       
             var httpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, 1);
             TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, tunnelType, httpTunnelCount);
 

@@ -14,7 +14,7 @@ namespace CYarp.Server.Clients
     /// </summary>
     sealed class ClientConnection : IAsyncDisposable
     {
-        private int tunnelValue = 0;
+        private int serialNumber = 0;
         private readonly Stream stream;
         private readonly ILogger<Client> logger;
         private readonly Timer? keepAliveTimer;
@@ -68,10 +68,10 @@ namespace CYarp.Server.Clients
             }
         }
 
-        public TunnelId NewTunnelId()
+        public TunnelId NewTunnelId(TunnelType tunnelType)
         {
-            var value = Interlocked.Increment(ref this.tunnelValue);
-            return TunnelId.NewTunnelId(this.ClientId, value);
+            var value = (short)Interlocked.Increment(ref this.serialNumber);
+            return TunnelId.NewTunnelId(this.ClientId, tunnelType, value);
         }
 
         public async Task CreateTunnelAsync(TunnelId tunnelId, CancellationToken cancellationToken)

@@ -24,11 +24,12 @@ namespace CYarp.Server.Clients
         /// 创建Tunnel
         /// </summary>
         /// <param name="connection"></param>
+        /// <param name="tunnelType"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Tunnel> CreateTunnelAsync(ClientConnection connection, CancellationToken cancellationToken)
+        public async Task<Tunnel> CreateTunnelAsync(ClientConnection connection, TunnelType tunnelType, CancellationToken cancellationToken)
         {
-            var tunnelId = connection.NewTunnelId();
+            var tunnelId = connection.NewTunnelId(tunnelType);
             var tunnelSource = new TaskCompletionSource<Tunnel>();
             if (this.tunnelCompletionSources.TryAdd(tunnelId, tunnelSource) == false)
             {

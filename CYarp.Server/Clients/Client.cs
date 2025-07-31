@@ -87,10 +87,10 @@ namespace CYarp.Server.Clients
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
             var stopwatch = Stopwatch.StartNew();
-            var tcpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, cancellationToken);
+            const TunnelType tunnelType = TunnelType.TcpTunnel;
+            var tcpTunnel = await this.tunnelFactory.CreateTunnelAsync(this.connection, tunnelType, cancellationToken);
             stopwatch.Stop();
 
-            const TunnelType tunnelType = TunnelType.TcpTunnel;
             var tcpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, 1);
             TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, tcpTunnel.Protocol, tcpTunnel.Id, stopwatch.Elapsed, tunnelType, tcpTunnelCount);
 
