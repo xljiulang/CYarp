@@ -1,4 +1,5 @@
 ﻿using CYarp.Server.Configs;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers;
@@ -87,19 +88,30 @@ namespace CYarp.Server.Clients
         }
 
 
-        public async Task WaitForCloseAsync()
+        public async Task<ClientCloseReason> WaitForCloseAsync()
         {
+            var cancellationToken = this.disposeTokenSource.Token;
             try
             {
-                var cancellationToken = this.disposeTokenSource.Token;
-                await this.HandleConnectionAsync(cancellationToken);
+                return await this.HandleConnectionAsync(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return cancellationToken.IsCancellationRequested
+                    ? ClientCloseReason.ServerAborted
+                    : ClientCloseReason.PingPongTimeout;
+            } 
+            catch (ConnectionResetException)
+            {
+                return ClientCloseReason.RemoteAborted;
             }
             catch (Exception)
             {
+                return ClientCloseReason.ServerAborted;
             }
         }
 
-        private async Task HandleConnectionAsync(CancellationToken cancellationToken)
+        private async Task<ClientCloseReason> HandleConnectionAsync(CancellationToken cancellationToken)
         {
             using var textReader = new StreamReader(this.stream, bufferSize: bufferSize, leaveOpen: true);
             while (cancellationToken.IsCancellationRequested == false)
@@ -111,7 +123,7 @@ namespace CYarp.Server.Clients
 
                 if (text == null)
                 {
-                    break;
+                    return ClientCloseReason.RemoteAborted;
                 }
 
                 if (text == Ping)
@@ -128,6 +140,7 @@ namespace CYarp.Server.Clients
                     ClientLog.LogRecvUnknown(this.logger, this.ClientId, text);
                 }
             }
+            return ClientCloseReason.ServerAborted;
         }
 
         public async ValueTask DisposeAsync()

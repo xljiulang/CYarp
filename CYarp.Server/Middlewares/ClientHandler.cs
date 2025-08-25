@@ -78,11 +78,11 @@ namespace CYarp.Server.Middlewares
                 if (await clientManager.AddAsync(client))
                 {
                     ClientLog.LogConnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
-                    await client.WaitForCloseAsync();
+                    var reason = await client.WaitForCloseAsync();
 
                     if (await clientManager.RemoveAsync(client))
                     {
-                        ClientLog.LogDisconnected(logger, clientId, cyarpFeature.Protocol, clientManager.Count);
+                        ClientLog.LogDisconnected(logger, clientId, cyarpFeature.Protocol, reason.ToString(), clientManager.Count);
                     }
                 }
             }

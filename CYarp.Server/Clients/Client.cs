@@ -114,7 +114,7 @@ namespace CYarp.Server.Clients
             return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig, transformer ?? HttpTransformer.Default);
         }
 
-        public Task WaitForCloseAsync()
+        public Task<ClientCloseReason> WaitForCloseAsync()
         {
             return this.connection.WaitForCloseAsync();
         }

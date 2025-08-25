@@ -7,11 +7,11 @@ namespace CYarp.Server.Clients
         [LoggerMessage(LogLevel.Warning, "连接{connectionId}请求无效：{message}")]
         public static partial void LogInvalidRequest(ILogger<Client> logger, string connectionId, string message);
 
-        [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接成功，系统当前客户端总数为{count}")]
+        [LoggerMessage(LogLevel.Information, "[{clientId}] {protocol}长连接建立，系统当前客户端总数为{count}")]
         public static partial void LogConnected(ILogger<Client> logger, string clientId, TransportProtocol protocol, int count);
 
-        [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长连接断开，系统当前客户端总数为{count}")]
-        public static partial void LogDisconnected(ILogger<Client> logger, string clientId, TransportProtocol protocol, int count);
+        [LoggerMessage(LogLevel.Warning, "[{clientId}] {protocol}长连接断开({reason})，系统当前客户端总数为{count}")]
+        public static partial void LogDisconnected(ILogger<Client> logger, string clientId, TransportProtocol protocol, string reason, int count);
 
 
         [LoggerMessage(LogLevel.Debug, "[{clientId}] 发出PING请求")]
