@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace CYarpServer.StateStrorages
 {
     /// <summary>
-    /// 基于redisIClientState存储器
+    /// Redis-based IClientState storage
     /// </summary>
     sealed class RedisClientStateStorage : IClientStateStorage
     {
@@ -43,7 +43,7 @@ namespace CYarpServer.StateStrorages
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "State写入redisFailure");
+                this.logger.LogError(ex, "Failed to write state to Redis");
             }
         }
 

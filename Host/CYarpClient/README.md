@@ -1,2 +1,2 @@
 ## CYarpClient
-CYarp的.NET客户端的demo
+Demo for CYarp .NET client

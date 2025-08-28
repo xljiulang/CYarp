@@ -6,29 +6,29 @@ using System.Security.Cryptography;
 namespace CYarpGateway
 {
     /// <summary>
-    /// 表示tokenOptions
+    /// Represents JWT token options
     /// </summary> 
     sealed class JwtTokenOptions
     {
         private TokenValidationParameters? parameters;
 
         /// <summary>
-        /// 公钥路径
+        /// Public key path
         /// </summary>
         public string PublicKeyPath { get; init; } = "jwt-keys/publickey.pem";
 
         /// <summary>
-        /// 安全算法
+        /// Security algorithm
         /// </summary>
         public string SecurityAlgorithm { get; init; } = SecurityAlgorithms.RsaSha256;
 
         /// <summary>
-        /// Issuer字段
+        /// Issuer field
         /// </summary>
         public string? Issuer { get; init; }
 
         /// <summary>
-        /// Audience字段
+        /// Audience field
         /// </summary>
         public string? Audience { get; init; }
 
@@ -39,7 +39,7 @@ namespace CYarpGateway
 
 
         /// <summary>
-        /// Create安全键
+        /// Create security key
         /// </summary> 
         /// <returns></returns>
         public SecurityKey CreateSecurityKey()
@@ -50,7 +50,7 @@ namespace CYarpGateway
         }
 
         /// <summary>
-        /// GetVerify参数
+        /// Get validation parameters
         /// </summary>
         /// <returns></returns>
         public TokenValidationParameters GetParameters()

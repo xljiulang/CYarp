@@ -34,7 +34,7 @@ namespace CYarpGateway
         }
 
         /// <summary>
-        /// ForwardhttpRequestToclientId对应CYarpServer节点
+        /// Forward HTTP request to CYarpServer node corresponding to clientId
         /// </summary>
         /// <param name="context"></param>
         /// <param name="next"></param>
@@ -79,10 +79,10 @@ namespace CYarpGateway
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Warning, "[{connection}] 匹配不ToClientId")]
+            [LoggerMessage(LogLevel.Warning, "[{connection}] No matching ClientId found")]
             public static partial void LogClientIdNotFound(ILogger logger, string connection);
 
-            [LoggerMessage(LogLevel.Warning, "[{clientId}] 找不ToAssociatedNode")]
+            [LoggerMessage(LogLevel.Warning, "[{clientId}] Associated node not found")]
             public static partial void LogNodeNotFound(ILogger logger, string clientId);
         }
     }
