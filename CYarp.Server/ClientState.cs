@@ -6,12 +6,12 @@
     public record ClientState
     {
         /// <summary>
-        /// Client实例
+        /// Client instance
         /// </summary>
         public required IClient Client { get; init; }
 
         /// <summary>
-        /// Is否AsConnectionState
+        /// Whether it is in connected state
         /// </summary>
         public required bool IsConnected { get; init; }
     }

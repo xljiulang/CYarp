@@ -3,12 +3,12 @@
 namespace CYarp.Server
 {
     /// <summary>
-    /// CYarpCreate器
+    /// CYarp builder
     /// </summary>
     public interface ICYarpBuilder
     {
         /// <summary>
-        /// Get服务集合
+        /// Gets service collection
         /// </summary>
         IServiceCollection Services { get; }
     }

@@ -8,13 +8,13 @@ namespace CYarp.Server
     public class CYarpOptions
     {
         /// <summary>
-        /// GetOrSet节点名称
+        /// Gets or sets node name
         /// </summary>
         public string Node { get; set; } = string.Empty;
 
         /// <summary>
-        /// 允许TransportProtocol
-        /// 默认AsAll
+        /// Allowed transport protocols
+        /// Default is All
         /// </summary>
         public Protocols Protocols { get; set; } = Protocols.All;
 
