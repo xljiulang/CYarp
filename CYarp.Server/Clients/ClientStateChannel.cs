@@ -27,8 +27,8 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// WillClientState写入Channel
-        /// 确保持久层性能不影响ToClientManager
+        /// Write client state to channel
+        /// Ensures persistent layer performance doesn't affect client manager
         /// </summary>
         /// <param name="client"></param>
         /// <param name="connected"></param>
@@ -51,7 +51,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 从Channel读取所有ClientState
+        /// Read all client states from channel
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

@@ -13,22 +13,22 @@ namespace CYarp.Server.Clients
         private readonly TaskCompletionSource disposeTaskCompletionSource = new();
 
         /// <summary>
-        /// Tunnel标识
+        /// Tunnel identifier
         /// </summary>
         public TunnelId Id { get; }
 
         /// <summary>
-        /// TransportProtocol
+        /// Transport protocol
         /// </summary>
         public TransportProtocol Protocol { get; }
 
         /// <summary>
-        /// GetLifetime
+        /// Get lifetime
         /// </summary>
         public TimeSpan Lifetime => TimeSpan.FromMilliseconds(Environment.TickCount64 - this.tickCount);
 
         /// <summary>
-        /// GetOrSetRelease回调
+        /// Get or set dispose callback
         /// </summary>
         public Action<Tunnel>? DisposingCallback { get; set; }
 

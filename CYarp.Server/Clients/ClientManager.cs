@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// ClientManager器
+    /// Client manager
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
     sealed class ClientManager : IClientViewer, IDisposable
@@ -35,9 +35,9 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 添加Client实例
+        /// Add client instance
         /// </summary>
-        /// <param name="client">Client实例</param>
+        /// <param name="client">Client instance</param>
         /// <returns></returns>
         public async ValueTask<bool> AddAsync(IClient client)
         {
@@ -70,9 +70,9 @@ namespace CYarp.Server.Clients
 
 
         /// <summary>
-        /// 移除Client实例
+        /// Remove client instance
         /// </summary>
-        /// <param name="client">Client实例</param> 
+        /// <param name="client">Client instance</param>
         /// <returns></returns>
         public async ValueTask<bool> RemoveAsync(IClient client)
         {

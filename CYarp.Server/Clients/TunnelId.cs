@@ -6,7 +6,7 @@ using System.IO.Hashing;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 安全TunnelId
+    /// Secure tunnel ID
     /// </summary>
     readonly struct TunnelId : IParsable<TunnelId>, IEquatable<TunnelId>
     {
@@ -16,7 +16,7 @@ namespace CYarp.Server.Clients
         public static readonly TunnelId Empty = default;
 
         /// <summary>
-        /// GetIs否AsValidTunnelId值
+        /// Gets whether this is a valid tunnel ID value
         /// </summary>
         public bool IsValid => this.isValid;
 
@@ -33,7 +33,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 生成安全tunnelId
+        /// Generate secure tunnel ID
         /// </summary>
         /// <param name="clientId"></param>
         /// <param name="tunnelType"></param>
@@ -55,7 +55,7 @@ namespace CYarp.Server.Clients
             // [8-11] ticks
             BinaryPrimitives.WriteInt32BigEndian(span[8..], Environment.TickCount);
 
-            // [12-15] 校验值
+            // [12-15] checksum value
             var hash32 = new XxHash32();
             hash32.Append(span[..12]);
             hash32.Append(secureSalt);
@@ -70,7 +70,7 @@ namespace CYarp.Server.Clients
             Span<byte> span = stackalloc byte[20];
             guid.TryWriteBytes(span);
 
-            // 计算校验值，放To[16-19]
+            // Calculate checksum value, place at [16-19]
             var hash32 = new XxHash32();
             hash32.Append(span[..12]);
             hash32.Append(secureSalt);

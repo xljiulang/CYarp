@@ -8,7 +8,7 @@ namespace CYarp.Server.Features
     sealed partial class CYarpFeature
     {
         /// <summary>
-        /// 安全写入Stream
+        /// Safe write stream
         /// </summary>
         private class SafeWriteStream : DelegatingStream
         {
