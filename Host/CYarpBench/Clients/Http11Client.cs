@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace CYarpBench.Clients
 {
     /// <summary>
-    /// http/1.1升级Client后台服务
+    /// HTTP/1.1 upgrade client background service
     /// </summary>
     sealed class Http11Client : ClientBase
     {

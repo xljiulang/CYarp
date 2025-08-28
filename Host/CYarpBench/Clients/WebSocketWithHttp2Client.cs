@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace CYarpBench.Clients
 {
     /// <summary>
-    /// WebSocket over Http2Client后台服务
+    /// WebSocket over HTTP/2 client background service
     /// </summary>
     sealed class WebSocketWithHttp2Client : ClientBase
     {

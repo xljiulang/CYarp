@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 namespace CYarpBench
 {
     /// <summary>
-    /// 适用于rfp进行benchhttpForwardMiddleware
+    /// HTTP forward middleware suitable for bench testing
     /// </summary>
     sealed class HttpForwardHandler
     {
         /// <summary>
-        /// 通过Request域名来找To对应IClient进行Forward
+        /// Find corresponding IClient by request domain and perform forwarding
         /// </summary>
         /// <param name="context"></param>
         /// <param name="clientViewer"></param>
