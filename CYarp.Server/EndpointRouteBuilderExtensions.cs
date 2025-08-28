@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// HandleCYarpClientConnection
         /// </summary>
-        /// <typeparam name="TClientIdProvider">ClientidProvider</typeparam>
+        /// <typeparam name="TClientIdProvider">ClientIdProvider</typeparam>
         /// <param name="endpoints"></param>
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClientIdProvider>(this IEndpointRouteBuilder endpoints) where TClientIdProvider : IClientIdProvider
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Builder
         /// HandleCYarpClientConnection
         /// </summary>
         /// <param name="endpoints"></param>
-        /// <param name="clientIdProvider">ClientidProvider</param>
+        /// <param name="clientIdProvider">ClientIdProvider</param>
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp(this IEndpointRouteBuilder endpoints, Func<HttpContext, string?> clientIdProvider)
         {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Builder
         /// HandleCYarpClientConnection
         /// </summary>
         /// <param name="endpoints"></param>
-        /// <param name="clientIdProvider">ClientidProvider</param>
+        /// <param name="clientIdProvider">ClientIdProvider</param>
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp(this IEndpointRouteBuilder endpoints, Func<HttpContext, ValueTask<string?>> clientIdProvider)
         {
