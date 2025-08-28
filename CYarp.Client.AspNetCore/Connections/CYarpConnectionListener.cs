@@ -50,13 +50,13 @@ namespace CYarp.Client.AspNetCore.Connections
                         await this.connections.DisposeAsync();
                         this.connections = null;
 
-                        Log.LogConnectError(this.logger, this.endPoint.ServerUri, "ConnectionBy中断");
+                        Log.LogConnectError(this.logger, this.endPoint.ServerUri, "Connection interrupted");
                         await Task.Delay(this.endPoint.ReconnectInterval, cancellationToken);
                     }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    Log.LogConnectError(this.logger, this.endPoint.ServerUri, "操作By用户取消");
+                    Log.LogConnectError(this.logger, this.endPoint.ServerUri, "Operation cancelled by user");
                     return null;
                 }
                 catch (CYarpConnectException ex) when (ex.ErrorCode >= CYarpConnectError.Unauthorized)

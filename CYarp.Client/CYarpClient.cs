@@ -126,7 +126,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// ConnectionToCYarpServer，并WillCYarpServerTransport绑定ToTargetServer
+        /// Connect to CYarp server and bind CYarp server transport to target server
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

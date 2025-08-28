@@ -25,7 +25,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 接收CYarpServerTransportConnection
+        /// Accept CYarp server transport connection
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <exception cref="CYarpConnectException"></exception>
@@ -55,7 +55,7 @@ namespace CYarp.Client
 
 
         /// <summary>
-        /// 接收CYarpServer所有TransportConnection
+        /// Accept all CYarp server transport connections
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

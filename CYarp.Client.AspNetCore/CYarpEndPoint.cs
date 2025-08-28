@@ -48,13 +48,13 @@ namespace CYarp.Client.AspNetCore
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 
         /// <summary>
-        /// GetOrSet断线重连间隔间隔
-        /// 默认5s
+        /// Gets or sets reconnection interval when disconnected
+        /// Default is 5 seconds
         /// </summary>
         public TimeSpan ReconnectInterval { get; set; } = TimeSpan.FromSeconds(5d);
 
         /// <summary>
-        /// 转换As文本
+        /// Convert to string
         /// </summary>
         /// <returns></returns>
         public override string ToString()
