@@ -12,14 +12,14 @@ namespace CYarp.Client
     public interface ICYarpListener : IAsyncDisposable
     {
         /// <summary>
-        /// 接收CYarpServerTransportConnection
+        /// Accept CYarp server transport connection
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>返回null表示再也无法接Receive</returns>
+        /// <returns>Returns null when no more connections can be accepted</returns>
         Task<Stream?> AcceptAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 接收CYarpServer所有TransportConnection
+        /// Accept all CYarp server transport connections
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

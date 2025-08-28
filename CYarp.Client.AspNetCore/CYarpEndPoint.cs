@@ -30,20 +30,20 @@ namespace CYarp.Client.AspNetCore
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// GetOrSetConnectionToCYarpServerRequest头Factory
-        /// 当ConnectHeadersFactory不Asnull时，ConnectHeadersWill会By忽略
+        /// Gets or sets request header factory for connecting to CYarp server
+        /// When ConnectHeadersFactory is not null, ConnectHeaders will be ignored
         /// </summary>
         public Func<ValueTask<Dictionary<string, string>>>? ConnectHeadersFactory { get; set; } = null;
 
         /// <summary>
-        /// GetOrSetAndCYarpServerConnectionTimeout时长
-        /// 默认As5s
+        /// Gets or sets connection timeout duration to CYarp server
+        /// Default is 5 seconds
         /// </summary>
         public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// GetOrSetConnection心跳包周期
-        /// 默认30s，小于等于0表示不发送心跳包
+        /// Gets or sets connection heartbeat interval
+        /// Default is 30 seconds, less than or equal to 0 means no heartbeat packets are sent
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 

@@ -48,7 +48,7 @@ namespace CYarp.Server.Middlewares
                 await httpTunnel.DisposeAsync();
             }
 
-            // Close通道Connection
+            // Close tunnel connection
             context.Abort();
             return Results.Empty;
         }

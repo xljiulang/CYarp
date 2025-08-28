@@ -19,7 +19,7 @@ namespace CYarp.Client
         };
 
         /// <summary>
-        /// GetConnectionError码
+        /// Get connection error code
         /// </summary>
         public CYarpConnectError ErrorCode { get; }
 

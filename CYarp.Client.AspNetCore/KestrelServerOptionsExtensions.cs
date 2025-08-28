@@ -10,20 +10,20 @@ namespace Microsoft.AspNetCore.Hosting
     public static class KestrelServerOptionsExtensions
     {
         /// <summary>
-        /// 监听一个CYarp终结点
+        /// Listen on a CYarp endpoint
         /// </summary>
         /// <param name="kestrel"></param>
-        /// <param name="endPoint">CYarp终结点</param>
+        /// <param name="endPoint">CYarp endpoint</param>
         public static void ListenCYarp(this KestrelServerOptions kestrel, CYarpEndPoint endPoint)
         {
             kestrel.Listen(endPoint);
         }
 
         /// <summary>
-        /// 监听一个CYarp终结点
+        /// Listen on a CYarp endpoint
         /// </summary>
         /// <param name="kestrel"></param>
-        /// <param name="endPoint">CYarp终结点</param>
+        /// <param name="endPoint">CYarp endpoint</param>
         /// <param name="configure">Configuration</param>
         public static void ListenCYarp(this KestrelServerOptions kestrel, CYarpEndPoint endPoint, Action<ListenOptions> configure)
         {
