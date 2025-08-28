@@ -95,8 +95,8 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// ConnectionToCYarpServer，Create用于接受CYarpServerTransportConnectionListener
-        /// </summary> 
+        /// Connect to CYarp server and create listener for accepting CYarp server transport connections
+        /// </summary>
         /// <exception cref="CYarpConnectException"></exception>
         /// <exception cref="ObjectDisposedException"></exception>
         /// <exception cref="OperationCanceledException"></exception>
@@ -110,8 +110,8 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// ConnectionToCYarpServer，并WillCYarpServerTransport绑定ToTargetServer
-        /// </summary> 
+        /// Connect to CYarp server and bind CYarp server transport to target server
+        /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="CYarpConnectException"></exception>
@@ -155,8 +155,8 @@ namespace CYarp.Client
 
 
         /// <summary>
-        /// 绑定tunnelIO
-        /// </summary> 
+        /// Bind tunnel IO
+        /// </summary>
         /// <param name="tunnelId"></param>
         /// <param name="cancellationTokens"></param>
         private async Task BindTunnelIOAsync(Guid tunnelId, CancellationToken[] cancellationTokens)
@@ -166,8 +166,8 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 绑定tunnelIO
-        /// </summary> 
+        /// Bind tunnel IO
+        /// </summary>
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
         private async Task BindTunnelIOCoreAsync(Guid tunnelId, CancellationToken cancellationToken)
@@ -249,10 +249,10 @@ namespace CYarp.Client
             [LoggerMessage(LogLevel.Information, "ConnectionToServer{address}Success")]
             public static partial void LogHttp11Connected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Information, "ConnectionToServer{address}Success，Already启用h2多路复用")]
+            [LoggerMessage(LogLevel.Information, "Connected to server {address} successfully, h2 multiplexing enabled")]
             public static partial void LogHttp2Connected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Warning, "AlreadyDisconnectAndServer{address}Connection")]
+            [LoggerMessage(LogLevel.Warning, "Disconnected from server {address}")]
             public static partial void LogDisconnected(ILogger logger, Uri address);
 
             [LoggerMessage(LogLevel.Information, "[{tunnelId}] Creating tunnel to {address}..")]

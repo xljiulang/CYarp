@@ -44,18 +44,18 @@ namespace CYarp.Client
         public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// GetOrSetTunnelTransportError回调
+        /// Gets or sets tunnel transport error callback
         /// </summary>
         public Action<Exception>? TunnelErrorCallback;
 
         /// <summary>
-        /// GetOrSet心跳包周期
-        /// 默认30s，小于等于0表示不发送心跳包
+        /// Gets or sets heartbeat interval
+        /// Default is 30 seconds, less than or equal to 0 means no heartbeat packets are sent
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 
         /// <summary>
-        /// Verify参数
+        /// Validate parameters
         /// </summary>
         /// <exception cref="ArgumentException"></exception>
         public void Validate()

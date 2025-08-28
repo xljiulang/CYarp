@@ -1,27 +1,27 @@
 ﻿namespace CYarp.Client
 {
     /// <summary>
-    /// ConnectionError码
+    /// Connection error code
     /// </summary>
     public enum CYarpConnectError
     {
         /// <summary>
-        /// ConnectionFailure
+        /// Connection failure
         /// </summary>
         Failure = 1,
 
         /// <summary>
-        /// ConnectionAlreadyTimeout
+        /// Connection timed out
         /// </summary>
         Timedout = 2,
 
         /// <summary>
-        /// ConnectionAuthentication不通过
+        /// Connection authentication failed
         /// </summary>
         Unauthorized = 3,
 
         /// <summary>
-        /// ConnectionBy拒绝(Authorization不通过)
+        /// Connection rejected (authorization failed)
         /// </summary>
         Forbid = 4,
     }

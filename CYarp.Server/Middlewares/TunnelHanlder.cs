@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// Tunnel握手Handle者
+    /// Tunnel handshake handler
     /// </summary>
     static class TunnelHanlder
     {
         /// <summary>
-        /// Tunnel不需要身份VerifyAndAuthorization，tunnelId由其可校验性来保证安全
+        /// Tunnel does not require identity verification and authorization, tunnelId ensures security through its verifiability
         /// </summary>
         /// <param name="context"></param>
         /// <param name="tunnelFactory"></param>
@@ -26,7 +26,7 @@ namespace CYarp.Server.Middlewares
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false)
             {
-                TunnelLog.LogInvalidRequest(tunnelFactory.Logger, context.Connection.Id, "不IsValidCYarpRequest");
+                TunnelLog.LogInvalidRequest(tunnelFactory.Logger, context.Connection.Id, "Not a valid CYarp request");
                 return Results.BadRequest();
             }
 

@@ -24,7 +24,7 @@ namespace CYarp.Client
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
         /// <summary>
-        /// GetClose凭证
+        /// Get close token
         /// </summary>
         public CancellationToken Closed { get; }
 
@@ -49,7 +49,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 心跳timer
+        /// Heartbeat timer
         /// </summary>
         /// <param name="state"></param>
         private async void KeepAliveTimerTick(object? state)
@@ -66,7 +66,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 读取tunnelId
+        /// Read tunnel ID
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

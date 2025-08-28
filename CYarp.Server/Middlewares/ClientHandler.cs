@@ -12,7 +12,7 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// IClientHandle者
+    /// Client handler
     /// </summary>
     sealed class ClientHandler
     {
@@ -20,7 +20,7 @@ namespace CYarp.Server.Middlewares
         private readonly Func<HttpContext, ValueTask<string?>> clientIdProvider;
 
         /// <summary>
-        /// IClientHandle者
+        /// Client handler
         /// </summary>
         /// <param name="clientIdProvider"></param>
         public ClientHandler(Func<HttpContext, ValueTask<string?>> clientIdProvider)
@@ -49,18 +49,18 @@ namespace CYarp.Server.Middlewares
                 return Results.BadRequest();
             }
 
-            // CYarp-TargetUri头格式Verify
+            // CYarp-TargetUri header format verification
             if (Uri.TryCreate(targetUri, UriKind.Absolute, out var clientTargetUri) == false)
             {
-                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"Request头{CYarpTargetUriHeader}值不IsUri格式");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"Request header {CYarpTargetUriHeader} value is not in URI format");
                 return Results.BadRequest();
             }
 
-            // 查找clientId
+            // Find client ID
             var clientId = await this.clientIdProvider.Invoke(context);
             if (string.IsNullOrEmpty(clientId))
             {
-                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "无法GetToIClientId");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "Unable to get client ID");
                 return Results.Forbid();
             }
 
