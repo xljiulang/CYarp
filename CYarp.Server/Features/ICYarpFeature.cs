@@ -4,35 +4,35 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Features
 {
     /// <summary>
-    /// CYarp特征接口，定义CYarpRequest相关功能。
+    /// CYarp feature interface that defines CYarp request related functionality.
     /// </summary>
     public interface ICYarpFeature
     {
         /// <summary>
-        /// GetCurrentRequestIs否AsCYarpRequest。
+        /// Gets whether the current request is a CYarp request.
         /// </summary>
         bool IsCYarpRequest { get; }
 
         /// <summary>
-        /// GetCurrentRequestIs否AlreadyBy接受。
+        /// Gets whether the current request has already been accepted.
         /// </summary>
         bool HasAccepted { get; }
 
         /// <summary>
-        /// GetCurrentRequestTransportProtocol类型。
+        /// Gets the transport protocol type of the current request.
         /// </summary>
         TransportProtocol Protocol { get; }
 
         /// <summary>
-        /// UseCurrent物理ConnectionCreate新双工Stream。
+        /// Creates a new duplex stream using the current physical connection.
         /// </summary>
-        /// <returns>表示Asynchronous操作任务，任务结果As新双工Stream <see cref="Stream"/>。</returns>
+        /// <returns>A task representing the asynchronous operation, with the task result being a new duplex stream <see cref="Stream"/>.</returns>
         Task<Stream> AcceptAsStreamAsync();
 
         /// <summary>
-        /// UseCurrent物理ConnectionCreate新线程安全写入双工Stream。
+        /// Creates a new thread-safe write duplex stream using the current physical connection.
         /// </summary>
-        /// <returns>表示Asynchronous操作任务，任务结果As新线程安全写入双工Stream <see cref="Stream"/>。</returns>
+        /// <returns>A task representing the asynchronous operation, with the task result being a new thread-safe write duplex stream <see cref="Stream"/>.</returns>
         Task<Stream> AcceptAsSafeWriteStreamAsync();
     }
 }

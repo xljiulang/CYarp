@@ -3,7 +3,7 @@
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// 应用程序Extension
+    /// Application builder extensions
     /// </summary>
     public static class ApplicationBuilderExtensions
     {

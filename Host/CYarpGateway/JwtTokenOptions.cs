@@ -33,7 +33,7 @@ namespace CYarpGateway
         public string? Audience { get; init; }
 
         /// <summary>
-        /// 时钟偏差
+        /// Clock skew tolerance
         /// </summary>
         public TimeSpan ClockSkew { get; init; } = TimeSpan.FromMinutes(10d);
 

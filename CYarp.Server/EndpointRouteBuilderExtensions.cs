@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// 终结点路由Extension
+    /// Endpoint routing extensions
     /// </summary>
     public static class EndpointRouteBuilderExtensions
     {

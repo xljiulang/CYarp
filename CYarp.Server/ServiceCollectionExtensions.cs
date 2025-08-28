@@ -59,9 +59,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 添加一个IClientState存储器
+        /// Add an IClientState storage provider
         /// </summary>
-        /// <typeparam name="TStorage">State存储器类型</typeparam>
+        /// <typeparam name="TStorage">State storage provider type</typeparam>
         /// <param name="builder"></param>
         /// <returns></returns>
         public static ICYarpBuilder AddClientStateStorage<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStorage>(this ICYarpBuilder builder)

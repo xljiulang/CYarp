@@ -53,7 +53,7 @@ namespace CYarp.Server.Features
             }
 
             /// <summary>
-            /// ClientConnection会调用To此方法
+            /// ClientConnection will call this method
             /// </summary>
             /// <returns></returns>
             public override async ValueTask DisposeAsync()
@@ -62,8 +62,8 @@ namespace CYarp.Server.Features
             }
 
             /// <summary>
-            /// ClientHttpHandler会调用To此方法
-            /// 即SocketsHttpHandler检测ToConnection空闲时TimeoutOr捕获To其它Exception
+            /// ClientHttpHandler will call this method
+            /// When SocketsHttpHandler detects connection idle timeout or catches other exceptions
             /// </summary>
             /// <param name="disposing"></param>
             protected override void Dispose(bool disposing)

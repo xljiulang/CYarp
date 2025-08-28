@@ -9,7 +9,7 @@ namespace CYarp.Server
     public interface IClientIdProvider
     {
         /// <summary>
-        /// 尝试GetIClientId
+        /// Try to get client ID
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
