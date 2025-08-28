@@ -14,32 +14,32 @@ namespace CYarp.Client
         private static readonly string[] serverSchemes = [Uri.UriSchemeHttp, Uri.UriSchemeHttps, Uri.UriSchemeWs, Uri.UriSchemeWss];
 
         /// <summary>
-        /// GetOrSetCYarpServerUri
-        /// 支持http、https、 wsAndwss
+        /// Gets or sets CYarp server URI
+        /// Supports http, https, ws and wss
         /// </summary>
         [AllowNull]
         public Uri ServerUri { get; set; }
 
         /// <summary>
-        /// GetOrSet访问TargetServerUseUri
-        /// 支持httpAndhttps
+        /// Gets or sets URI for accessing target server
+        /// Supports http and https
         /// </summary>
         [AllowNull]
         public Uri TargetUri { get; set; }
 
         /// <summary>
-        ///GetOrSetTargetServerUnixDomainSocket路径[可选]
+        /// Gets or sets target server Unix domain socket path [optional]
         /// </summary>
         public string? TargetUnixDomainSocket { get; set; }
 
         /// <summary>
-        /// GetOrSetConnectionToCYarpServerRequest头
+        /// Gets or sets request headers for connecting to CYarp server
         /// </summary>
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// GetOrSetAndserverOrtargetConnectionTimeout时长
-        /// 默认As5s
+        /// Gets or sets connection timeout duration for server or target connection
+        /// Default is 5 seconds
         /// </summary>
         public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 

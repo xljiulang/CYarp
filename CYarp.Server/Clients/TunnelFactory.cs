@@ -33,7 +33,7 @@ namespace CYarp.Server.Clients
             var tunnelSource = new TaskCompletionSource<Tunnel>();
             if (this.tunnelCompletionSources.TryAdd(tunnelId, tunnelSource) == false)
             {
-                throw new SystemException($"系统中Already存在{tunnelId}tunnelId");
+                throw new SystemException($"Tunnel with tunnelId {tunnelId} already exists in the system");
             }
 
             try
@@ -44,7 +44,7 @@ namespace CYarp.Server.Clients
             }
             catch (OperationCanceledException)
             {
-                TunnelLog.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, "远程端操作Timeout");
+                TunnelLog.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, "Remote operation timeout");
                 throw;
             }
             catch (Exception ex)

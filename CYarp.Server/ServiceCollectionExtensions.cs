@@ -9,13 +9,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// 服务注册Extension
+    /// Service registration extensions
     /// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// 注册CYarp相关服务
-        /// 提供IClientViewer服务来查看IClient
+        /// Register CYarp related services
+        /// Provides IClientViewer service to view IClient
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
@@ -47,10 +47,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// ConfigurationCYarpOptions绑定
+        /// Configure CYarpOptions binding
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="configureBinder">CYarpOptionsConfiguration绑定</param>
+        /// <param name="configureBinder">CYarpOptions configuration binding</param>
         /// <returns></returns>
         public static ICYarpBuilder Configure(this ICYarpBuilder builder, IConfiguration configureBinder)
         {

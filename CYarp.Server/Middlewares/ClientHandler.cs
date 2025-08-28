@@ -39,13 +39,13 @@ namespace CYarp.Server.Middlewares
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false)
             {
-                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "不IsValidCYarpRequest");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "Not a valid CYarp request");
                 return Results.BadRequest();
             }
 
             if (cyarpFeature.IsCYarpRequest == false || context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
             {
-                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"Request头{CYarpTargetUriHeader}不存在");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"Request header {CYarpTargetUriHeader} does not exist");
                 return Results.BadRequest();
             }
 

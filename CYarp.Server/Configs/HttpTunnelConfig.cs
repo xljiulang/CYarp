@@ -9,37 +9,37 @@ namespace CYarp.Server.Configs
     public class HttpTunnelConfig
     {
         /// <summary>
-        /// GetOrSetTunnelLifetime，To期时CompletedRequest后就Close
-        /// 默认As10分钟，要求必须大于0秒
+        /// Gets or sets tunnel lifetime, tunnel will close after completing requests upon expiration
+        /// Default is 10 minutes, must be greater than 0 seconds
         /// </summary>
         public TimeSpan LifeTime { get; set; } = TimeSpan.FromMinutes(10d);
 
         /// <summary>
-        /// GetOrSetTunnel空闲Timeout时长，空闲Timeout后WillCloseTunnel
-        /// 默认As1分钟，要求必须大于0秒
+        /// Gets or sets tunnel idle timeout duration, tunnel will close after idle timeout
+        /// Default is 1 minute, must be greater than 0 seconds
         /// </summary>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(1d);
 
         /// <summary>
-        /// GetOrSet每个Client最大httpTunnelCount
-        /// 默认As10
+        /// Gets or sets maximum HTTP tunnel count per client
+        /// Default is 10
         /// </summary>
         public int MaxTunnelsPerClient { get; set; } = 10;
 
         /// <summary>
-        /// GetOrSetTunnelCreateTimeout时长
-        /// 默认10s
+        /// Gets or sets tunnel creation timeout duration
+        /// Default is 10 seconds
         /// </summary>
         public TimeSpan CreationTimeout { get; set; } = TimeSpan.FromSeconds(10d);
 
         /// <summary>
-        /// GetOrSet接受不安全TargetServer证书
-        /// 默认Astrue
+        /// Gets or sets whether to accept unsafe target server certificates
+        /// Default is true
         /// </summary>
         public bool DangerousAcceptAnyServerCertificate { get; set; } = true;
 
         /// <summary>
-        /// GetOrSet在传播分布式跟踪And上下文时Use<see cref="DistributedContextPropagator"/>
+        /// Gets or sets the <see cref="DistributedContextPropagator"/> to use when propagating distributed tracing and context
         /// </summary>
         public DistributedContextPropagator? ActivityHeadersPropagator { get; set; }
     }

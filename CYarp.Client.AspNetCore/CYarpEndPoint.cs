@@ -7,25 +7,25 @@ using System.Threading.Tasks;
 namespace CYarp.Client.AspNetCore
 {
     /// <summary>
-    /// Cyarp终结点
+    /// CYarp endpoint
     /// </summary>
     public sealed class CYarpEndPoint : EndPoint
     {
         /// <summary>
-        /// GetOrSetCYarpServerUri
-        /// 支持http、https、 wsAndwss
+        /// Gets or sets CYarp server URI
+        /// Supports http, https, ws and wss
         /// </summary>
         [AllowNull]
         public Uri ServerUri { get; set; }
 
         /// <summary>
-        /// GetOrSet访问TargetServer（即本服务）UseUri
-        /// 支持httpAndhttps
+        /// Gets or sets URI for accessing target server (this service)
+        /// Supports http and https
         /// </summary>
         public Uri TargetUri { get; set; } = new Uri("http://localhost");
 
         /// <summary>
-        /// GetOrSetConnectionToCYarpServerRequest头
+        /// Gets or sets request headers for connecting to CYarp server
         /// </summary>
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
