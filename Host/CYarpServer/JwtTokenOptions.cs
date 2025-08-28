@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 namespace CYarpServer
 {
     /// <summary>
-    /// 表示token选项
+    /// 表示tokenOptions
     /// </summary> 
     sealed class JwtTokenOptions
     {
@@ -39,7 +39,7 @@ namespace CYarpServer
 
 
         /// <summary>
-        /// 创建安全键
+        /// Create安全键
         /// </summary> 
         /// <returns></returns>
         public SecurityKey CreateSecurityKey()
@@ -50,7 +50,7 @@ namespace CYarpServer
         }
 
         /// <summary>
-        /// 获取验证参数
+        /// GetVerify参数
         /// </summary>
         /// <returns></returns>
         public TokenValidationParameters GetParameters()

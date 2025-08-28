@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 客户端状态后台服务
+    /// ClientState后台服务
     /// </summary>
     sealed class ClientStateStorageService : BackgroundService
     {
@@ -32,7 +32,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 初始化所有客户端为离线
+        /// 初始化所有ClientAs离线
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

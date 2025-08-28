@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace CYarpBench
 {
     /// <summary>
-    /// 客户端后台服务
+    /// Client后台服务
     /// </summary>
     abstract class ClientBase : BackgroundService
     {
@@ -42,7 +42,7 @@ namespace CYarpBench
                     using var client = new CYarpClient(options, this.logger, httpHandler);
                     await client.TransportAsync(stoppingToken);
 
-                    this.logger.LogInformation("连接已被关闭，5秒后重新连接");
+                    this.logger.LogInformation("ConnectionAlreadyByClose，5秒后重新Connection");
                     await Task.Delay(TimeSpan.FromSeconds(5d), stoppingToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -56,7 +56,7 @@ namespace CYarpBench
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogError(ex, "连接异常，10秒后重新连接");
+                    this.logger.LogError(ex, "ConnectionException，10秒后重新Connection");
                     await Task.Delay(TimeSpan.FromSeconds(10d), stoppingToken);
                 }
             }

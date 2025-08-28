@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// 终结点路由扩展
+    /// 终结点路由Extension
     /// </summary>
     public static class EndpointRouteBuilderExtensions
     {
         /// <summary>
-        /// 处理CYarp的客户端连接
+        /// HandleCYarpClientConnection
         /// </summary>
-        /// <typeparam name="TClientIdProvider">客户端id的提供者</typeparam>
+        /// <typeparam name="TClientIdProvider">ClientidProvider</typeparam>
         /// <param name="endpoints"></param>
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TClientIdProvider>(this IEndpointRouteBuilder endpoints) where TClientIdProvider : IClientIdProvider
@@ -27,10 +27,10 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// 处理CYarp的客户端连接
+        /// HandleCYarpClientConnection
         /// </summary>
         /// <param name="endpoints"></param>
-        /// <param name="clientIdProvider">客户端id的提供者</param>
+        /// <param name="clientIdProvider">ClientidProvider</param>
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp(this IEndpointRouteBuilder endpoints, Func<HttpContext, string?> clientIdProvider)
         {
@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// 处理CYarp的客户端连接
+        /// HandleCYarpClientConnection
         /// </summary>
         /// <param name="endpoints"></param>
-        /// <param name="clientIdProvider">客户端id的提供者</param>
+        /// <param name="clientIdProvider">ClientidProvider</param>
         /// <returns></returns>
         public static RouteHandlerBuilder MapCYarp(this IEndpointRouteBuilder endpoints, Func<HttpContext, ValueTask<string?>> clientIdProvider)
         {
@@ -55,12 +55,12 @@ namespace Microsoft.AspNetCore.Builder
                 .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest))
                 .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status403Forbidden));
 
-            // Tunnel的连接处理
+            // TunnelConnectionHandle
             cyarp.Map("/{tunnelId}", TunnelHanlder.HandleTunnelAsync)
                 .AllowAnonymous()
                 .WithDisplayName("CYarp tunnel endpoint");
 
-            // Client的连接处理
+            // ClientConnectionHandle
             var clientHandler = new ClientHandler(clientIdProvider);
             return cyarp.Map("/", clientHandler.HandleClientAsync)
                 .WithDisplayName("CYarp client endpoint");

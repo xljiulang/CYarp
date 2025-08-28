@@ -6,7 +6,7 @@ using System.IO.Hashing;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 安全的隧道Id
+    /// 安全TunnelId
     /// </summary>
     readonly struct TunnelId : IParsable<TunnelId>, IEquatable<TunnelId>
     {
@@ -16,7 +16,7 @@ namespace CYarp.Server.Clients
         public static readonly TunnelId Empty = default;
 
         /// <summary>
-        /// 获取是否为有效的TunnelId值
+        /// GetIs否AsValidTunnelId值
         /// </summary>
         public bool IsValid => this.isValid;
 
@@ -33,7 +33,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 生成安全的tunnelId
+        /// 生成安全tunnelId
         /// </summary>
         /// <param name="clientId"></param>
         /// <param name="tunnelType"></param>
@@ -70,7 +70,7 @@ namespace CYarp.Server.Clients
             Span<byte> span = stackalloc byte[20];
             guid.TryWriteBytes(span);
 
-            // 计算校验值，放到[16-19]
+            // 计算校验值，放To[16-19]
             var hash32 = new XxHash32();
             hash32.Append(span[..12]);
             hash32.Append(secureSalt);

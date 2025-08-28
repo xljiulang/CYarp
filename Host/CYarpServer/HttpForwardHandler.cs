@@ -14,11 +14,11 @@ namespace CYarpServer
         private static readonly string clientIdClaimType = "ClientId";
 
         /// <summary>
-        /// 处理cyarp
-        /// 核心操作是从请求上下文获取clientId
-        /// 然后使用clientId从IClientViewer服务获取IClient来转发http
+        /// Handlecyarp
+        /// 核心操作Is从Request上下文GetclientId
+        /// 然后UseclientId从IClientViewer服务GetIClient来Forwardhttp
         /// </summary>
-        /// <param name="clientViewer">IClient的查看器</param>
+        /// <param name="clientViewer">IClientViewer</param>
         /// <param name="context"></param>
         /// <param name="logger"></param>
         /// <returns></returns> 
@@ -51,7 +51,7 @@ namespace CYarpServer
             [LoggerMessage(LogLevel.Information, "=> [{clientId}] {method} {uri}")]
             public static partial void LogRequest(ILogger logger, string clientId, string method, Uri uri);
 
-            [LoggerMessage(LogLevel.Information, "<= [{clientId}] {method} {uri} {statusCode}，过程耗时{elapsed}")]
+            [LoggerMessage(LogLevel.Information, "<= [{clientId}] {method} {uri} {statusCode}，过程Took{elapsed}")]
             public static partial void LogResponse(ILogger logger, string clientId, string method, Uri uri, int statusCode, TimeSpan elapsed);
         }
     }

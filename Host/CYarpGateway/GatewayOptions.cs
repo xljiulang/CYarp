@@ -3,12 +3,12 @@
 namespace CYarpGateway
 {
     /// <summary>
-    /// 网关选项
+    /// 网关Options
     /// </summary>
     sealed class GatewayOptions
     {
         /// <summary>
-        /// 节点的Uri地址
+        /// 节点UriAddress
         /// </summary>
         public ConcurrentDictionary<string, string> Nodes { get; set; } = [];
     }

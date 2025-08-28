@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// 服务注册扩展
+    /// 服务注册Extension
     /// </summary>
     public static class ServiceCollectionExtensions
     {
@@ -35,10 +35,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 配置CYarpOptions
+        /// ConfigurationCYarpOptions
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="configureOptions">CYarpOptions的配置</param>
+        /// <param name="configureOptions">CYarpOptionsConfiguration</param>
         /// <returns></returns>
         public static ICYarpBuilder Configure(this ICYarpBuilder builder, Action<CYarpOptions> configureOptions)
         {
@@ -47,10 +47,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 配置CYarpOptions的绑定
+        /// ConfigurationCYarpOptions绑定
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="configureBinder">CYarpOptions的配置绑定</param>
+        /// <param name="configureBinder">CYarpOptionsConfiguration绑定</param>
         /// <returns></returns>
         public static ICYarpBuilder Configure(this ICYarpBuilder builder, IConfiguration configureBinder)
         {
@@ -59,9 +59,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 添加一个IClient的状态存储器
+        /// 添加一个IClientState存储器
         /// </summary>
-        /// <typeparam name="TStorage">状态存储器的类型</typeparam>
+        /// <typeparam name="TStorage">State存储器类型</typeparam>
         /// <param name="builder"></param>
         /// <returns></returns>
         public static ICYarpBuilder AddClientStateStorage<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStorage>(this ICYarpBuilder builder)

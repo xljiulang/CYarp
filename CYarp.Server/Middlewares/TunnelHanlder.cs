@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// Tunnel握手处理者
+    /// Tunnel握手Handle者
     /// </summary>
     static class TunnelHanlder
     {
         /// <summary>
-        /// Tunnel不需要身份验证和授权，tunnelId由其可校验性来保证安全
+        /// Tunnel不需要身份VerifyAndAuthorization，tunnelId由其可校验性来保证安全
         /// </summary>
         /// <param name="context"></param>
         /// <param name="tunnelFactory"></param>
@@ -26,7 +26,7 @@ namespace CYarp.Server.Middlewares
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false)
             {
-                TunnelLog.LogInvalidRequest(tunnelFactory.Logger, context.Connection.Id, "不是有效的CYarp请求");
+                TunnelLog.LogInvalidRequest(tunnelFactory.Logger, context.Connection.Id, "不IsValidCYarpRequest");
                 return Results.BadRequest();
             }
 
@@ -48,7 +48,7 @@ namespace CYarp.Server.Middlewares
                 await httpTunnel.DisposeAsync();
             }
 
-            // 关闭通道的连接
+            // Close通道Connection
             context.Abort();
             return Results.Empty;
         }

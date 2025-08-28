@@ -12,7 +12,7 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// IClient的的处理者
+    /// IClientHandle者
     /// </summary>
     sealed class ClientHandler
     {
@@ -20,7 +20,7 @@ namespace CYarp.Server.Middlewares
         private readonly Func<HttpContext, ValueTask<string?>> clientIdProvider;
 
         /// <summary>
-        /// IClient的的处理者
+        /// IClientHandle者
         /// </summary>
         /// <param name="clientIdProvider"></param>
         public ClientHandler(Func<HttpContext, ValueTask<string?>> clientIdProvider)
@@ -39,20 +39,20 @@ namespace CYarp.Server.Middlewares
             var cyarpFeature = context.Features.GetRequiredFeature<ICYarpFeature>();
             if (cyarpFeature.IsCYarpRequest == false)
             {
-                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "不是有效的CYarp请求");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "不IsValidCYarpRequest");
                 return Results.BadRequest();
             }
 
             if (cyarpFeature.IsCYarpRequest == false || context.Request.Headers.TryGetValue(CYarpTargetUriHeader, out var targetUri) == false)
             {
-                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"请求头{CYarpTargetUriHeader}不存在");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"Request头{CYarpTargetUriHeader}不存在");
                 return Results.BadRequest();
             }
 
-            // CYarp-TargetUri头格式验证
+            // CYarp-TargetUri头格式Verify
             if (Uri.TryCreate(targetUri, UriKind.Absolute, out var clientTargetUri) == false)
             {
-                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"请求头{CYarpTargetUriHeader}的值不是Uri格式");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, $"Request头{CYarpTargetUriHeader}值不IsUri格式");
                 return Results.BadRequest();
             }
 
@@ -60,7 +60,7 @@ namespace CYarp.Server.Middlewares
             var clientId = await this.clientIdProvider.Invoke(context);
             if (string.IsNullOrEmpty(clientId))
             {
-                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "无法获取到IClient的Id");
+                ClientLog.LogInvalidRequest(logger, context.Connection.Id, "无法GetToIClientId");
                 return Results.Forbid();
             }
 
@@ -87,7 +87,7 @@ namespace CYarp.Server.Middlewares
                 }
             }
 
-            // 关闭连接
+            // CloseConnection
             context.Abort();
             return Results.Empty;
         }

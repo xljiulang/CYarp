@@ -14,7 +14,7 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 客户端状态Channel
+    /// ClientStateChannel
     /// </summary>
     sealed class ClientStateChannel
     {
@@ -27,8 +27,8 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 将客户端状态写入Channel
-        /// 确保持久层的性能不影响到ClientManager
+        /// WillClientState写入Channel
+        /// 确保持久层性能不影响ToClientManager
         /// </summary>
         /// <param name="client"></param>
         /// <param name="connected"></param>
@@ -51,7 +51,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 从Channel读取所有客户端状态
+        /// 从Channel读取所有ClientState
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

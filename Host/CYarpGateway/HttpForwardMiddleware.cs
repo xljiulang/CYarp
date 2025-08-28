@@ -12,7 +12,7 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarpGateway
 {
     /// <summary>
-    /// http转发中间件
+    /// httpForwardMiddleware
     /// </summary>
     sealed partial class HttpForwardMiddleware : IMiddleware
     {
@@ -34,7 +34,7 @@ namespace CYarpGateway
         }
 
         /// <summary>
-        /// 转发http请求到clientId对应的CYarpServer节点
+        /// ForwardhttpRequestToclientId对应CYarpServer节点
         /// </summary>
         /// <param name="context"></param>
         /// <param name="next"></param>
@@ -79,10 +79,10 @@ namespace CYarpGateway
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Warning, "[{connection}] 匹配不到ClientId")]
+            [LoggerMessage(LogLevel.Warning, "[{connection}] 匹配不ToClientId")]
             public static partial void LogClientIdNotFound(ILogger logger, string connection);
 
-            [LoggerMessage(LogLevel.Warning, "[{clientId}] 找不到关联的Node")]
+            [LoggerMessage(LogLevel.Warning, "[{clientId}] 找不ToAssociatedNode")]
             public static partial void LogNodeNotFound(ILogger logger, string clientId);
         }
     }

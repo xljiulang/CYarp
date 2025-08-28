@@ -1,12 +1,12 @@
 ﻿namespace CYarp.Server.Configs
 {
     /// <summary>
-    /// 允许的传输协议
+    /// 允许TransportProtocol
     /// </summary>
     public enum Protocols
     {
         /// <summary>
-        /// 同时允许Http和WebSocket
+        /// 同时允许HttpAndWebSocket
         /// </summary>
         All,
 

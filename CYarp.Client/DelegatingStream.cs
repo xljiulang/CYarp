@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 namespace CYarp.Client
 {
     /// <summary>
-    /// 委托流
+    /// 委托Stream
     /// </summary>
     abstract class DelegatingStream : Stream
     {
         /// <summary>
-        /// 获取所包装的流对象
+        /// Get所包装Stream对象
         /// </summary>
         protected readonly Stream Inner;
 
         /// <summary>
-        /// 委托流
+        /// 委托Stream
         /// </summary>
         /// <param name="inner"></param>
         public DelegatingStream(Stream inner)

@@ -12,49 +12,49 @@ namespace CYarp.Client.AspNetCore
     public sealed class CYarpEndPoint : EndPoint
     {
         /// <summary>
-        /// 获取或设置CYarp服务器Uri
-        /// 支持http、https、 ws和wss
+        /// GetOrSetCYarpServerUri
+        /// 支持http、https、 wsAndwss
         /// </summary>
         [AllowNull]
         public Uri ServerUri { get; set; }
 
         /// <summary>
-        /// 获取或设置访问目标服务器（即本服务）使用的Uri
-        /// 支持http和https
+        /// GetOrSet访问TargetServer（即本服务）UseUri
+        /// 支持httpAndhttps
         /// </summary>
         public Uri TargetUri { get; set; } = new Uri("http://localhost");
 
         /// <summary>
-        /// 获取或设置连接到CYarp服务器的请求头
+        /// GetOrSetConnectionToCYarpServerRequest头
         /// </summary>
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// 获取或设置连接到CYarp服务器的请求头的工厂
-        /// 当ConnectHeadersFactory不为null时，ConnectHeaders将会被忽略
+        /// GetOrSetConnectionToCYarpServerRequest头Factory
+        /// 当ConnectHeadersFactory不Asnull时，ConnectHeadersWill会By忽略
         /// </summary>
         public Func<ValueTask<Dictionary<string, string>>>? ConnectHeadersFactory { get; set; } = null;
 
         /// <summary>
-        /// 获取或设置与CYarp服务器的连接超时时长
-        /// 默认为5s
+        /// GetOrSetAndCYarpServerConnectionTimeout时长
+        /// 默认As5s
         /// </summary>
         public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// 获取或设置连接心跳包周期
+        /// GetOrSetConnection心跳包周期
         /// 默认30s，小于等于0表示不发送心跳包
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 
         /// <summary>
-        /// 获取或设置断线重连间隔间隔
+        /// GetOrSet断线重连间隔间隔
         /// 默认5s
         /// </summary>
         public TimeSpan ReconnectInterval { get; set; } = TimeSpan.FromSeconds(5d);
 
         /// <summary>
-        /// 转换为文本
+        /// 转换As文本
         /// </summary>
         /// <returns></returns>
         public override string ToString()

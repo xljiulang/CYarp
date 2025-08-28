@@ -95,7 +95,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 连接到CYarp服务器，创建用于接受CYarp服务器传输连接的监听器
+        /// ConnectionToCYarpServer，Create用于接受CYarpServerTransportConnectionListener
         /// </summary> 
         /// <exception cref="CYarpConnectException"></exception>
         /// <exception cref="ObjectDisposedException"></exception>
@@ -110,7 +110,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 连接到CYarp服务器，并将CYarp服务器的传输绑定到目标服务器
+        /// ConnectionToCYarpServer，并WillCYarpServerTransport绑定ToTargetServer
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -126,7 +126,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 连接到CYarp服务器，并将CYarp服务器的传输绑定到目标服务器
+        /// ConnectionToCYarpServer，并WillCYarpServerTransport绑定ToTargetServer
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -155,7 +155,7 @@ namespace CYarp.Client
 
 
         /// <summary>
-        /// 绑定tunnel的IO
+        /// 绑定tunnelIO
         /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationTokens"></param>
@@ -166,7 +166,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 绑定tunnel的IO
+        /// 绑定tunnelIO
         /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
@@ -246,13 +246,13 @@ namespace CYarp.Client
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "连接到服务器{address}成功")]
+            [LoggerMessage(LogLevel.Information, "ConnectionToServer{address}Success")]
             public static partial void LogHttp11Connected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Information, "连接到服务器{address}成功，已启用h2多路复用")]
+            [LoggerMessage(LogLevel.Information, "ConnectionToServer{address}Success，Already启用h2多路复用")]
             public static partial void LogHttp2Connected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Warning, "已断开与服务器{address}的连接")]
+            [LoggerMessage(LogLevel.Warning, "AlreadyDisconnectAndServer{address}Connection")]
             public static partial void LogDisconnected(ILogger logger, Uri address);
 
             [LoggerMessage(LogLevel.Information, "[{tunnelId}] Creating tunnel to {address}..")]

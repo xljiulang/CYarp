@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace CYarpGateway.StateStrorages
 {
-    /// 基于redis的IClient状态存储器
+    /// 基于redisIClientState存储器
     sealed class RedisClientStateStorage
     {
         private readonly ConnectionMultiplexer redis;
@@ -19,7 +19,7 @@ namespace CYarpGateway.StateStrorages
         }
 
         /// <summary>
-        /// 查找clientId对应的Node的Destination值
+        /// 查找clientId对应NodeDestination值
         /// </summary>
         /// <param name="clientId"></param>
         /// <returns></returns>

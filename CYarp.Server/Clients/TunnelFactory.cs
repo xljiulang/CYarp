@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// Tunnel工厂
+    /// TunnelFactory
     /// </summary> 
     sealed class TunnelFactory
     {
@@ -21,7 +21,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 创建Tunnel
+        /// CreateTunnel
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="tunnelType"></param>
@@ -33,7 +33,7 @@ namespace CYarp.Server.Clients
             var tunnelSource = new TaskCompletionSource<Tunnel>();
             if (this.tunnelCompletionSources.TryAdd(tunnelId, tunnelSource) == false)
             {
-                throw new SystemException($"系统中已存在{tunnelId}的tunnelId");
+                throw new SystemException($"系统中Already存在{tunnelId}tunnelId");
             }
 
             try
@@ -44,7 +44,7 @@ namespace CYarp.Server.Clients
             }
             catch (OperationCanceledException)
             {
-                TunnelLog.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, "远程端操作超时");
+                TunnelLog.LogTunnelCreateFailure(this.Logger, connection.ClientId, tunnelId, "远程端操作Timeout");
                 throw;
             }
             catch (Exception ex)

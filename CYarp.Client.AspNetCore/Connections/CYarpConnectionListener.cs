@@ -50,13 +50,13 @@ namespace CYarp.Client.AspNetCore.Connections
                         await this.connections.DisposeAsync();
                         this.connections = null;
 
-                        Log.LogConnectError(this.logger, this.endPoint.ServerUri, "连接被中断");
+                        Log.LogConnectError(this.logger, this.endPoint.ServerUri, "ConnectionBy中断");
                         await Task.Delay(this.endPoint.ReconnectInterval, cancellationToken);
                     }
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
-                    Log.LogConnectError(this.logger, this.endPoint.ServerUri, "操作被用户取消");
+                    Log.LogConnectError(this.logger, this.endPoint.ServerUri, "操作By用户取消");
                     return null;
                 }
                 catch (CYarpConnectException ex) when (ex.ErrorCode >= CYarpConnectError.Unauthorized)
@@ -130,13 +130,13 @@ namespace CYarp.Client.AspNetCore.Connections
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "连接到服务器{serverUri}成功")]
+            [LoggerMessage(LogLevel.Information, "ConnectionToServer{serverUri}Success")]
             public static partial void LogConnected(ILogger logger, Uri serverUri);
 
-            [LoggerMessage(LogLevel.Warning, "已断开与服务器{serverUri}的连接")]
+            [LoggerMessage(LogLevel.Warning, "AlreadyDisconnectAndServer{serverUri}Connection")]
             public static partial void LogDisconnected(ILogger logger, Uri serverUri);
 
-            [LoggerMessage(LogLevel.Warning, "连接到服务器{serverUri}异常：{reason}")]
+            [LoggerMessage(LogLevel.Warning, "ConnectionToServer{serverUri}Exception：{reason}")]
             public static partial void LogConnectError(ILogger logger, Uri serverUri, string? reason);
         }
     }

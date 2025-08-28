@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 客户端的长连接
+    /// Client长Connection
     /// </summary>
     sealed class ClientConnection : IAsyncDisposable
     {

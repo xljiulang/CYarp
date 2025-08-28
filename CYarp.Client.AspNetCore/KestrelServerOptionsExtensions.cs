@@ -5,7 +5,7 @@ using System;
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// KestrelServerOptions扩展
+    /// KestrelServerOptionsExtension
     /// </summary>
     public static class KestrelServerOptionsExtensions
     {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="kestrel"></param>
         /// <param name="endPoint">CYarp终结点</param>
-        /// <param name="configure">配置</param>
+        /// <param name="configure">Configuration</param>
         public static void ListenCYarp(this KestrelServerOptions kestrel, CYarpEndPoint endPoint, Action<ListenOptions> configure)
         {
             kestrel.Listen(endPoint, configure);

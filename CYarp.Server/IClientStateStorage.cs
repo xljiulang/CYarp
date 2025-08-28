@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace CYarp.Server
 {
     /// <summary>
-    /// CYarp的IClient状态存储器
+    /// CYarpIClientState存储器
     /// </summary>
     public interface IClientStateStorage
     {
         /// <summary>
-        /// 初始化所有客户端为离线
+        /// 初始化所有ClientAs离线
         /// 服务启动后触发此方法
         /// </summary>
         /// <param name="cancellationToken"></param>
@@ -17,9 +17,9 @@ namespace CYarp.Server
         Task InitClientStatesAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// 写入客户端状态
+        /// 写入ClientState
         /// </summary>
-        /// <param name="clientState">客户端状态</param>
+        /// <param name="clientState">ClientState</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task WriteClientStateAsync(ClientState clientState, CancellationToken cancellationToken);

@@ -34,7 +34,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 创建到目的地的通道
+        /// CreateTo目地通道
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <exception cref="CYarpConnectException"></exception>
@@ -75,7 +75,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 创建到服务器的通道
+        /// CreateToServer通道
         /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
@@ -89,7 +89,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 创建与CYarp服务器的连接
+        /// CreateAndCYarpServerConnection
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <exception cref="CYarpConnectException"></exception>
@@ -200,7 +200,7 @@ namespace CYarp.Client
                 }
                 catch (Exception)
                 {
-                    // 捕获剩余的其它所有异常，从而降级到http/1.1的Upgrade协议
+                    // 捕获剩余其它所有Exception，从而降级Tohttp/1.1UpgradeProtocol
                 }
             }
             return await this.Http11ConnectServerAsync(tunnelId, cancellationToken);
