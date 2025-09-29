@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Builder
                 .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status403Forbidden));
 
             // Tunnel的连接处理
-            cyarp.Map("/{tunnelId}", TunnelHanlder.HandleTunnelAsync)
+            cyarp.Map("/{tunnelId}", TunnelHandler.HandleTunnelAsync)
                 .AllowAnonymous()
                 .WithDisplayName("CYarp tunnel endpoint");
 
