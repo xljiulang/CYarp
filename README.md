@@ -1,5 +1,3 @@
-[README](README.md) | [中文文档](README_zh.md)
-
 ## CYarp
 A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet. It currently supports four connection methods: `HTTP/1.1 Upgrade`, `HTTP/2 Extended CONNECT`, `WebSocket` and `WebSocket over Http/2`.
 
