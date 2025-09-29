@@ -8,7 +8,7 @@ namespace CYarp.Client
     sealed partial class CYarpConnectionFactory
     {
         /// <summary>
-        /// 自动刷新的Stream
+        /// Auto-flushing stream
         /// </summary>
         private class ServerTunnelStream : DelegatingStream
         {

@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 namespace CYarp.Client
 {
     /// <summary>
-    /// CYarp监听器
+    /// CYarpListener
     /// </summary>
     public interface ICYarpListener : IAsyncDisposable
     {
         /// <summary>
-        /// 接收CYarp服务器的传输连接
+        /// Accept CYarp server transport connection
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns>返回null表示再也无法接收到</returns>
+        /// <returns>Returns null when no more connections can be accepted</returns>
         Task<Stream?> AcceptAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 接收CYarp服务器的所有传输连接
+        /// Accept all CYarp server transport connections
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

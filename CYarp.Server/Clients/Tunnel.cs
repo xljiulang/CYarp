@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 隧道
+    /// Tunnel
     /// </summary>
     sealed partial class Tunnel : DelegatingStream
     {
@@ -13,22 +13,22 @@ namespace CYarp.Server.Clients
         private readonly TaskCompletionSource disposeTaskCompletionSource = new();
 
         /// <summary>
-        /// 隧道标识
+        /// Tunnel identifier
         /// </summary>
         public TunnelId Id { get; }
 
         /// <summary>
-        /// 传输协议
+        /// Transport protocol
         /// </summary>
         public TransportProtocol Protocol { get; }
 
         /// <summary>
-        /// 获取生命周期
+        /// Get lifetime
         /// </summary>
         public TimeSpan Lifetime => TimeSpan.FromMilliseconds(Environment.TickCount64 - this.tickCount);
 
         /// <summary>
-        /// 获取或设置释放回调
+        /// Get or set dispose callback
         /// </summary>
         public Action<Tunnel>? DisposingCallback { get; set; }
 

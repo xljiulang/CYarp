@@ -1,14 +1,14 @@
 ﻿namespace CYarpServer.StateStrorages
 {
     /// <summary>
-    /// redis客户端状态存储选项
+    /// Redis client state storage options
     /// </summary>
     sealed class RedisClientStateStorageOptions
     {
         public const string ClientNodePrefix = "CYarp:Client:";
 
         /// <summary>
-        /// redis连接字符串
+        /// Redis connection string
         /// </summary>
         public string ConnectionString { get; set; } = "localhost";
     }

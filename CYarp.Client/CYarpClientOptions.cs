@@ -6,7 +6,7 @@ using System.Linq;
 namespace CYarp.Client
 {
     /// <summary>
-    /// 客户端选项
+    /// ClientOptions
     /// </summary>
     public class CYarpClientOptions
     {
@@ -14,48 +14,48 @@ namespace CYarp.Client
         private static readonly string[] serverSchemes = [Uri.UriSchemeHttp, Uri.UriSchemeHttps, Uri.UriSchemeWs, Uri.UriSchemeWss];
 
         /// <summary>
-        /// 获取或设置CYarp服务器Uri
-        /// 支持http、https、 ws和wss
+        /// Gets or sets CYarp server URI
+        /// Supports http, https, ws and wss
         /// </summary>
         [AllowNull]
         public Uri ServerUri { get; set; }
 
         /// <summary>
-        /// 获取或设置访问目标服务器使用的Uri
-        /// 支持http和https
+        /// Gets or sets URI for accessing target server
+        /// Supports http and https
         /// </summary>
         [AllowNull]
         public Uri TargetUri { get; set; }
 
         /// <summary>
-        ///获取或设置目标服务器的UnixDomainSocket路径[可选]
+        /// Gets or sets target server Unix domain socket path [optional]
         /// </summary>
         public string? TargetUnixDomainSocket { get; set; }
 
         /// <summary>
-        /// 获取或设置连接到CYarp服务器的请求头
+        /// Gets or sets request headers for connecting to CYarp server
         /// </summary>
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// 获取或设置与server或target的连接超时时长
-        /// 默认为5s
+        /// Gets or sets connection timeout duration for server or target connection
+        /// Default is 5 seconds
         /// </summary>
         public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// 获取或设置隧道传输错误回调
+        /// Gets or sets tunnel transport error callback
         /// </summary>
         public Action<Exception>? TunnelErrorCallback;
 
         /// <summary>
-        /// 获取或设置心跳包周期
-        /// 默认30s，小于等于0表示不发送心跳包
+        /// Gets or sets heartbeat interval
+        /// Default is 30 seconds, less than or equal to 0 means no heartbeat packets are sent
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 
         /// <summary>
-        /// 验证参数
+        /// Validate parameters
         /// </summary>
         /// <exception cref="ArgumentException"></exception>
         public void Validate()

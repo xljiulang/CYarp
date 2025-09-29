@@ -13,7 +13,7 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 客户端
+    /// Client
     /// </summary>
     [DebuggerDisplay("Id = {Id}, Protocol = {Protocol}")]
     sealed class Client : IClient

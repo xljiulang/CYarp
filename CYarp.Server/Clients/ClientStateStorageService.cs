@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 客户端状态后台服务
+    /// Client state background service
     /// </summary>
     sealed class ClientStateStorageService : BackgroundService
     {
@@ -32,7 +32,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 初始化所有客户端为离线
+        /// Initialize all clients as offline
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -45,7 +45,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 从channel消费ClientState
+        /// Consume client state from channel
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

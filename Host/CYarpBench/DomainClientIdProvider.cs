@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 namespace CYarpBench
 {
     /// <summary>
-    /// 适用于和frp bench测试的IClient的Id提供者
+    /// IClientIdProvider suitable for bench testing
     /// </summary>
     sealed class DomainClientIdProvider : IClientIdProvider
     {
         /// <summary>
-        /// 使用请求头的X-Domain值做IClient的Id
+        /// Use X-Domain header value as IClientId
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
