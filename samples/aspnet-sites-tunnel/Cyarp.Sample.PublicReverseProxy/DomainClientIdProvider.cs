@@ -6,7 +6,7 @@ namespace Cyarp.Sample.PublicReverseProxy;
 public class DomainClientIdProvider : IClientIdProvider
 {
     /// <summary>
-    /// 使用请求头的HOST值做IClient的Id
+    /// Use HOST header value as IClientId
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>

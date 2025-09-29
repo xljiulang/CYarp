@@ -3,12 +3,12 @@
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// 应用程序扩展
+    /// Application builder extensions
     /// </summary>
     public static class ApplicationBuilderExtensions
     {
         /// <summary>
-        /// 使用CYarp中间件 
+        /// UseCYarpMiddleware 
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>

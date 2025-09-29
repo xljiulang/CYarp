@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace CYarp.Server
 {
     /// <summary>
-    /// IClient的Id的提供者
+    /// IClientIdProvider
     /// </summary>
     public interface IClientIdProvider
     {
         /// <summary>
-        /// 尝试获取IClient的Id
+        /// Try to get client ID
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>

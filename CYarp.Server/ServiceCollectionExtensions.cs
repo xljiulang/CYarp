@@ -9,13 +9,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// 服务注册扩展
+    /// Service registration extensions
     /// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// 注册CYarp相关服务
-        /// 提供IClientViewer服务来查看IClient
+        /// Register CYarp related services
+        /// Provides IClientViewer service to view IClient
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
@@ -35,10 +35,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 配置CYarpOptions
+        /// ConfigurationCYarpOptions
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="configureOptions">CYarpOptions的配置</param>
+        /// <param name="configureOptions">CYarpOptionsConfiguration</param>
         /// <returns></returns>
         public static ICYarpBuilder Configure(this ICYarpBuilder builder, Action<CYarpOptions> configureOptions)
         {
@@ -47,10 +47,10 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 配置CYarpOptions的绑定
+        /// Configure CYarpOptions binding
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="configureBinder">CYarpOptions的配置绑定</param>
+        /// <param name="configureBinder">CYarpOptions configuration binding</param>
         /// <returns></returns>
         public static ICYarpBuilder Configure(this ICYarpBuilder builder, IConfiguration configureBinder)
         {
@@ -59,9 +59,9 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// 添加一个IClient的状态存储器
+        /// Add an IClientState storage provider
         /// </summary>
-        /// <typeparam name="TStorage">状态存储器的类型</typeparam>
+        /// <typeparam name="TStorage">State storage provider type</typeparam>
         /// <param name="builder"></param>
         /// <returns></returns>
         public static ICYarpBuilder AddClientStateStorage<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStorage>(this ICYarpBuilder builder)

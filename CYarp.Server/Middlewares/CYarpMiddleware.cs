@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Middlewares
 {
     /// <summary>
-    /// cyarp协议分析中间件
+    /// CYarp protocol analysis middleware
     /// </summary>
     sealed class CYarpMiddleware : IMiddleware
     {
         private readonly IOptionsMonitor<CYarpOptions> cyarpOptions;
 
         /// <summary>
-        /// cyarp协议分析中间件
+        /// CYarp protocol analysis middleware
         /// </summary>
         /// <param name="cyarpOptions"></param>
         public CYarpMiddleware(IOptionsMonitor<CYarpOptions> cyarpOptions)

@@ -8,7 +8,7 @@ namespace CYarp.Client
     sealed partial class CYarpConnectionFactory
     {
         /// <summary>
-        /// 安全写入的Stream
+        /// Safe write stream
         /// </summary>
         private class SafeWriteStream : DelegatingStream
         {

@@ -14,14 +14,14 @@ namespace CYarpClientAspNetCore
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.Configure<CYarpEndPoint>(builder.Configuration.GetSection(nameof(CYarpEndPoint)));
 
-            // ×¢²ácyarpµÄ¼àÌýÆ÷
+            // Register cyarp listener
             builder.Services.AddCYarpListener();
 
             builder.WebHost.ConfigureKestrel(kestrel =>
             {
                 kestrel.ListenLocalhost(5000);
 
-                // ¼àÌýÒ»¸öcyarp
+                // Configure a cyarp endpoint
                 var endPoint = kestrel.ApplicationServices.GetRequiredService<IOptions<CYarpEndPoint>>().Value;
                 kestrel.ListenCYarp(endPoint);
             });

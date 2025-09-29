@@ -10,62 +10,62 @@ using Yarp.ReverseProxy.Forwarder;
 namespace CYarp.Server
 {
     /// <summary>
-    /// 客户端接口
+    /// Client interface
     /// </summary>
     public interface IClient : IAsyncDisposable
     {
         /// <summary>
-        /// 获取唯一标识
+        /// Get unique identifier
         /// </summary>
         string Id { get; }
 
         /// <summary>
-        /// 获取转发的目标Uri
+        /// Get forwarding target Uri
         /// </summary>
         Uri TargetUri { get; }
 
         /// <summary>
-        /// 获取关联的用户信息
+        /// Get associated user information
         /// </summary>
         ClaimsPrincipal User { get; }
 
         /// <summary>
-        /// 获取传输协议
+        /// Get transport protocol
         /// </summary>
         TransportProtocol Protocol { get; }
 
         /// <summary>
-        /// 获取远程终结点
+        /// Get remote endpoint
         /// </summary>
         IPEndPoint? RemoteEndpoint { get; }
 
         /// <summary>
-        /// 获取仍在连接的TcpTunnel数量
+        /// Get number of still connected TcpTunnels
         /// </summary>
         int TcpTunnelCount { get; }
 
         /// <summary>
-        /// 获取仍在连接的HttpTunnel数量
+        /// Get number of still connected HttpTunnels
         /// </summary>
         int HttpTunnelCount { get; }
 
         /// <summary>
-        /// 获取创建时间
+        /// Get creation time
         /// </summary>
         DateTimeOffset CreationTime { get; }
 
         /// <summary>
-        /// 创建一个可承载 TCP 流的传输隧道到<see cref="TargetUri"/>的EndPoint
+        /// Create a transport tunnel that can carry TCP streams to the EndPoint of <see cref="TargetUri"/>
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<Stream> CreateTcpTunnelAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 转发http请求到关联的<see cref="TargetUri"/>"/>
+        /// Forward HTTP request to associated <see cref="TargetUri"/>
         /// </summary>
-        /// <param name="context">http上下文</param> 
-        /// <param name="transformer">http内容转换器</param>
+        /// <param name="context">HTTP context</param> 
+        /// <param name="transformer">HTTP content transformer</param>
         /// <returns></returns>
         ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = default);
     }

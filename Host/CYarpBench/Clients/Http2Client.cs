@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 namespace CYarpBench.Clients
 {
     /// <summary>
-    /// HTTP/2 Extended CONNECT的客户端后台服务
+    /// HTTP/2 Extended CONNECT client background service
     /// </summary>
     sealed class Http2Client : ClientBase
     {

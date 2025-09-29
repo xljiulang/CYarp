@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace CYarp.Client
 {
     /// <summary>
-    /// CYarp连接
+    /// CYarpConnection
     /// </summary>
     sealed partial class CYarpConnection : IAsyncDisposable
     {
@@ -24,7 +24,7 @@ namespace CYarp.Client
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
         /// <summary>
-        /// 获取关闭凭证
+        /// Get close token
         /// </summary>
         public CancellationToken Closed { get; }
 
@@ -49,7 +49,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 心跳timer
+        /// Heartbeat timer
         /// </summary>
         /// <param name="state"></param>
         private async void KeepAliveTimerTick(object? state)
@@ -66,7 +66,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 读取tunnelId
+        /// Read tunnel ID
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -132,16 +132,16 @@ namespace CYarp.Client
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Debug, "发出PING请求")]
+            [LoggerMessage(LogLevel.Debug, "SendPINGRequest")]
             public static partial void LogSendPing(ILogger logger);
 
-            [LoggerMessage(LogLevel.Debug, "收到PING请求")]
+            [LoggerMessage(LogLevel.Debug, "ReceivePINGRequest")]
             public static partial void LogRecvPing(ILogger logger);
 
-            [LoggerMessage(LogLevel.Debug, "收到PONG回应")]
+            [LoggerMessage(LogLevel.Debug, "ReceivePONGResponse")]
             public static partial void LogRecvPong(ILogger logger);
 
-            [LoggerMessage(LogLevel.Debug, "收到未知数据: {text}")]
+            [LoggerMessage(LogLevel.Debug, "ReceiveUnknownData: {text}")]
             public static partial void LogRecvUnknown(ILogger logger, string text);
         }
     }

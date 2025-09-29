@@ -1,2 +1,2 @@
 ## CYarpClient.Native
-CYarp的C/C++客户端的demo
+Demo for CYarp C/C++ client
