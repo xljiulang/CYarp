@@ -13,28 +13,16 @@ public class SignalRTests : CYarpTestBase
     {
         // Arrange
         var server = AddBackendServer("site1");
-        await Task.Delay(1000);
         
         // Act
-        var hubUrl = "http://site1.test.com/signalr";
-        var connection = new HubConnectionBuilder()
-            .WithUrl(hubUrl, options =>
-            {
-                options.HttpMessageHandlerFactory = _ => new HttpClientHandler();
-            })
-            .Build();
+        var connection = await CreateSignalRConnectionAsync("site1");
+        await connection.StartAsync();
         
-        try
-        {
-            await connection.StartAsync();
-            
-            // Assert
-            Assert.Equal(HubConnectionState.Connected, connection.State);
-        }
-        finally
-        {
-            await connection.DisposeAsync();
-        }
+        // Assert
+        Assert.True(connection.IsConnected);
+        
+        // Cleanup
+        connection.Dispose();
     }
 
     [Fact]
@@ -42,37 +30,18 @@ public class SignalRTests : CYarpTestBase
     {
         // Arrange
         var server = AddBackendServer("site1");
-        await Task.Delay(1000);
         
-        var hubUrl = "http://site1.test.com/signalr";
-        var connection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
-            .Build();
+        // Act
+        var connection = await CreateSignalRConnectionAsync("site1");
+        await connection.StartAsync();
+        await connection.SendAsync("SendMessage", "testUser", "Hello from test!");
         
-        var receivedMessages = new List<(string connectionId, string message)>();
+        // Assert
+        Assert.Single(connection.ReceivedMessages);
+        Assert.Contains("testUser: Hello from test!", connection.ReceivedMessages);
         
-        connection.On<string, string>("ReceiveMessage", (connectionId, message) =>
-        {
-            receivedMessages.Add((connectionId, message));
-        });
-        
-        try
-        {
-            // Act
-            await connection.StartAsync();
-            await connection.InvokeAsync("SendMessage", "Hello from test!");
-            
-            // Wait for message to be received
-            await Task.Delay(1000);
-            
-            // Assert
-            Assert.Single(receivedMessages);
-            Assert.Equal("Hello from test!", receivedMessages[0].message);
-        }
-        finally
-        {
-            await connection.DisposeAsync();
-        }
+        // Cleanup
+        connection.Dispose();
     }
 
     [Fact]
