@@ -101,7 +101,7 @@ namespace CYarp.Client.AspNetCore.Connections
             var remoteEndPoint = new DnsEndPoint(this.endPoint.ServerUri.Host, this.endPoint.ServerUri.Port);
             await foreach (var stream in listener.AcceptAllAsync(cancellationToken))
             {
-                yield return new CYarpConnectionContext(stream)
+                yield return new CYarpConnectionContext(new CyarpConnection(stream))
                 {
                     LocalEndPoint = localEndPoint,
                     RemoteEndPoint = remoteEndPoint
