@@ -8,13 +8,66 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace CYarp.Tests.Infrastructure;
 
 /// <summary>
+/// Startup class for test applications
+/// </summary>
+public class TestStartup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddCYarp();
+        services.Configure<CYarpOptions>(options =>
+        {
+            // Configure test options
+        });
+        services.AddSignalR();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        app.UseRouting();
+        app.UseCYarp();
+        
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapCYarp<TestClientIdProvider>();
+            endpoints.MapHub<TestSignalRHub>("/signalr");
+            
+            // Fallback for testing
+            endpoints.Map("/{**any}", async (HttpContext context, IClientViewer clientViewer) =>
+            {
+                var host = context.Request.Headers.Host.ToString();
+                var clientId = ExtractClientIdFromHost(host);
+                
+                if (clientViewer.TryGetValue(clientId, out var client))
+                {
+                    await client.ForwardHttpAsync(context);
+                }
+                else
+                {
+                    context.Response.StatusCode = 502; // Bad Gateway
+                    await context.Response.WriteAsync($"No client found for host: {host}");
+                }
+            });
+        });
+    }
+    
+    private static string ExtractClientIdFromHost(string host)
+    {
+        // Extract client ID from host (e.g., "site1.test.com" -> "site1")
+        var parts = host.Split('.');
+        return parts.Length > 0 ? parts[0] : "default";
+    }
+}
+
+/// <summary>
 /// Test server that acts as the reverse proxy (CYarp Server)
 /// </summary>
-public class TestReverseProxy : WebApplicationFactory<Program>
+public class TestReverseProxy : WebApplicationFactory<TestStartup>
 {
     private readonly int _port;
 
@@ -25,45 +78,6 @@ public class TestReverseProxy : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureServices(services =>
-        {
-            services.AddCYarp();
-            services.Configure<CYarpOptions>(options =>
-            {
-                // Configure test options
-            });
-            services.AddSignalR();
-        });
-
-        builder.Configure(app =>
-        {
-            app.UseRouting();
-            app.UseCYarp();
-            
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapCYarp<TestClientIdProvider>();
-                endpoints.MapHub<TestSignalRHub>("/signalr");
-                
-                // Fallback for testing
-                endpoints.Map("/{**any}", async (HttpContext context, IClientViewer clientViewer) =>
-                {
-                    var host = context.Request.Headers.Host.ToString();
-                    var clientId = ExtractClientIdFromHost(host);
-                    
-                    if (clientViewer.TryGetValue(clientId, out var client))
-                    {
-                        await client.ForwardHttpAsync(context);
-                    }
-                    else
-                    {
-                        context.Response.StatusCode = 502; // Bad Gateway
-                        await context.Response.WriteAsync($"No client found for host: {host}");
-                    }
-                });
-            });
-        });
-
         if (_port > 0)
         {
             builder.UseUrls($"http://localhost:{_port}");
@@ -115,119 +129,137 @@ public class TestSignalRHub : Hub
 }
 
 /// <summary>
-/// Test backend server (acts as the target server behind CYarp Client)
+/// Startup class for backend test servers
 /// </summary>
-public class TestBackendServer : WebApplicationFactory<Program>
+public class TestBackendStartup
 {
     private readonly string _clientId;
-    private readonly int _port;
+
+    public TestBackendStartup(string clientId)
+    {
+        _clientId = clientId;
+    }
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.Configure<CYarpEndPoint>(options =>
+        {
+            options.ServerUri = new Uri("ws://localhost:5000/cyarp");
+            options.TargetUri = new Uri("http://localhost");
+            options.ConnectHeaders = new Dictionary<string, string>
+            {
+                ["Host"] = $"{_clientId}.test.com"
+            };
+        });
+        services.AddCYarpListener();
+        services.AddSignalR();
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        app.UseRouting();
+        
+        app.UseEndpoints(endpoints =>
+        {
+            // Standard REST endpoint
+            endpoints.MapGet("/api/test", () => new { Message = "Hello from " + _clientId, Timestamp = DateTime.UtcNow });
+            
+            // Long-running operation
+            endpoints.MapGet("/api/long-operation", async (HttpContext context) =>
+            {
+                var duration = context.Request.Query["duration"].FirstOrDefault();
+                var delayMs = int.TryParse(duration, out var d) ? d : 5000;
+                
+                try
+                {
+                    await Task.Delay(delayMs, context.RequestAborted);
+                    await context.Response.WriteAsJsonAsync(new { Message = "Operation completed", Duration = delayMs });
+                }
+                catch (OperationCanceledException)
+                {
+                    context.Response.StatusCode = 499; // Client Closed Request
+                    await context.Response.WriteAsJsonAsync(new { Message = "Operation cancelled" });
+                }
+            });
+
+            // SSE endpoint
+            endpoints.MapGet("/api/sse", async (HttpContext context) =>
+            {
+                context.Response.Headers.Append("Content-Type", "text/event-stream");
+                context.Response.Headers.Append("Cache-Control", "no-cache");
+                context.Response.Headers.Append("Connection", "keep-alive");
+                
+                var counter = 0;
+                while (!context.RequestAborted.IsCancellationRequested)
+                {
+                    counter++;
+                    var data = $"data: {{\"id\":{counter},\"message\":\"Hello from {_clientId}\",\"timestamp\":\"{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}\"}}\n\n";
+                    await context.Response.WriteAsync(data);
+                    await context.Response.Body.FlushAsync();
+                    await Task.Delay(1000, context.RequestAborted);
+                }
+            });
+
+            // Parallel processing endpoint
+            endpoints.MapPost("/api/parallel", async (HttpContext context) =>
+            {
+                var tasks = Enumerable.Range(1, 5).Select(async i =>
+                {
+                    await Task.Delay(1000 + i * 100, context.RequestAborted);
+                    return new { TaskId = i, Message = $"Task {i} completed", ClientId = _clientId };
+                });
+
+                var results = await Task.WhenAll(tasks);
+                await context.Response.WriteAsJsonAsync(new { Results = results, TotalTime = DateTime.UtcNow });
+            });
+
+            // SignalR Hub
+            endpoints.MapHub<TestSignalRHub>("/signalr");
+        });
+    }
+}
+
+/// <summary>
+/// Test backend server (acts as the target server behind CYarp Client)
+/// </summary>
+public class TestBackendServer : IDisposable
+{
+    private readonly string _clientId;
+    private readonly WebApplication _app;
 
     public TestBackendServer(string clientId, int port = 0)
     {
         _clientId = clientId;
-        _port = port;
+        
+        var builder = WebApplication.CreateBuilder();
+        var startup = new TestBackendStartup(clientId);
+        startup.ConfigureServices(builder.Services);
+        
+        _app = builder.Build();
+        startup.Configure(_app, _app.Environment);
+        
+        if (port > 0)
+        {
+            // Note: For simplicity, we'll use a minimal approach here
+        }
     }
 
     public string ClientId => _clientId;
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    public async Task StartAsync()
     {
-        builder.ConfigureServices(services =>
-        {
-            services.Configure<CYarpEndPoint>(options =>
-            {
-                options.ServerUri = new Uri("ws://localhost:5000/cyarp");
-                options.TargetUri = new Uri("http://localhost");
-                options.ConnectHeaders = new Dictionary<string, string>
-                {
-                    ["Host"] = $"{_clientId}.test.com"
-                };
-            });
-            services.AddCYarpListener();
-            services.AddSignalR();
-        });
+        await _app.StartAsync();
+    }
 
-        builder.ConfigureKestrel(kestrel =>
-        {
-            var endPoint = new CYarpEndPoint
-            {
-                ServerUri = new Uri("ws://localhost:5000/cyarp"),
-                TargetUri = new Uri("http://localhost"),
-                ConnectHeaders = new Dictionary<string, string>
-                {
-                    ["Host"] = $"{_clientId}.test.com"
-                }
-            };
-            kestrel.ListenCYarp(endPoint);
-        });
+    public async Task StopAsync()
+    {
+        await _app.StopAsync();
+    }
 
-        builder.Configure(app =>
-        {
-            app.UseRouting();
-            
-            app.UseEndpoints(endpoints =>
-            {
-                // Standard REST endpoint
-                endpoints.MapGet("/api/test", () => new { Message = "Hello from " + _clientId, Timestamp = DateTime.UtcNow });
-                
-                // Long-running operation
-                endpoints.MapGet("/api/long-operation", async (HttpContext context) =>
-                {
-                    var duration = context.Request.Query["duration"].FirstOrDefault();
-                    var delayMs = int.TryParse(duration, out var d) ? d : 5000;
-                    
-                    try
-                    {
-                        await Task.Delay(delayMs, context.RequestAborted);
-                        await context.Response.WriteAsJsonAsync(new { Message = "Operation completed", Duration = delayMs });
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        context.Response.StatusCode = 499; // Client Closed Request
-                        await context.Response.WriteAsJsonAsync(new { Message = "Operation cancelled" });
-                    }
-                });
-
-                // SSE endpoint
-                endpoints.MapGet("/api/sse", async (HttpContext context) =>
-                {
-                    context.Response.Headers.Append("Content-Type", "text/event-stream");
-                    context.Response.Headers.Append("Cache-Control", "no-cache");
-                    context.Response.Headers.Append("Connection", "keep-alive");
-                    
-                    var counter = 0;
-                    while (!context.RequestAborted.IsCancellationRequested)
-                    {
-                        counter++;
-                        var data = $"data: {{\"id\":{counter},\"message\":\"Hello from {_clientId}\",\"timestamp\":\"{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ss.fffZ}\"}}\n\n";
-                        await context.Response.WriteAsync(data);
-                        await context.Response.Body.FlushAsync();
-                        await Task.Delay(1000, context.RequestAborted);
-                    }
-                });
-
-                // Parallel processing endpoint
-                endpoints.MapPost("/api/parallel", async (HttpContext context) =>
-                {
-                    var tasks = Enumerable.Range(1, 5).Select(async i =>
-                    {
-                        await Task.Delay(1000 + i * 100, context.RequestAborted);
-                        return new { TaskId = i, Message = $"Task {i} completed", ClientId = _clientId };
-                    });
-
-                    var results = await Task.WhenAll(tasks);
-                    await context.Response.WriteAsJsonAsync(new { Results = results, TotalTime = DateTime.UtcNow });
-                });
-
-                // SignalR Hub
-                endpoints.MapHub<TestSignalRHub>("/signalr");
-            });
-        });
-
-        if (_port > 0)
-        {
-            builder.UseUrls($"http://localhost:{_port}");
-        }
+    public void Dispose()
+    {
+        _app?.StopAsync().GetAwaiter().GetResult();
+        _app?.DisposeAsync().GetAwaiter().GetResult();
     }
 }
 
@@ -278,11 +310,4 @@ public abstract class CYarpTestBase : IDisposable
         ReverseProxy?.Dispose();
         BackendServers?.ForEach(s => s.Dispose());
     }
-}
-
-/// <summary>
-/// Dummy Program class for WebApplicationFactory
-/// </summary>
-public class Program
-{
 }
