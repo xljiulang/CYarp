@@ -50,25 +50,10 @@ namespace CYarp.Client
                     {
                         this.connection.RegisterTunnel(tunnelId.Value, serverTunnelStream.CancellationTokenSource);
                         
-                        // Unregister when the stream is disposed
-                        _ = Task.Run(async () =>
+                        // Unregister when the cancellation token is triggered
+                        serverTunnelStream.CancellationToken.Register(() =>
                         {
-                            try
-                            {
-                                // Wait for the stream to be disposed
-                                while (!serverTunnelStream.CancellationToken.IsCancellationRequested)
-                                {
-                                    await Task.Delay(100, serverTunnelStream.CancellationToken);
-                                }
-                            }
-                            catch
-                            {
-                                // Ignore cancellation exceptions
-                            }
-                            finally
-                            {
-                                this.connection.UnregisterTunnel(tunnelId.Value);
-                            }
+                            this.connection.UnregisterTunnel(tunnelId.Value);
                         });
                     }
                     
