@@ -3,6 +3,10 @@
 GET http://127.0.0.1:5080
 HOST: siteA1.demo.com
 
+### Test SSE on siteA1.demo.com
+GET http://127.0.0.1:5080/sse
+HOST: siteA1.demo.com
+
 ### Access siteA2.demo.com
 GET http://127.0.0.1:5080
 HOST: siteA2.demo.com

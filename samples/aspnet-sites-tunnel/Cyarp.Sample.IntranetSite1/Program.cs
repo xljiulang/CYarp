@@ -32,6 +32,23 @@ namespace Cyarp.Sample.IntranetSite1
 
             app.UseAuthorization();
 
+            // Add SSE endpoint for testing request cancellation
+            app.MapGet("/sse", async (HttpContext httpContext) =>
+            {
+                httpContext.Response.Headers.Append("Content-Type", "text/event-stream");
+                httpContext.Response.Headers.Append("Cache-Control", "no-cache");
+                httpContext.Response.Headers.Append("Connection", "keep-alive");
+                
+                var counter = 0;
+                while (!httpContext.RequestAborted.IsCancellationRequested)
+                {
+                    counter++;
+                    var message = $"data: Counter: {counter} at {DateTime.Now:HH:mm:ss.fff}\n\n";
+                    await httpContext.Response.WriteAsync(message);
+                    await httpContext.Response.Body.FlushAsync();
+                    await Task.Delay(1000, httpContext.RequestAborted);
+                }
+            });
 
             app.MapControllers();
 
