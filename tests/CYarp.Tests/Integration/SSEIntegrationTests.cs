@@ -17,7 +17,7 @@ public class SSEIntegrationTests : RealConnectionTestBase
         await StartClientConnectionAsync("site1", BackendSite1Port);
         
         var client = CreateProxyClient();
-        client.DefaultRequestHeaders.Host = "site1.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site1");
         client.Timeout = TimeSpan.FromSeconds(10);
         
         // Act
@@ -52,7 +52,7 @@ public class SSEIntegrationTests : RealConnectionTestBase
         await StartClientConnectionAsync("site1", BackendSite1Port);
         
         var client = CreateProxyClient();
-        client.DefaultRequestHeaders.Host = "site1.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site1");
         
         var cts = new CancellationTokenSource();
         
@@ -90,7 +90,7 @@ public class SSEIntegrationTests : RealConnectionTestBase
         await StartClientConnectionAsync("site1", BackendSite1Port);
         
         var client = CreateProxyClient();
-        client.DefaultRequestHeaders.Host = "site1.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site1");
         
         // Act - Start SSE stream
         var sseTask = Task.Run(async () =>
@@ -115,7 +115,7 @@ public class SSEIntegrationTests : RealConnectionTestBase
         await Task.Delay(200); // Let SSE start
         
         var standardClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        standardClient.DefaultRequestHeaders.Host = "site1.test.com";
+        standardClient.DefaultRequestHeaders.Add("HOST", "site1");
         
         var standardResponses = new List<HttpResponseMessage>();
         for (int i = 0; i < 3; i++)
@@ -145,10 +145,10 @@ public class SSEIntegrationTests : RealConnectionTestBase
         
         // Act - Connect to both SSE endpoints
         var client1 = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        client1.DefaultRequestHeaders.Host = "site1.test.com";
+        client1.DefaultRequestHeaders.Add("HOST", "site1");
         
         var client2 = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        client2.DefaultRequestHeaders.Host = "site2.test.com";
+        client2.DefaultRequestHeaders.Add("HOST", "site2");
         
         var response1 = await client1.GetAsync("/sse", HttpCompletionOption.ResponseHeadersRead);
         var response2 = await client2.GetAsync("/sse", HttpCompletionOption.ResponseHeadersRead);
@@ -183,7 +183,7 @@ public class SSEIntegrationTests : RealConnectionTestBase
         await StartClientConnectionAsync("site1", BackendSite1Port);
         
         var client = CreateProxyClient();
-        client.DefaultRequestHeaders.Host = "site1.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site1");
         client.Timeout = TimeSpan.FromSeconds(2);
         
         // Act

@@ -20,12 +20,12 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         var client = CreateProxyClient();
         
         // Act
-        client.DefaultRequestHeaders.Host = "site1.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site1");
         var response1 = await client.GetAsync("/api/test");
         var content1 = await response1.Content.ReadAsStringAsync();
         var result1 = JsonSerializer.Deserialize<JsonElement>(content1);
         
-        client.DefaultRequestHeaders.Host = "site2.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site2");
         var response2 = await client.GetAsync("/api/test");
         var content2 = await response2.Content.ReadAsStringAsync();
         var result2 = JsonSerializer.Deserialize<JsonElement>(content2);
@@ -33,8 +33,8 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         // Assert
         Assert.True(response1.IsSuccessStatusCode);
         Assert.True(response2.IsSuccessStatusCode);
-        Assert.Equal("Hello from site1", result1.GetProperty("Message").GetString());
-        Assert.Equal("Hello from site2", result2.GetProperty("Message").GetString());
+        Assert.Equal("Hello from site1", result1.GetProperty("message").GetString());
+        Assert.Equal("Hello from site2", result2.GetProperty("message").GetString());
     }
 
     [Fact]
@@ -48,10 +48,10 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         await StartClientConnectionAsync("site2", BackendSite2Port);
         
         var client1 = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        client1.DefaultRequestHeaders.Host = "site1.test.com";
+        client1.DefaultRequestHeaders.Add("HOST", "site1");
         
         var client2 = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        client2.DefaultRequestHeaders.Host = "site2.test.com";
+        client2.DefaultRequestHeaders.Add("HOST", "site2");
         
         // Act
         var tasks = new List<Task<(string siteId, HttpResponseMessage response)>>();
@@ -72,7 +72,7 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         {
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<JsonElement>(content);
-            Assert.Contains(siteId, result.GetProperty("Message").GetString());
+            Assert.Contains(siteId, result.GetProperty("message").GetString());
         }
         
         client1.Dispose();
@@ -92,11 +92,11 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         var client = CreateProxyClient();
         
         // Verify both work
-        client.DefaultRequestHeaders.Host = "site1.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site1");
         var response1 = await client.GetAsync("/api/test");
         Assert.True(response1.IsSuccessStatusCode);
         
-        client.DefaultRequestHeaders.Host = "site2.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site2");
         var response2 = await client.GetAsync("/api/test");
         Assert.True(response2.IsSuccessStatusCode);
         
@@ -105,7 +105,7 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         await Task.Delay(500);
         
         // Assert - site2 should still work
-        client.DefaultRequestHeaders.Host = "site2.test.com";
+        client.DefaultRequestHeaders.Add("HOST", "site2");
         var response3 = await client.GetAsync("/api/test");
         Assert.True(response3.IsSuccessStatusCode);
     }
@@ -121,10 +121,10 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         await StartClientConnectionAsync("site2", BackendSite2Port);
         
         var client1 = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        client1.DefaultRequestHeaders.Host = "site1.test.com";
+        client1.DefaultRequestHeaders.Add("HOST", "site1");
         
         var client2 = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        client2.DefaultRequestHeaders.Host = "site2.test.com";
+        client2.DefaultRequestHeaders.Add("HOST", "site2");
         
         // Act - Send 20 requests total (10 to each)
         var tasks = new List<Task<HttpResponseMessage>>();

@@ -176,7 +176,7 @@ public class SignalRIntegrationTests : RealConnectionTestBase
         
         // Act - Start SSE stream
         var sseClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        sseClient.DefaultRequestHeaders.Host = "site1.test.com";
+        sseClient.DefaultRequestHeaders.Add("HOST", "site1");
         
         var sseTask = Task.Run(async () =>
         {
@@ -235,7 +235,7 @@ public class SignalRIntegrationTests : RealConnectionTestBase
         
         // Act - Make standard HTTP requests
         var httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
-        httpClient.DefaultRequestHeaders.Host = "site1.test.com";
+        httpClient.DefaultRequestHeaders.Add("HOST", "site1");
         
         var httpResponses = new List<HttpResponseMessage>();
         for (int i = 0; i < 3; i++)

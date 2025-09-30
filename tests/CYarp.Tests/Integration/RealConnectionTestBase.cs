@@ -123,9 +123,26 @@ public class RealConnectionTestBase : IAsyncLifetime
         app.UseCYarp();
         app.MapCYarp((HttpContext context) =>
         {
-            // Extract client ID from Host header
-            var host = context.Request.Headers.Host.ToString();
+            // Extract client ID from HOST header sent during CYarp connection
+            // The client sends its ID in the HOST header when connecting
+            var host = context.Request.Headers["HOST"].ToString();
             return ValueTask.FromResult<string?>(host);
+        });
+        
+        // Add catch-all route to forward HTTP requests through CYarp tunnels
+        app.Map("/{**path}", async (HttpContext context, IClientViewer clientViewer) =>
+        {
+            // Extract client ID from HOST header (same as CYarp connection)
+            var clientId = context.Request.Headers["HOST"].ToString();
+            
+            if (!string.IsNullOrEmpty(clientId) && clientViewer.TryGetValue(clientId, out var client))
+            {
+                await client.ForwardHttpAsync(context);
+            }
+            else
+            {
+                context.Response.StatusCode = StatusCodes.Status502BadGateway;
+            }
         });
 
         await app.StartAsync();
@@ -148,12 +165,8 @@ public class RealConnectionTestBase : IAsyncLifetime
         
         builder.WebHost.ConfigureKestrel(kestrel =>
         {
-            // Listen on regular HTTP port for the target
+            // Only listen on regular HTTP port - the CYarp client will be started separately
             kestrel.ListenLocalhost(port);
-            
-            // Also configure CYarp endpoint for the tunnel
-            var endPoint = kestrel.ApplicationServices.GetRequiredService<IOptions<CYarpEndPoint>>().Value;
-            kestrel.ListenCYarp(endPoint);
         });
         
         builder.Services.AddSignalR();
@@ -217,7 +230,8 @@ public class RealConnectionTestBase : IAsyncLifetime
         var cts = new CancellationTokenSource();
         ClientCancellationTokens.Add(cts);
         
-        var connected = false;
+        var tcs = new TaskCompletionSource<bool>();
+        
         var clientTask = Task.Run(async () =>
         {
             try
@@ -234,53 +248,74 @@ public class RealConnectionTestBase : IAsyncLifetime
                     EnableMultipleHttp2Connections = true 
                 };
                 
-                var logger = new LoggerFactory().CreateLogger<CYarpClient>();
+                var loggerFactory = new LoggerFactory();
+                loggerFactory.AddProvider(new Microsoft.Extensions.Logging.Debug.DebugLoggerProvider());
+                var logger = loggerFactory.CreateLogger<CYarpClient>();
+                
                 using var client = new CYarpClient(options, logger, httpHandler);
                 
-                // Start transport which will block until cancelled
-                var transportTask = client.TransportAsync(cts.Token);
+                // Start transport in background
+                var transportTask = Task.Run(async () => 
+                {
+                    try
+                    {
+                        await client.TransportAsync(cts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Expected when test ends
+                    }
+                }, cts.Token);
                 
-                // Wait a bit for connection to establish
-                await Task.Delay(500);
-                connected = true;
+                // Wait for connection to establish by checking ClientViewer
+                for (int i = 0; i < 50; i++) // 5 seconds total
+                {
+                    if (cts.Token.IsCancellationRequested)
+                        break;
+                        
+                    if (ClientViewer != null && ClientViewer.TryGetValue(siteId, out _))
+                    {
+                        tcs.TrySetResult(true);
+                        break;
+                    }
+                    await Task.Delay(100, cts.Token);
+                }
+                
+                if (!tcs.Task.IsCompleted)
+                {
+                    tcs.TrySetResult(false);
+                }
                 
                 // Now wait for cancellation
                 await transportTask;
             }
             catch (OperationCanceledException) when (_disposing || cts.IsCancellationRequested)
             {
-                // Expected when test ends
+                tcs.TrySetCanceled();
             }
             catch (Exception ex)
             {
-                // Log unexpected errors
                 Console.WriteLine($"Client {siteId} error: {ex.Message}");
-                throw;
+                tcs.TrySetException(ex);
             }
         }, cts.Token);
         
         ClientTasks.Add(clientTask);
         
-        // Wait for client to actually connect
-        var timeout = DateTime.UtcNow.AddSeconds(10);
-        while (DateTime.UtcNow < timeout && !_disposing)
+        // Wait for connection confirmation or timeout
+        var connected = await Task.WhenAny(tcs.Task, Task.Delay(10000)) == tcs.Task && await tcs.Task;
+        
+        if (!connected && !_disposing)
         {
-            if (connected && ClientViewer != null && ClientViewer.TryGetValue(siteId, out _))
-            {
-                await Task.Delay(200); // Extra time for full initialization
-                return;
-            }
-            await Task.Delay(100);
+            var clientCount = ClientViewer?.Count ?? -1;
+            throw new TimeoutException($"Client {siteId} failed to connect within timeout. ClientViewer count: {clientCount}");
         }
         
-        if (_disposing)
+        // Give a bit more time for full initialization
+        if (connected)
         {
-            return; // Test is cleaning up
+            await Task.Delay(300);
         }
-        
-        var clientCount = ClientViewer?.Count ?? -1;
-        var clientConnected = connected;
-        throw new TimeoutException($"Client {siteId} failed to connect within timeout. Connected flag: {clientConnected}, ClientViewer count: {clientCount}");
     }
 
     protected HttpClient CreateProxyClient()
