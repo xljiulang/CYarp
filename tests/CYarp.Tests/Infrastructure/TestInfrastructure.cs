@@ -117,8 +117,19 @@ public abstract class CYarpTestBase : IDisposable
         
         if (path.Contains("long-operation"))
         {
+            // Parse duration from query string - simple approach
+            var duration = 5000; // default
+            if (path.Contains("duration="))
+            {
+                var startIndex = path.IndexOf("duration=") + 9;
+                var endIndex = path.IndexOf("&", startIndex);
+                if (endIndex == -1) endIndex = path.Length;
+                var durationStr = path.Substring(startIndex, endIndex - startIndex);
+                int.TryParse(durationStr, out duration);
+            }
+            
             // Simulate long operation
-            content = JsonSerializer.Serialize(new { Message = "Operation completed", Duration = 1000, ClientId = clientId });
+            content = JsonSerializer.Serialize(new { Message = "Operation completed", Duration = duration, ClientId = clientId });
         }
         else if (path.Contains("parallel"))
         {
