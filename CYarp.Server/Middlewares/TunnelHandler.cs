@@ -9,7 +9,7 @@ namespace CYarp.Server.Middlewares
     /// <summary>
     /// Tunnel握手处理者
     /// </summary>
-    static class TunnelHanlder
+    static class TunnelHandler
     {
         /// <summary>
         /// Tunnel不需要身份验证和授权，tunnelId由其可校验性来保证安全
