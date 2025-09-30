@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.Features;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CYarp.Client.AspNetCore.Connections
@@ -16,6 +17,7 @@ namespace CYarp.Client.AspNetCore.Connections
     {
         private readonly Stream stream;
         private readonly FeatureCollection features = new();
+        private readonly CancellationTokenSource connectionClosedTokenSource = new();
 
         public override string ConnectionId { get; set; }
 
@@ -24,6 +26,8 @@ namespace CYarp.Client.AspNetCore.Connections
         public override IFeatureCollection Features => features;
 
         public override IDictionary<object, object?> Items { get; set; } = new Dictionary<object, object?>();
+
+        public override CancellationToken ConnectionClosed => connectionClosedTokenSource.Token;
 
         public CYarpConnectionContext(Stream stream)
         {
@@ -37,8 +41,18 @@ namespace CYarp.Client.AspNetCore.Connections
             features.Set<IConnectionTransportFeature>(this);
         }
 
+        /// <summary>
+        /// Abort the connection to trigger ConnectionClosed cancellation token
+        /// </summary>
+        public override void Abort()
+        {
+            connectionClosedTokenSource.Cancel();
+        }
+
         public override ValueTask DisposeAsync()
         {
+            connectionClosedTokenSource.Cancel();
+            connectionClosedTokenSource.Dispose();
             return stream.DisposeAsync();
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,9 +18,11 @@ namespace CYarp.Client
         private readonly Timer? keepAliveTimer;
         private readonly TimeSpan keepAliveTimeout;
         private readonly CancellationTokenSource closedTokenSource;
+        private readonly Dictionary<Guid, CancellationTokenSource> activeTunnels = new();
 
         private static readonly string Ping = "PING";
         private static readonly string Pong = "PONG";
+        private static readonly string Abrt = "ABRT";
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
@@ -84,6 +87,31 @@ namespace CYarp.Client
             }
         }
 
+        /// <summary>
+        /// Register a tunnel for potential cancellation
+        /// </summary>
+        /// <param name="tunnelId"></param>
+        /// <param name="cancellationTokenSource"></param>
+        public void RegisterTunnel(Guid tunnelId, CancellationTokenSource cancellationTokenSource)
+        {
+            lock (this.activeTunnels)
+            {
+                this.activeTunnels[tunnelId] = cancellationTokenSource;
+            }
+        }
+
+        /// <summary>
+        /// Unregister a tunnel
+        /// </summary>
+        /// <param name="tunnelId"></param>
+        public void UnregisterTunnel(Guid tunnelId)
+        {
+            lock (this.activeTunnels)
+            {
+                this.activeTunnels.Remove(tunnelId);
+            }
+        }
+
 
         private async Task<Guid?> ReadTunnelIdCoreAsync(CancellationToken cancellationToken)
         {
@@ -109,6 +137,27 @@ namespace CYarp.Client
                 {
                     Log.LogRecvPong(this.logger);
                 }
+                else if (text.StartsWith(Abrt) && text.Length > 5)
+                {
+                    // Handle ABRT message: "ABRT tunnelId"
+                    var tunnelIdText = text.Substring(5);
+                    if (Guid.TryParse(tunnelIdText, out var abortTunnelId))
+                    {
+                        lock (this.activeTunnels)
+                        {
+                            if (this.activeTunnels.TryGetValue(abortTunnelId, out var tunnelCancellation))
+                            {
+                                tunnelCancellation.Cancel();
+                                this.activeTunnels.Remove(abortTunnelId);
+                                Log.LogRecvAbort(this.logger, abortTunnelId);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Log.LogRecvUnknown(this.logger, text);
+                    }
+                }
                 else if (Guid.TryParse(text, out var tunnelId))
                 {
                     return tunnelId;
@@ -125,6 +174,17 @@ namespace CYarp.Client
             this.closedTokenSource.Cancel();
             this.closedTokenSource.Dispose();
 
+            // Cancel all active tunnels
+            lock (this.activeTunnels)
+            {
+                foreach (var tunnelCancellation in this.activeTunnels.Values)
+                {
+                    tunnelCancellation.Cancel();
+                    tunnelCancellation.Dispose();
+                }
+                this.activeTunnels.Clear();
+            }
+
             this.keepAliveTimer?.Dispose();
             this.streamReader.Dispose();
             return this.stream.DisposeAsync();
@@ -140,6 +200,9 @@ namespace CYarp.Client
 
             [LoggerMessage(LogLevel.Debug, "ReceivePONGResponse")]
             public static partial void LogRecvPong(ILogger logger);
+
+            [LoggerMessage(LogLevel.Debug, "ReceiveABRTRequest: {tunnelId}")]
+            public static partial void LogRecvAbort(ILogger logger, Guid tunnelId);
 
             [LoggerMessage(LogLevel.Debug, "ReceiveUnknownData: {text}")]
             public static partial void LogRecvUnknown(ILogger logger, string text);

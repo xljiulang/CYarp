@@ -25,6 +25,7 @@ namespace CYarp.Server.Clients
         private static readonly int bufferSize = 8;
         private const string Ping = "PING";
         private const string Pong = "PONG";
+        private const string Abrt = "ABRT";
         private static readonly ReadOnlyMemory<byte> PingLine = "PING\r\n"u8.ToArray();
         private static readonly ReadOnlyMemory<byte> PongLine = "PONG\r\n"u8.ToArray();
 
@@ -87,6 +88,18 @@ namespace CYarp.Server.Clients
             await this.stream.WriteAsync(buffer, cancellationToken);
         }
 
+        public async Task SendAbortAsync(Guid tunnelId, CancellationToken cancellationToken)
+        {
+            const int size = 64;
+            var abortLine = $"{Abrt} {tunnelId}\r\n";
+
+            using var owner = MemoryPool<byte>.Shared.Rent(size);
+            var length = Encoding.ASCII.GetBytes(abortLine, owner.Memory.Span);
+
+            var buffer = owner.Memory[..length];
+            await this.stream.WriteAsync(buffer, cancellationToken);
+        }
+
 
         public async Task<ClientCloseReason> WaitForCloseAsync()
         {
@@ -134,6 +147,11 @@ namespace CYarp.Server.Clients
                 else if (text == Pong)
                 {
                     ClientLog.LogRecvPong(this.logger, this.ClientId);
+                }
+                else if (text.StartsWith(Abrt))
+                {
+                    // Handle ABRT message - just log it for now
+                    ClientLog.LogRecvUnknown(this.logger, this.ClientId, text);
                 }
                 else
                 {
