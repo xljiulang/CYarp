@@ -6,6 +6,7 @@ namespace CYarp.Tests.Integration;
 /// <summary>
 /// Server-Sent Events integration tests with real connections
 /// </summary>
+[Collection("Integration Tests")]
 public class SSEIntegrationTests : RealConnectionTestBase
 {
     [Fact]

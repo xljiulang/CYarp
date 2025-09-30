@@ -5,6 +5,7 @@ namespace CYarp.Tests.Integration;
 /// <summary>
 /// SignalR integration tests with real connections
 /// </summary>
+[Collection("Integration Tests")]
 public class SignalRIntegrationTests : RealConnectionTestBase
 {
     [Fact]

@@ -5,6 +5,7 @@ namespace CYarp.Tests.Integration;
 /// <summary>
 /// Multi-client integration tests with real connections
 /// </summary>
+[Collection("Integration Tests")]
 public class MultiClientIntegrationTests : RealConnectionTestBase
 {
     [Fact]
@@ -17,16 +18,16 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         await StartClientConnectionAsync("site1", BackendSite1Port);
         await StartClientConnectionAsync("site2", BackendSite2Port);
         
-        var client = CreateProxyClient();
-        
         // Act
-        client.DefaultRequestHeaders.Add("HOST", "site1");
-        var response1 = await client.GetAsync("/api/test");
+        var client1 = CreateProxyClient();
+        client1.DefaultRequestHeaders.Add("HOST", "site1");
+        var response1 = await client1.GetAsync("/api/test");
         var content1 = await response1.Content.ReadAsStringAsync();
         var result1 = JsonSerializer.Deserialize<JsonElement>(content1);
         
-        client.DefaultRequestHeaders.Add("HOST", "site2");
-        var response2 = await client.GetAsync("/api/test");
+        var client2 = new HttpClient { BaseAddress = new Uri($"http://localhost:{ReverseProxyPort}") };
+        client2.DefaultRequestHeaders.Add("HOST", "site2");
+        var response2 = await client2.GetAsync("/api/test");
         var content2 = await response2.Content.ReadAsStringAsync();
         var result2 = JsonSerializer.Deserialize<JsonElement>(content2);
         
@@ -91,13 +92,19 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         
         var client = CreateProxyClient();
         
+        // Helper to make request with specific HOST header
+        async Task<HttpResponseMessage> GetWithHost(string host, string path)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, path);
+            request.Headers.Add("HOST", host);
+            return await client.SendAsync(request);
+        }
+        
         // Verify both work
-        client.DefaultRequestHeaders.Add("HOST", "site1");
-        var response1 = await client.GetAsync("/api/test");
+        var response1 = await GetWithHost("site1", "/api/test");
         Assert.True(response1.IsSuccessStatusCode);
         
-        client.DefaultRequestHeaders.Add("HOST", "site2");
-        var response2 = await client.GetAsync("/api/test");
+        var response2 = await GetWithHost("site2", "/api/test");
         Assert.True(response2.IsSuccessStatusCode);
         
         // Act - Disconnect site1
@@ -105,8 +112,7 @@ public class MultiClientIntegrationTests : RealConnectionTestBase
         await Task.Delay(500);
         
         // Assert - site2 should still work
-        client.DefaultRequestHeaders.Add("HOST", "site2");
-        var response3 = await client.GetAsync("/api/test");
+        var response3 = await GetWithHost("site2", "/api/test");
         Assert.True(response3.IsSuccessStatusCode);
     }
 

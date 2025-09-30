@@ -4,8 +4,17 @@ using System.Text.Json;
 namespace CYarp.Tests.Integration;
 
 /// <summary>
+/// Collection definition to prevent parallel execution of integration tests
+/// </summary>
+[CollectionDefinition("Integration Tests", DisableParallelization = true)]
+public class IntegrationTestCollection
+{
+}
+
+/// <summary>
 /// Basic integration tests with real server and client connections
 /// </summary>
+[Collection("Integration Tests")]
 public class BasicIntegrationTests : RealConnectionTestBase
 {
     [Fact]
