@@ -8,29 +8,19 @@ namespace CYarp.Client
     sealed partial class CYarpConnectionFactory
     {
         /// <summary>
-        /// Auto-flushing stream with cancellation support
+        /// Auto-flushing stream with cancellation signaling
         /// </summary>
         public class ServerTunnelStream : DelegatingStream
         {
             private readonly Guid tunnelId;
             private readonly CancellationTokenSource cancellationTokenSource = new();
-
-            public Guid TunnelId => tunnelId;
+            
             public CancellationToken CancellationToken => cancellationTokenSource.Token;
-            public CancellationTokenSource CancellationTokenSource => cancellationTokenSource;
 
             public ServerTunnelStream(Guid tunnelId, Stream inner)
                 : base(inner)
             {
                 this.tunnelId = tunnelId;
-            }
-
-            /// <summary>
-            /// Cancel this tunnel stream
-            /// </summary>
-            public void Cancel()
-            {
-                cancellationTokenSource.Cancel();
             }
 
             public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)

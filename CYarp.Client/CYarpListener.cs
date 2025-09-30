@@ -43,21 +43,7 @@ namespace CYarp.Client
 
                 try
                 {
-                    var stream = await this.connectionFactory.CreateServerTunnelAsync(tunnelId.Value, cancellationToken);
-                    
-                    // Register the tunnel for potential cancellation via ABRT messages
-                    if (stream is CYarpConnectionFactory.ServerTunnelStream serverTunnelStream)
-                    {
-                        this.connection.RegisterTunnel(tunnelId.Value, serverTunnelStream.CancellationTokenSource);
-                        
-                        // Unregister when the cancellation token is triggered
-                        serverTunnelStream.CancellationToken.Register(() =>
-                        {
-                            this.connection.UnregisterTunnel(tunnelId.Value);
-                        });
-                    }
-                    
-                    return stream;
+                    return await this.connectionFactory.CreateServerTunnelAsync(tunnelId.Value, cancellationToken);
                 }
                 catch (Exception ex)
                 {

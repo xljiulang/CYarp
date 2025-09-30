@@ -1,5 +1,4 @@
 ﻿using CYarp.Server.Configs;
-using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -66,21 +65,12 @@ namespace CYarp.Server.Clients
             var httpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, 1);
             TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, tunnelType, httpTunnelCount);
 
-            // Register for cancellation to send ABRT message to client
-            cancellationToken.Register(async () =>
+            // Simple approach: Register for cancellation to dispose the tunnel
+            // This will propagate through the stream disposal mechanism
+            cancellationToken.Register(() =>
             {
-                try
-                {
-                    // Extract tunnel ID as Guid from TunnelId
-                    if (Guid.TryParse(httpTunnel.Id.ToString(), out var tunnelGuid))
-                    {
-                        await this.connection.SendAbortAsync(tunnelGuid, CancellationToken.None);
-                    }
-                }
-                catch (Exception)
-                {
-                    // Ignore errors when sending abort - connection might already be closed
-                }
+                // Dispose the tunnel when cancelled - this propagates to the client
+                _ = httpTunnel.DisposeAsync();
             });
 
             httpTunnel.DisposingCallback = OnHttpTunnelDisposing;
