@@ -32,13 +32,15 @@ public class SSEIntegrationTests : RealConnectionTestBase
         var reader = new StreamReader(stream);
         
         var events = new List<string>();
-        for (int i = 0; i < 3; i++)
+        var attempts = 0;
+        while (events.Count < 3 && attempts < 10)
         {
             var line = await reader.ReadLineAsync();
             if (line != null && line.StartsWith("data:"))
             {
                 events.Add(line);
             }
+            attempts++;
         }
         
         Assert.True(events.Count >= 3, $"Expected at least 3 events, got {events.Count}");
@@ -101,13 +103,15 @@ public class SSEIntegrationTests : RealConnectionTestBase
             var reader = new StreamReader(stream);
             
             var events = new List<string>();
-            for (int i = 0; i < 5; i++)
+            var attempts = 0;
+            while (events.Count < 5 && attempts < 20)
             {
                 var line = await reader.ReadLineAsync();
                 if (line != null && line.StartsWith("data:"))
                 {
                     events.Add(line);
                 }
+                attempts++;
             }
             return events.Count;
         });

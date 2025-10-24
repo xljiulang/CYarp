@@ -20,7 +20,7 @@ public class SignalRIntegrationTests : RealConnectionTestBase
         var connection = new HubConnectionBuilder()
             .WithUrl(hubUrl, options =>
             {
-                options.Headers.Add("Host", "site1.test.com");
+                options.Headers.Add("Host", "site1");
             })
             .Build();
         
@@ -46,7 +46,7 @@ public class SignalRIntegrationTests : RealConnectionTestBase
         var connection = new HubConnectionBuilder()
             .WithUrl(hubUrl, options =>
             {
-                options.Headers.Add("Host", "site1.test.com");
+                options.Headers.Add("Host", "site1");
             })
             .Build();
         
@@ -80,11 +80,11 @@ public class SignalRIntegrationTests : RealConnectionTestBase
         var hubUrl = $"http://localhost:{ReverseProxyPort}/hubs/test";
         
         var connection1 = new HubConnectionBuilder()
-            .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1.test.com"); })
+            .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1"); })
             .Build();
         
         var connection2 = new HubConnectionBuilder()
-            .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1.test.com"); })
+            .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1"); })
             .Build();
         
         var messages1 = new List<string>();
@@ -125,12 +125,12 @@ public class SignalRIntegrationTests : RealConnectionTestBase
         
         var hubUrl1 = $"http://localhost:{ReverseProxyPort}/hubs/test";
         var connection1 = new HubConnectionBuilder()
-            .WithUrl(hubUrl1, options => { options.Headers.Add("Host", "site1.test.com"); })
+            .WithUrl(hubUrl1, options => { options.Headers.Add("Host", "site1"); })
             .Build();
         
         var hubUrl2 = $"http://localhost:{ReverseProxyPort}/hubs/test";
         var connection2 = new HubConnectionBuilder()
-            .WithUrl(hubUrl2, options => { options.Headers.Add("Host", "site2.test.com"); })
+            .WithUrl(hubUrl2, options => { options.Headers.Add("Host", "site2"); })
             .Build();
         
         var messages1 = new List<string>();
@@ -167,7 +167,7 @@ public class SignalRIntegrationTests : RealConnectionTestBase
         
         var hubUrl = $"http://localhost:{ReverseProxyPort}/hubs/test";
         var connection = new HubConnectionBuilder()
-            .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1.test.com"); })
+            .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1"); })
             .Build();
         
         var signalRMessages = new List<string>();
@@ -186,13 +186,15 @@ public class SignalRIntegrationTests : RealConnectionTestBase
             var reader = new StreamReader(stream);
             
             var events = 0;
-            for (int i = 0; i < 3; i++)
+            var attempts = 0;
+            while (events < 3 && attempts < 15)
             {
                 var line = await reader.ReadLineAsync();
                 if (line != null && line.StartsWith("data:"))
                 {
                     events++;
                 }
+                attempts++;
             }
             return events;
         });
@@ -226,7 +228,7 @@ public class SignalRIntegrationTests : RealConnectionTestBase
         
         var hubUrl = $"http://localhost:{ReverseProxyPort}/hubs/test";
         var connection = new HubConnectionBuilder()
-            .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1.test.com"); })
+            .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1"); })
             .Build();
         
         var signalRMessages = new List<string>();
