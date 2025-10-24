@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Connections;
+﻿using CYarp.Client;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using System.Collections.Generic;
@@ -39,6 +40,18 @@ namespace CYarp.Client.AspNetCore.Connections
             features.Set<IConnectionItemsFeature>(this);
             features.Set<IConnectionEndPointFeature>(this);
             features.Set<IConnectionTransportFeature>(this);
+
+            // Link stream cancellation to connection closure if stream supports it
+            if (stream is ICancellableStream cancellableStream)
+            {
+                cancellableStream.CancellationToken.Register(() =>
+                {
+                    if (!connectionClosedTokenSource.IsCancellationRequested)
+                    {
+                        connectionClosedTokenSource.Cancel();
+                    }
+                });
+            }
         }
 
         /// <summary>
@@ -46,12 +59,24 @@ namespace CYarp.Client.AspNetCore.Connections
         /// </summary>
         public override void Abort()
         {
-            connectionClosedTokenSource.Cancel();
+            if (!connectionClosedTokenSource.IsCancellationRequested)
+            {
+                connectionClosedTokenSource.Cancel();
+            }
+
+            // Also cancel the stream if it supports cancellation
+            if (stream is ICancellableStream cancellableStream)
+            {
+                cancellableStream.Cancel();
+            }
         }
 
         public override ValueTask DisposeAsync()
         {
-            connectionClosedTokenSource.Cancel();
+            if (!connectionClosedTokenSource.IsCancellationRequested)
+            {
+                connectionClosedTokenSource.Cancel();
+            }
             connectionClosedTokenSource.Dispose();
             return stream.DisposeAsync();
         }

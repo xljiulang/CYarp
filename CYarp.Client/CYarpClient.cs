@@ -184,21 +184,19 @@ namespace CYarp.Client
                 var count = Interlocked.Increment(ref this.tunnelCount);
                 Log.LogTunnelCreated(this.logger, tunnelId, stopwatch.Elapsed, count);
 
-                var server2Target = serverTunnel.CopyToAsync(targetTunnel, cancellationToken);
-                var target2Server = targetTunnel.CopyToAsync(serverTunnel, cancellationToken);
-                var task = await Task.WhenAny(server2Target, target2Server);
+                // Use WhenAll for full-duplex bidirectional copying (both directions complete independently)
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                var server2Target = SafeCopyAsync(serverTunnel, targetTunnel, linked.Token);
+                var target2Server = SafeCopyAsync(targetTunnel, serverTunnel, linked.Token);
+                await Task.WhenAll(server2Target, target2Server);
+
+                // Graceful flush of both streams after copy completes
+                try { await targetTunnel.FlushAsync(linked.Token).ConfigureAwait(false); } catch { }
+                try { await serverTunnel.FlushAsync(linked.Token).ConfigureAwait(false); } catch { }
 
                 stopwatch.Stop();
                 count = Interlocked.Decrement(ref this.tunnelCount);
-
-                if (task == server2Target)
-                {
-                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.ServerUri, stopwatch.Elapsed, count);
-                }
-                else
-                {
-                    Log.LogTunnelClosed(this.logger, tunnelId, this.options.TargetUri, stopwatch.Elapsed, count);
-                }
+                Log.LogTunnelClosed(this.logger, tunnelId, this.options.ServerUri, stopwatch.Elapsed, count);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -208,6 +206,47 @@ namespace CYarp.Client
                 this.OnTunnelException(ex);
                 Log.LogTunnelError(this.logger, tunnelId, ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Safe copy from source to destination with graceful handling of cancellations and connection resets
+        /// </summary>
+        private static async Task SafeCopyAsync(System.IO.Stream source, System.IO.Stream destination, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await source.CopyToAsync(destination, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Graceful cancellation - this is expected during shutdown
+            }
+            catch (System.IO.IOException ex) when (IsConnectionResetError(ex))
+            {
+                // Connection reset/broken pipe/shutdown - treat as graceful EOF
+            }
+        }
+
+        /// <summary>
+        /// Check if IOException is a connection reset/broken pipe/shutdown error
+        /// </summary>
+        private static bool IsConnectionResetError(System.IO.IOException ex)
+        {
+            var inner = ex.InnerException as System.Net.Sockets.SocketException;
+            if (inner == null)
+                return false;
+
+            // Common connection reset/shutdown error codes across platforms
+            return inner.SocketErrorCode switch
+            {
+                System.Net.Sockets.SocketError.ConnectionReset => true,
+                System.Net.Sockets.SocketError.ConnectionAborted => true,
+                System.Net.Sockets.SocketError.Shutdown => true,
+                System.Net.Sockets.SocketError.TimedOut => true,
+                System.Net.Sockets.SocketError.NetworkReset => true,
+                System.Net.Sockets.SocketError.NetworkDown => true,
+                _ => false
+            };
         }
 
         /// <summary>

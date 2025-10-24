@@ -9,8 +9,9 @@ namespace CYarp.Client
     {
         /// <summary>
         /// Auto-flushing stream with cancellation signaling
+        /// Supports linking to connection context cancellation
         /// </summary>
-        public class ServerTunnelStream : DelegatingStream
+        public class ServerTunnelStream : DelegatingStream, ICancellableStream
         {
             private readonly Guid tunnelId;
             private readonly CancellationTokenSource cancellationTokenSource = new();
@@ -31,16 +32,33 @@ namespace CYarp.Client
 
             public override ValueTask DisposeAsync()
             {
-                cancellationTokenSource.Cancel();
+                if (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    cancellationTokenSource.Cancel();
+                }
                 cancellationTokenSource.Dispose();
                 return this.Inner.DisposeAsync();
             }
 
             protected override void Dispose(bool disposing)
             {
-                cancellationTokenSource.Cancel();
+                if (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    cancellationTokenSource.Cancel();
+                }
                 cancellationTokenSource.Dispose();
                 this.Inner.Dispose();
+            }
+
+            /// <summary>
+            /// Cancel this tunnel stream (e.g., when request is aborted)
+            /// </summary>
+            public void Cancel()
+            {
+                if (!cancellationTokenSource.IsCancellationRequested)
+                {
+                    cancellationTokenSource.Cancel();
+                }
             }
 
             public override string ToString()

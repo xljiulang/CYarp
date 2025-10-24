@@ -65,11 +65,12 @@ namespace CYarp.Server.Clients
             var httpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, 1);
             TunnelLog.LogTunnelCreate(this.tunnelFactory.Logger, this.connection.ClientId, httpTunnel.Protocol, httpTunnel.Id, stopwatch.Elapsed, tunnelType, httpTunnelCount);
 
-            // Simple approach: Register for cancellation to dispose the tunnel
-            // This will propagate through the stream disposal mechanism
-            cancellationToken.Register(() =>
+            // Graceful cancellation handling: when request is cancelled, mark the tunnel for graceful shutdown
+            // Don't aggressively dispose - let the bidirectional copy complete naturally
+            var cancellationRegistration = cancellationToken.Register(() =>
             {
-                // Dispose the tunnel when cancelled - this propagates to the client
+                // Trigger graceful shutdown by disposing the tunnel
+                // The tunnel's own disposal logic will handle proper cleanup
                 _ = httpTunnel.DisposeAsync();
             });
 
@@ -79,6 +80,7 @@ namespace CYarp.Server.Clients
 
             void OnHttpTunnelDisposing(Tunnel tunnel)
             {
+                cancellationRegistration.Dispose();
                 var httpTunnelCount = this.tunnelStatistics.AddTunnelCount(tunnelType, -1);
                 TunnelLog.LogTunnelClosed(this.tunnelFactory.Logger, this.connection.ClientId, tunnel.Protocol, tunnel.Id, tunnel.Lifetime, tunnelType, httpTunnelCount);
             }
