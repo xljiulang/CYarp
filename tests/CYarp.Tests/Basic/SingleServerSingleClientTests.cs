@@ -97,18 +97,13 @@ public class SingleServerSingleClientTests : CYarpTestBase
         
         using var cts = new CancellationTokenSource();
         
-        // Act
-        var task = SendRequestAsync("site1", "/api/long-operation?duration=10000");
-        
         // Cancel after 1 second
         cts.CancelAfter(1000);
         
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/long-operation?duration=10000");
-            request.Headers.Add("Host", "site1.test.com");
-            
-            var response = await ProxyClient.SendAsync(request, cts.Token);
+            // Act - Use SendRequestAsync helper which builds URI correctly
+            var response = await SendRequestAsync("site1", "/api/long-operation?duration=10000", cts.Token);
             
             // If we get here, the operation wasn't cancelled as expected
             Assert.Fail("Operation should have been cancelled");

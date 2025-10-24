@@ -107,10 +107,15 @@ public abstract class CYarpTestBase : IDisposable
 
     protected async Task<HttpResponseMessage> SendRequestAsync(string clientId, string path, HttpMethod? method = null)
     {
+        return await SendRequestAsync(clientId, path, CancellationToken.None, method);
+    }
+    
+    protected async Task<HttpResponseMessage> SendRequestAsync(string clientId, string path, CancellationToken cancellationToken, HttpMethod? method = null)
+    {
         method ??= HttpMethod.Get;
         
         // Simulate different responses based on client and path
-        await Task.Delay(50); // Simulate network delay
+        await Task.Delay(50, cancellationToken); // Simulate network delay
         
         var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         string content;
@@ -128,7 +133,8 @@ public abstract class CYarpTestBase : IDisposable
                 int.TryParse(durationStr, out duration);
             }
             
-            // Simulate long operation
+            // Simulate long operation with cancellation support
+            await Task.Delay(duration, cancellationToken);
             content = JsonSerializer.Serialize(new { Message = "Operation completed", Duration = duration, ClientId = clientId });
         }
         else if (path.Contains("parallel"))
