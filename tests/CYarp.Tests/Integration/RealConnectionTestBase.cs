@@ -334,7 +334,7 @@ public class RealConnectionTestBase : IAsyncLifetime
 /// </summary>
 public class TestHub : Hub
 {
-    private static readonly ConcurrentDictionary<string, List<string>> Groups = new();
+    private static readonly ConcurrentDictionary<string, List<string>> TestGroups = new();
     
     public async Task SendMessage(string message)
     {
@@ -348,7 +348,7 @@ public class TestHub : Hub
     
     public async Task JoinGroup(string groupName)
     {
-        Groups.AddOrUpdate(
+        TestGroups.AddOrUpdate(
             groupName,
             _ => new List<string> { Context.ConnectionId },
             (_, list) => { list.Add(Context.ConnectionId); return list; }
@@ -358,10 +358,15 @@ public class TestHub : Hub
     
     public async Task LeaveGroup(string groupName)
     {
-        if (Groups.TryGetValue(groupName, out var list))
+        if (TestGroups.TryGetValue(groupName, out var list))
         {
             list.Remove(Context.ConnectionId);
         }
         await base.Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+    }
+    
+    public static void ClearGroups()
+    {
+        TestGroups.Clear();
     }
 }

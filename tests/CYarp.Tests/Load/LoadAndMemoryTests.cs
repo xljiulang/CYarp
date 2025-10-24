@@ -135,8 +135,8 @@ public class LoadAndMemoryTests : RealConnectionTestBase
         // Act - Create and dispose many SignalR connections
         for (int i = 0; i < 50; i++)
         {
-            var hubUrl = $"http://localhost:{ReverseProxyPort}/hubs/test";
-            var connection = new Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder()
+            var hubUrl = $"http://localhost:{ReverseProxyPort}/signalr";
+            var connection = new HubConnectionBuilder()
                 .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1"); })
                 .Build();
             
@@ -212,8 +212,8 @@ public class LoadAndMemoryTests : RealConnectionTestBase
         
         var signalRTask = Task.Run(async () =>
         {
-            var hubUrl = $"http://localhost:{ReverseProxyPort}/hubs/test";
-            var connection = new Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilder()
+            var hubUrl = $"http://localhost:{ReverseProxyPort}/signalr";
+            var connection = new HubConnectionBuilder()
                 .WithUrl(hubUrl, options => { options.Headers.Add("Host", "site1"); })
                 .Build();
             
