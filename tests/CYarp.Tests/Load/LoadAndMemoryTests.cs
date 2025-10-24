@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using System.Text;
 using CYarp.Tests.Integration;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace CYarp.Tests.Load;
 
