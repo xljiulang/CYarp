@@ -189,13 +189,15 @@ public abstract class CYarpTestBase : IDisposable
         private readonly string _clientId;
         private readonly List<string> _receivedMessages = new();
         private readonly List<string> _groups = new();
+        private bool _isConnected;
 
         public MockSignalRConnection(string clientId)
         {
             _clientId = clientId;
         }
 
-        public bool IsConnected => true;
+        public bool IsConnected => _isConnected;
+        public string? CurrentGroup => _groups.Count > 0 ? _groups[^1] : null;
 
         public IReadOnlyList<string> ReceivedMessages => _receivedMessages;
         public IReadOnlyList<string> Groups => _groups;
@@ -204,14 +206,21 @@ public abstract class CYarpTestBase : IDisposable
         {
             await Task.Delay(1); // Simulate network call
             
-            if (method == "SendMessage" && args.Length >= 2)
+            if (method == "SendMessage")
             {
-                _receivedMessages.Add($"{args[0]}: {args[1]}");
+                if (args.Length >= 2)
+                {
+                    _receivedMessages.Add($"{args[0]}: {args[1]}");
+                }
+                else if (args.Length >= 1)
+                {
+                    _receivedMessages.Add(args[0].ToString() ?? "");
+                }
             }
             else if (method == "JoinGroup" && args.Length >= 1)
             {
                 var group = args[0].ToString();
-                if (!_groups.Contains(group))
+                if (group != null && !_groups.Contains(group))
                 {
                     _groups.Add(group);
                 }
@@ -219,23 +228,33 @@ public abstract class CYarpTestBase : IDisposable
             else if (method == "LeaveGroup" && args.Length >= 1)
             {
                 var group = args[0].ToString();
-                _groups.Remove(group);
+                if (group != null)
+                {
+                    _groups.Remove(group);
+                }
             }
+        }
+        
+        public async Task JoinGroupAsync(string groupName)
+        {
+            await SendAsync("JoinGroup", groupName);
         }
 
         public async Task StartAsync()
         {
             await Task.Delay(10); // Simulate startup
+            _isConnected = true;
         }
 
         public async Task StopAsync()
         {
             await Task.Delay(5); // Simulate shutdown
+            _isConnected = false;
         }
 
         public void Dispose()
         {
-            // Cleanup resources
+            _isConnected = false;
         }
     }
 

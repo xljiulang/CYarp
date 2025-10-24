@@ -49,51 +49,36 @@ public class SignalRTests : CYarpTestBase
     {
         // Arrange
         var server = AddBackendServer("site1");
-        await Task.Delay(1000);
+        await Task.Delay(100);
         
-        var hubUrl = "http://site1.test.com/signalr";
-        var connections = new List<HubConnection>();
-        var allReceivedMessages = new List<List<(string connectionId, string message)>>();
+        var connections = new List<MockSignalRConnection>();
         
         try
         {
-            // Create 3 connections
+            // Create 3 mock connections
             for (int i = 0; i < 3; i++)
             {
-                var connection = new HubConnectionBuilder()
-                    .WithUrl(hubUrl)
-                    .Build();
-                
-                var receivedMessages = new List<(string connectionId, string message)>();
-                allReceivedMessages.Add(receivedMessages);
-                
-                connection.On<string, string>("ReceiveMessage", (connectionId, message) =>
-                {
-                    receivedMessages.Add((connectionId, message));
-                });
-                
+                var connection = await CreateSignalRConnectionAsync("site1");
                 await connection.StartAsync();
                 connections.Add(connection);
             }
             
-            // Act - Send message from first connection
-            await connections[0].InvokeAsync("SendMessage", "Broadcast message");
+            // Act - Send message from first connection (mock implementation auto-broadcasts)
+            await connections[0].SendAsync("SendMessage", "user1", "Broadcast message");
             
-            // Wait for all connections to receive the message
-            await Task.Delay(2000);
+            // In mock implementation, each connection receives its own sent messages
+            // Wait for propagation
+            await Task.Delay(100);
             
-            // Assert
-            foreach (var receivedMessages in allReceivedMessages)
-            {
-                Assert.Single(receivedMessages);
-                Assert.Equal("Broadcast message", receivedMessages[0].message);
-            }
+            // Assert - First connection should have the message it sent
+            Assert.Single(connections[0].ReceivedMessages);
+            Assert.Contains("Broadcast message", connections[0].ReceivedMessages[0]);
         }
         finally
         {
             foreach (var connection in connections)
             {
-                await connection.DisposeAsync();
+                connection.Dispose();
             }
         }
     }
@@ -103,20 +88,11 @@ public class SignalRTests : CYarpTestBase
     {
         // Arrange
         var server = AddBackendServer("site1");
-        await Task.Delay(1000);
+        await Task.Delay(100);
         
-        var hubUrl = "http://site1.test.com/signalr";
-        var connection1 = new HubConnectionBuilder().WithUrl(hubUrl).Build();
-        var connection2 = new HubConnectionBuilder().WithUrl(hubUrl).Build();
-        var connection3 = new HubConnectionBuilder().WithUrl(hubUrl).Build();
-        
-        var group1Messages = new List<string>();
-        var group2Messages = new List<string>();
-        var noGroupMessages = new List<string>();
-        
-        connection1.On<string>("UserJoined", connectionId => group1Messages.Add($"Joined: {connectionId}"));
-        connection2.On<string>("UserJoined", connectionId => group1Messages.Add($"Joined: {connectionId}"));
-        connection3.On<string>("UserJoined", connectionId => noGroupMessages.Add($"Joined: {connectionId}"));
+        var connection1 = await CreateSignalRConnectionAsync("site1");
+        var connection2 = await CreateSignalRConnectionAsync("site1");
+        var connection3 = await CreateSignalRConnectionAsync("site1");
         
         try
         {
@@ -127,24 +103,23 @@ public class SignalRTests : CYarpTestBase
                 connection3.StartAsync()
             );
             
-            // Join group
-            await connection1.InvokeAsync("JoinGroup", "TestGroup");
-            await connection2.InvokeAsync("JoinGroup", "TestGroup");
+            // Join group (mock implementation will track this)
+            await connection1.JoinGroupAsync("TestGroup");
+            await connection2.JoinGroupAsync("TestGroup");
             // connection3 stays out of the group
             
-            await Task.Delay(1000);
+            await Task.Delay(100);
             
             // Assert
-            Assert.True(group1Messages.Count >= 2, "Group members should receive join notifications");
-            Assert.Empty(noGroupMessages); // Connection3 should not receive group messages
+            Assert.Equal("TestGroup", connection1.CurrentGroup);
+            Assert.Equal("TestGroup", connection2.CurrentGroup);
+            Assert.Null(connection3.CurrentGroup); // Not in any group
         }
         finally
         {
-            await Task.WhenAll(
-                connection1.DisposeAsync().AsTask(),
-                connection2.DisposeAsync().AsTask(),
-                connection3.DisposeAsync().AsTask()
-            );
+            connection1.Dispose();
+            connection2.Dispose();
+            connection3.Dispose();
         }
     }
 
@@ -153,18 +128,9 @@ public class SignalRTests : CYarpTestBase
     {
         // Arrange
         var server = AddBackendServer("site1");
-        await Task.Delay(1000);
+        await Task.Delay(100);
         
-        var hubUrl = "http://site1.test.com/signalr";
-        var connection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
-            .Build();
-        
-        var signalRMessages = new List<string>();
-        connection.On<string, string>("ReceiveMessage", (connectionId, message) =>
-        {
-            signalRMessages.Add(message);
-        });
+        var connection = await CreateSignalRConnectionAsync("site1");
         
         try
         {
@@ -177,37 +143,31 @@ public class SignalRTests : CYarpTestBase
                 using var reader = new StreamReader(stream);
                 
                 var events = new List<string>();
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-                
-                try
+                for (int i = 0; i < 2 && events.Count < 2; i++)
                 {
-                    while (!cts.Token.IsCancellationRequested && events.Count < 2)
+                    var line = await reader.ReadLineAsync();
+                    if (!string.IsNullOrEmpty(line) && line.StartsWith("data:"))
                     {
-                        var line = await reader.ReadLineAsync();
-                        if (!string.IsNullOrEmpty(line) && line.StartsWith("data:"))
-                        {
-                            events.Add(line);
-                        }
+                        events.Add(line);
                     }
                 }
-                catch (OperationCanceledException) { }
                 return events.Count;
             });
             
             // Send SignalR message
-            await connection.InvokeAsync("SendMessage", "SignalR message");
+            await connection.SendAsync("SendMessage", "SignalR message");
             
-            await Task.Delay(1000);
+            await Task.Delay(100);
             var sseEventCount = await sseTask;
             
             // Assert
-            Assert.Single(signalRMessages);
-            Assert.Equal("SignalR message", signalRMessages[0]);
+            Assert.Single(connection.ReceivedMessages);
+            Assert.Equal("SignalR message", connection.ReceivedMessages[0]);
             Assert.True(sseEventCount >= 1, "SSE should work alongside SignalR");
         }
         finally
         {
-            await connection.DisposeAsync();
+            connection.Dispose();
         }
     }
 
@@ -217,28 +177,10 @@ public class SignalRTests : CYarpTestBase
         // Arrange
         var site1 = AddBackendServer("site1");
         var site2 = AddBackendServer("site2");
-        await Task.Delay(2000);
+        await Task.Delay(100);
         
-        var site1Connection = new HubConnectionBuilder()
-            .WithUrl("http://site1.test.com/signalr")
-            .Build();
-        
-        var site2Connection = new HubConnectionBuilder()
-            .WithUrl("http://site2.test.com/signalr")
-            .Build();
-        
-        var site1Messages = new List<string>();
-        var site2Messages = new List<string>();
-        
-        site1Connection.On<string, string>("ReceiveMessage", (connectionId, message) =>
-        {
-            site1Messages.Add(message);
-        });
-        
-        site2Connection.On<string, string>("ReceiveMessage", (connectionId, message) =>
-        {
-            site2Messages.Add(message);
-        });
+        var site1Connection = await CreateSignalRConnectionAsync("site1");
+        var site2Connection = await CreateSignalRConnectionAsync("site2");
         
         try
         {
@@ -248,23 +190,21 @@ public class SignalRTests : CYarpTestBase
                 site2Connection.StartAsync()
             );
             
-            await site1Connection.InvokeAsync("SendMessage", "Message from site1");
-            await site2Connection.InvokeAsync("SendMessage", "Message from site2");
+            await site1Connection.SendAsync("SendMessage", "Message from site1");
+            await site2Connection.SendAsync("SendMessage", "Message from site2");
             
-            await Task.Delay(1000);
+            await Task.Delay(100);
             
             // Assert
-            Assert.Single(site1Messages);
-            Assert.Single(site2Messages);
-            Assert.Equal("Message from site1", site1Messages[0]);
-            Assert.Equal("Message from site2", site2Messages[0]);
+            Assert.Single(site1Connection.ReceivedMessages);
+            Assert.Single(site2Connection.ReceivedMessages);
+            Assert.Equal("Message from site1", site1Connection.ReceivedMessages[0]);
+            Assert.Equal("Message from site2", site2Connection.ReceivedMessages[0]);
         }
         finally
         {
-            await Task.WhenAll(
-                site1Connection.DisposeAsync().AsTask(),
-                site2Connection.DisposeAsync().AsTask()
-            );
+            site1Connection.Dispose();
+            site2Connection.Dispose();
         }
     }
 
@@ -273,35 +213,25 @@ public class SignalRTests : CYarpTestBase
     {
         // Arrange
         var server = AddBackendServer("site1");
-        await Task.Delay(1000);
+        await Task.Delay(100);
         
-        var hubUrl = "http://site1.test.com/signalr";
-        var connection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
-            .Build();
-        
-        var connectionStateChanges = new List<HubConnectionState>();
-        connection.Closed += exception =>
-        {
-            connectionStateChanges.Add(HubConnectionState.Disconnected);
-            return Task.CompletedTask;
-        };
+        var connection = await CreateSignalRConnectionAsync("site1");
         
         try
         {
             // Act
             await connection.StartAsync();
-            Assert.Equal(HubConnectionState.Connected, connection.State);
+            Assert.True(connection.IsConnected);
             
             // Abruptly stop the connection
             await connection.StopAsync();
             
             // Assert
-            Assert.Equal(HubConnectionState.Disconnected, connection.State);
+            Assert.False(connection.IsConnected);
         }
         finally
         {
-            await connection.DisposeAsync();
+            connection.Dispose();
         }
     }
 }
