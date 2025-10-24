@@ -1,4 +1,5 @@
 ﻿using CYarp.Server;
+using Microsoft.AspNetCore.Http;
 
 namespace Cyarp.Sample.PublicReverseProxy;
 
