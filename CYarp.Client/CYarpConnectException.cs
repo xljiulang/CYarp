@@ -5,7 +5,7 @@ using System.Diagnostics;
 namespace CYarp.Client
 {
     /// <summary>
-    /// 连接异常
+    /// Connection exception
     /// </summary>
     [DebuggerDisplay("ErrorCode = {ErrorCode}")]
     public class CYarpConnectException : Exception
@@ -15,16 +15,16 @@ namespace CYarp.Client
             { CYarpConnectError.Failure,"Connect failure" },
             { CYarpConnectError.Timedout,"Connect timed out" },
             { CYarpConnectError.Unauthorized,"Connect unauthorized" },
-            { CYarpConnectError.Forbid ,"Connect forbid" },
+            { CYarpConnectError.Forbid ,"Connect forbidden" },
         };
 
         /// <summary>
-        /// 获取连接错误码
+        /// Gets the connection error code
         /// </summary>
         public CYarpConnectError ErrorCode { get; }
 
         /// <summary>
-        /// CYarp异常
+        /// CYarp connection exception
         /// </summary>
         /// <param name="errorCode"></param> 
         /// <param name="innerException"></param>

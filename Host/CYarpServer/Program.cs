@@ -19,12 +19,12 @@ namespace CYarpServer
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 注册CYarp服务端组件
+            // Register CYarp server components
             builder.Services.AddCYarp()
                 .Configure(builder.Configuration.GetSection(nameof(CYarpOptions)))
                 .AddRedisClientStateStorage(builder.Configuration.GetSection(nameof(RedisClientStateStorageOptions)));
 
-            // asp.net的jwt认证等 
+            // ASP.NET JWT authentication and related
             builder.Services.AddAuthorization();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
             builder.Services.Configure<JwtTokenOptions>(builder.Configuration.GetSection(nameof(JwtTokenOptions)));

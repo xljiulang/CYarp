@@ -7,54 +7,54 @@ using System.Threading.Tasks;
 namespace CYarp.Client.AspNetCore
 {
     /// <summary>
-    /// Cyarp终结点
+    /// CYarp endpoint
     /// </summary>
     public sealed class CYarpEndPoint : EndPoint
     {
         /// <summary>
-        /// 获取或设置CYarp服务器Uri
-        /// 支持http、https、 ws和wss
+        /// Gets or sets the CYarp server Uri
+        /// Supports http, https, ws and wss
         /// </summary>
         [AllowNull]
         public Uri ServerUri { get; set; }
 
         /// <summary>
-        /// 获取或设置访问目标服务器（即本服务）使用的Uri
-        /// 支持http和https
+        /// Gets or sets the Uri used to access the target server (this service)
+        /// Supports http and https
         /// </summary>
         public Uri TargetUri { get; set; } = new Uri("http://localhost");
 
         /// <summary>
-        /// 获取或设置连接到CYarp服务器的请求头
+        /// Gets or sets the headers used when connecting to CYarp server
         /// </summary>
         public Dictionary<string, string> ConnectHeaders { get; set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// 获取或设置连接到CYarp服务器的请求头的工厂
-        /// 当ConnectHeadersFactory不为null时，ConnectHeaders将会被忽略
+        /// Gets or sets a factory for connect headers
+        /// When ConnectHeadersFactory is not null, ConnectHeaders will be ignored
         /// </summary>
         public Func<ValueTask<Dictionary<string, string>>>? ConnectHeadersFactory { get; set; } = null;
 
         /// <summary>
-        /// 获取或设置与CYarp服务器的连接超时时长
-        /// 默认为5s
+        /// Gets or sets the connection timeout to the CYarp server
+        /// Default is 5s
         /// </summary>
         public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// 获取或设置连接心跳包周期
-        /// 默认30s，小于等于0表示不发送心跳包
+        /// Gets or sets the connection keep-alive interval
+        /// Default is 30s, &lt;=0 means no keep-alive
         /// </summary>
         public TimeSpan KeepAliveInterval { get; set; } = TimeSpan.FromSeconds(30d);
 
         /// <summary>
-        /// 获取或设置断线重连间隔间隔
-        /// 默认5s
+        /// Gets or sets the reconnect interval
+        /// Default is 5s
         /// </summary>
         public TimeSpan ReconnectInterval { get; set; } = TimeSpan.FromSeconds(5d);
 
         /// <summary>
-        /// 转换为文本
+        /// Convert to string
         /// </summary>
         /// <returns></returns>
         public override string ToString()

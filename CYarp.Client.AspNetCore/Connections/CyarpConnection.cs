@@ -10,24 +10,24 @@ namespace CYarp.Client.AspNetCore.Connections
     sealed class CyarpConnection : Stream, IConnectionLifetimeFeature
     {
         /// <summary>
-        /// 获取所包装的流对象
+        /// The wrapped inner stream
         /// </summary>
         private readonly Stream inner;
 
         /// <summary>
-        /// 连接中止的取消标记源
+        /// Cancellation token source for connection closure
         /// </summary>
         private readonly CancellationTokenSource closedTokenSource = new();
 
         /// <summary>
-        /// 获取连接中止的取消标记
+        /// Gets the cancellation token that signals connection closure
         /// </summary>
         public CancellationToken ConnectionClosed { get; set; }
 
         /// <summary>
-        /// 委托流
+        /// Delegating stream
         /// </summary>
-        /// <param name="inner"></param>
+        /// <param name="inner">The inner stream to delegate to</param>
         public CyarpConnection(Stream inner)
         {
             this.inner = inner;

@@ -6,48 +6,48 @@ using System.Threading.Tasks;
 namespace CYarp.Client
 {
     /// <summary>
-    /// AOT编译
+    /// AOT compilation helpers
     /// </summary>
     static class AOT
     {
         /// <summary>
-        /// 错误码
+        /// Error codes
         /// </summary>
         public enum ErrorCode : int
         {
             /// <summary>
-            /// 句柄无效
+            /// Invalid handle
             /// </summary>
             InvalidHandle = -1,
 
             /// <summary>
-            /// 无错误
+            /// No error
             /// </summary>
             NoError = 0,
 
             /// <summary>
-            /// 连接到服务器失败
+            /// Failed to connect to server
             /// </summary>
             ConnectFailure = 1,
 
             /// <summary>
-            /// 连接到服务器已超时
+            /// Connection to server timed out
             /// </summary>
             ConnectTimeout = 2,
 
             /// <summary>
-            /// 连接到服务身份认证不通过
+            /// Connection authentication failed
             /// </summary>
             ConnectUnauthorized = 3,
 
             /// <summary>
-          	/// 连接被拒绝(授权不通过)
+            /// Connection was rejected (authorization failed)
             /// </summary>
             ConnectForbid = 4,
         }
 
         /// <summary>
-        /// 客户端选项
+        /// Client options (for native interop)
         /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         public struct ClientOptions
@@ -60,9 +60,9 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 创建客户端
+        /// Create client
         /// </summary>
-        /// <returns>客户端句柄</returns>
+        /// <returns>Client handle</returns>
         [UnmanagedCallersOnly(EntryPoint = "CYarpClientCreate", CallConvs = [typeof(CallConvCdecl)])]
         public unsafe static nint CYarpClientCreate(ClientOptions* clientOptions)
         {
@@ -116,11 +116,11 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 设置连接时的请求头
+        /// Set connect header
         /// </summary>
-        /// <param name="clientPtr">客户端句柄</param>
-        /// <param name="headerName">请求头名称</param>
-        /// <param name="headerValue">请求头的值</param>
+        /// <param name="clientPtr">Client handle</param>
+        /// <param name="headerName">Header name</param>
+        /// <param name="headerValue">Header value</param>
         /// <returns></returns>
         [UnmanagedCallersOnly(EntryPoint = "CYarpClientSetConnectHeader", CallConvs = [typeof(CallConvCdecl)])]
         public static ErrorCode CYarpClientSetConnectHeader(nint clientPtr, nint headerName, nint headerValue)
@@ -138,9 +138,9 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 释放客户端
+        /// Free client
         /// </summary>
-        /// <param name="clientPtr">客户端句柄</param>
+        /// <param name="clientPtr">Client handle</param>
         [UnmanagedCallersOnly(EntryPoint = "CYarpClientFree", CallConvs = [typeof(CallConvCdecl)])]
         public static void CYarpClientFree(nint clientPtr)
         {
@@ -156,10 +156,10 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 同步传输数据
+        /// Synchronous transport
         /// </summary>
-        /// <param name="clientPtr">客户端句柄</param> 
-        /// <returns>传输错误枚举</returns>
+        /// <param name="clientPtr">Client handle</param> 
+        /// <returns>Transport error code</returns>
         [UnmanagedCallersOnly(EntryPoint = "CYarpClientTransport", CallConvs = [typeof(CallConvCdecl)])]
         public static ErrorCode CYarpClientTransport(nint clientPtr)
         {
@@ -167,11 +167,11 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 异步传输数据
+        /// Asynchronous transport
         /// </summary>
-        /// <param name="clientPtr">客户端句柄</param>
-        /// <param name="completedCallback">传输完成回调，null则转同步调用</param>
-        /// <returns>传输错误枚举</returns>
+        /// <param name="clientPtr">Client handle</param>
+        /// <param name="completedCallback">Completion callback, null to call synchronously</param>
+        /// <returns>Transport error code</returns>
         [UnmanagedCallersOnly(EntryPoint = "CYarpClientTransportAsync", CallConvs = [typeof(CallConvCdecl)])]
         public unsafe static ErrorCode CYarpClientTransportAsync(nint clientPtr, delegate* unmanaged[Cdecl]<ErrorCode, void> completedCallback)
         {
@@ -191,7 +191,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 同步数据传输
+        /// Synchronous data transport
         /// </summary>
         /// <param name="clientPtr"></param>
         /// <returns></returns>
@@ -209,10 +209,10 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 传输数据
+        /// Transport data
         /// </summary>
-        /// <param name="client">客户端</param>
-        /// <param name="completedCallback">传输完成回调</param>        
+        /// <param name="client">Client</param>
+        /// <param name="completedCallback">Completion callback</param>        
         private static async void TransportAsync(CYarpClient client, Action<ErrorCode> completedCallback)
         {
             try

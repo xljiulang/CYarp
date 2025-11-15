@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace CYarp.Server.Clients
 {
     /// <summary>
-    /// 客户端的长连接
+    /// Long connection for client
     /// </summary>
     sealed class ClientConnection : IAsyncDisposable
     {
@@ -53,7 +53,7 @@ namespace CYarp.Server.Clients
         }
 
         /// <summary>
-        /// 心跳timer
+        /// Keep-alive timer
         /// </summary>
         /// <param name="state"></param>
         private async void KeepAliveTimerTick(object? state)

@@ -9,7 +9,7 @@ namespace CYarp.Server.Features
     sealed partial class CYarpFeature
     {
         /// <summary>
-        /// WebSocket流
+        /// WebSocket stream
         /// </summary>
         private class WebSocketStream : Stream
         {
@@ -53,7 +53,7 @@ namespace CYarp.Server.Features
             }
 
             /// <summary>
-            /// ClientConnection会调用到此方法
+            /// This method will be called by ClientConnection
             /// </summary>
             /// <returns></returns>
             public override async ValueTask DisposeAsync()
@@ -62,8 +62,8 @@ namespace CYarp.Server.Features
             }
 
             /// <summary>
-            /// ClientHttpHandler会调用到此方法
-            /// 即SocketsHttpHandler检测到连接空闲时超时或捕获到其它异常
+            /// This method will be called by ClientHttpHandler
+            /// when SocketsHttpHandler detects connection idle timeout or catches other exceptions
             /// </summary>
             /// <param name="disposing"></param>
             protected override void Dispose(bool disposing)

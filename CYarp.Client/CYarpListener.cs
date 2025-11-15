@@ -25,7 +25,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 接收CYarp服务器的传输连接
+        /// Accept a transport connection from the CYarp server
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <exception cref="CYarpConnectException"></exception>
@@ -55,7 +55,7 @@ namespace CYarp.Client
 
 
         /// <summary>
-        /// 接收CYarp服务器的所有传输连接
+        /// Accept all transport connections from the CYarp server
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -80,7 +80,7 @@ namespace CYarp.Client
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Warning, "[{tunnelId}] 隧道遇到异常：{reason}")]
+            [LoggerMessage(LogLevel.Warning, "[{tunnelId}] Tunnel encountered error: {reason}")]
             public static partial void LogTunnelError(ILogger logger, Guid tunnelId, string? reason);
         }
     }

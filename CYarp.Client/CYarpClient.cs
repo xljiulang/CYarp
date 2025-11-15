@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace CYarp.Client
 {
     /// <summary>
-    /// CYarp客户端
+    /// CYarp client
     /// </summary>
     public partial class CYarpClient : IDisposable
     {
@@ -20,14 +20,14 @@ namespace CYarp.Client
         private readonly CancellationTokenSource disposeTokenSource = new();
 
         /// <summary>
-        /// 获取当前隧道数量
+        /// Gets the current tunnel count
         /// </summary>
         public int TunnelCount => this.tunnelCount;
 
         /// <summary>
-        /// CYarp客户端
+        /// CYarp client
         /// </summary>
-        /// <param name="options">客户端选项</param>
+        /// <param name="options">Client options</param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public CYarpClient(CYarpClientOptions options)
@@ -36,9 +36,9 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// CYarp客户端
+        /// CYarp client
         /// </summary>
-        /// <param name="options">客户端选项</param>
+        /// <param name="options">Client options</param>
         /// <param name="logger"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
@@ -48,10 +48,10 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// CYarp客户端
+        /// CYarp client
         /// </summary>
-        /// <param name="options">客户端选项</param>
-        /// <param name="logger">日志组件</param> 
+        /// <param name="options">Client options</param>
+        /// <param name="logger">Logger</param> 
         /// <param name="handler">httpHandler</param>
         /// <param name="disposeHandler"></param>
         /// <exception cref="ArgumentException"></exception>
@@ -95,7 +95,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 连接到CYarp服务器，创建用于接受CYarp服务器传输连接的监听器
+        /// Connect to the CYarp server and create a listener for accepting transport connections from the server
         /// </summary> 
         /// <exception cref="CYarpConnectException"></exception>
         /// <exception cref="ObjectDisposedException"></exception>
@@ -110,7 +110,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 连接到CYarp服务器，并将CYarp服务器的传输绑定到目标服务器
+        /// Connect to the CYarp server and bind the server transport to the target server
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -126,7 +126,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 连接到CYarp服务器，并将CYarp服务器的传输绑定到目标服务器
+        /// Connect to the CYarp server and bind the server transport to the target server
         /// </summary> 
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -155,7 +155,7 @@ namespace CYarp.Client
 
 
         /// <summary>
-        /// 绑定tunnel的IO
+        /// Bind tunnel IO
         /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationTokens"></param>
@@ -166,7 +166,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 绑定tunnel的IO
+        /// Bind tunnel IO
         /// </summary> 
         /// <param name="tunnelId"></param>
         /// <param name="cancellationToken"></param>
@@ -211,9 +211,9 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 隧道异常时
+        /// Called when a tunnel exception occurs
         /// </summary>
-        /// <param name="ex">异常</param>
+        /// <param name="ex">Exception</param>
         protected virtual void OnTunnelException(Exception ex)
         {
             this.options.TunnelErrorCallback?.Invoke(ex);
@@ -221,7 +221,7 @@ namespace CYarp.Client
 
 
         /// <summary>
-        /// 释放资源
+        /// Dispose resources
         /// </summary>
         public void Dispose()
         {
@@ -234,7 +234,7 @@ namespace CYarp.Client
         }
 
         /// <summary>
-        /// 释放资源
+        /// Dispose resources
         /// </summary>
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
@@ -246,25 +246,25 @@ namespace CYarp.Client
 
         static partial class Log
         {
-            [LoggerMessage(LogLevel.Information, "连接到服务器{address}成功")]
+            [LoggerMessage(LogLevel.Information, "Connected to server {address}")]
             public static partial void LogHttp11Connected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Information, "连接到服务器{address}成功，已启用h2多路复用")]
+            [LoggerMessage(LogLevel.Information, "Connected to server {address}, HTTP/2 multiplexing enabled")]
             public static partial void LogHttp2Connected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Warning, "已断开与服务器{address}的连接")]
+            [LoggerMessage(LogLevel.Warning, "Disconnected from server {address}")]
             public static partial void LogDisconnected(ILogger logger, Uri address);
 
-            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 正在创建到{address}的隧道..")]
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] Creating tunnel to {address}...")]
             public static partial void LogTunnelCreating(ILogger logger, Guid tunnelId, Uri address);
 
-            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 隧道创建完成耗时{elapsed}，当前隧道数为{tunnelCount}")]
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] Tunnel created in {elapsed}, current tunnel count is {tunnelCount}")]
             public static partial void LogTunnelCreated(ILogger logger, Guid tunnelId, TimeSpan elapsed, int tunnelCount);
 
-            [LoggerMessage(LogLevel.Information, "[{tunnelId}] 隧道已被{address}关闭，生命周期为{lifeTime}，当前隧道数为{tunnelCount}")]
+            [LoggerMessage(LogLevel.Information, "[{tunnelId}] Tunnel closed by {address}, lifetime {lifeTime}, current tunnel count {tunnelCount}")]
             public static partial void LogTunnelClosed(ILogger logger, Guid tunnelId, Uri address, TimeSpan lifeTime, int tunnelCount);
 
-            [LoggerMessage(LogLevel.Warning, "[{tunnelId}] 隧道遇到异常：{reason}")]
+            [LoggerMessage(LogLevel.Warning, "[{tunnelId}] Tunnel encountered an error: {reason}")]
             public static partial void LogTunnelError(ILogger logger, Guid tunnelId, string? reason);
         }
     }

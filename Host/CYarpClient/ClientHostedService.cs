@@ -31,7 +31,7 @@ namespace CYarpServer
                     using var client = new CYarp.Client.CYarpClient(options, this.logger);
                     await client.TransportAsync(stoppingToken);
 
-                    this.logger.LogInformation($"传输已被关闭，5秒后重新连接");
+                    this.logger.LogInformation($"Transport has been closed, will reconnect after 5 seconds");
                     await Task.Delay(TimeSpan.FromSeconds(5d), stoppingToken);
                 }
                 catch (ArgumentException)
@@ -49,7 +49,7 @@ namespace CYarpServer
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogError(ex, "连接异常，10秒后重新连接");
+                    this.logger.LogError(ex, "Connection error, will reconnect after 10 seconds");
                     await Task.Delay(TimeSpan.FromSeconds(10d), stoppingToken);
                 }
             }

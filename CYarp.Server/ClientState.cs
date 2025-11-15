@@ -1,17 +1,17 @@
 ﻿namespace CYarp.Server
 {
     /// <summary>
-    /// 客户端状态
+    /// Represents the state of a client
     /// </summary>
     public record ClientState
     {
         /// <summary>
-        /// 客户端实例
+        /// The client instance
         /// </summary>
         public required IClient Client { get; init; }
 
         /// <summary>
-        /// 是否为连接状态
+        /// Indicates whether the client is currently connected
         /// </summary>
         public required bool IsConnected { get; init; }
     }

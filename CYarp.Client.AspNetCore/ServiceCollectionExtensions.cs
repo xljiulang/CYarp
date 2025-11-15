@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Connections;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// 服务注册扩展
+    /// Service registration extensions
     /// </summary>
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// 注册CYarp监听器
-        /// 以支持kestrel监听CYarpEndPoint
+        /// Registers the CYarp listener
+        /// Enables Kestrel to listen on CYarpEndPoint
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>

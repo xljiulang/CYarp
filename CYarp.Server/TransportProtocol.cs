@@ -1,12 +1,12 @@
 ﻿namespace CYarp.Server
 {
     /// <summary>
-    /// 传输协议类型
+    /// Transport protocol types
     /// </summary>
     public enum TransportProtocol
     {
         /// <summary>
-        /// 无
+        /// None
         /// </summary>
         None,
 
@@ -21,7 +21,7 @@
         Http2,
 
         /// <summary>
-        /// WebSocket
+        /// WebSocket over HTTP/1.1
         /// </summary>
         WebSocketWithHttp11,
 
