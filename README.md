@@ -1,14 +1,14 @@
 [README](README.md) | [中文文档](README_zh.md)
 
 ## CYarp
-A reverse proxy toolkit to help you expose multiple local http servers behind a NAT or firewall to the internet. It currently supports four connection methods: `HTTP/1.1 Upgrade`, `HTTP/2 Extended CONNECT`, `WebSocket` and `WebSocket over Http/2`.
+CYarp is a reverse-proxy toolkit that helps you expose multiple local HTTP servers behind NAT or a firewall to the internet. It currently supports four connection methods: `HTTP/1.1 Upgrade`, `HTTP/2 Extended CONNECT`, `WebSocket`, and `WebSocket over HTTP/2`.
 
 ### Features
-1. Use high-performance [kestrel](https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-8.0) as server
-2. Use high-performance [YARP](https://github.com/microsoft/reverse-proxy) for http forwarding
-3. Designed as middleware for asp.netcore
+1. Uses the high-performance [Kestrel](https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-8.0) server
+2. Uses the high-performance [YARP](https://github.com/microsoft/reverse-proxy) for HTTP forwarding
+3. Designed as middleware for ASP.NET Core
 4. Open server-client interaction protocol
-5. Provides .NET, C/C++ client libraries
+5. Provides .NET and C/C++ client libraries
 
 ### Network structure
 
@@ -17,7 +17,7 @@ A reverse proxy toolkit to help you expose multiple local http servers behind a 
 
 ### Apache Bench
 
-Nginx, CYarp and frp_0.56.0 are deployed simultaneously on an Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz CentOS Linux 7 (Core) system machine. The ab tool for testing is on another machine on the LAN. The test sequence is the parameter order from top to bottom of the table.
+Nginx, CYarp, and frp_0.56.0 were deployed concurrently on an Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz running CentOS Linux 7 (Core). The `ab` load-testing tool ran on a different machine in the LAN. Tests are shown in the tables below; each row lists the test in the order presented.
 
 #### ab -c 1 -n 10000
 | Product          | Requests per second | Rps Ratio | P95 | P99 |
@@ -54,12 +54,12 @@ Nginx, CYarp and frp_0.56.0 are deployed simultaneously on an Intel(R) Xeon(R) C
 | ab->cyarp->nginx | 14216.45            | 1.01      | 10  | 12  |
 | ab->frp->nginx   | 6504.36             | 0.46      | 20  | 49  |
 
-###  Demo and experience
+### Demo and experience
 
 1. Run the `Host/CYarpServer` project
 2. Run the `Host/CYarpClient` project
-3. When PostMan requests `http://localhost`, it receives `401` authorization failed
-4. Add PostMan's Auth, select Bearer Token, and use the following test token to request
+3. When Postman requests `http://localhost`, the response is `401` (authorization failed)
+4. In Postman, add an Authorization header, select Bearer Token, and use the following test token
 
 > test token
 
@@ -70,34 +70,35 @@ eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3d
 ### Development Guide
 #### Server side
 
-The [CYarp.Server](https://www.nuget.org/packages/CYarp.Server/) package is designed as an http middleware for asp.net core. By default, it relies on the `Authentication` middleware to verify the IClient connection. Use the following methods to register and configure the middleware.
+The [CYarp.Server](https://www.nuget.org/packages/CYarp.Server/) package is implemented as an HTTP middleware for ASP.NET Core. By default it relies on the `Authentication` middleware to validate IClient connections. Register and configure it like this:
 
 ```c#
 builder.Services.AddAuthentication(<DefaultScheme>).AddYourScheme();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp(); // Using CYarp middleware
+app.UseCYarp(); // Use CYarp middleware
 app.UseAuthentication(); 
 app.UseAuthorization();
 
-app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... }); // Handling CYarp's IClient connection
+app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... }); // Handle CYarp IClient connections
 app.MapControllers();
 app.Run();
 ```
-Authentication and authorization when connecting to IClient can be skipped using the following method
+
+Authentication and authorization for IClient connections can be skipped using the following configuration:
 ```c#
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp(); // Using CYarp middleware
+app.UseCYarp(); // Use CYarp middleware
 
-app.MapCYarp<YourClientIdProvider>(); // Handling CYarp's IClient connection
+app.MapCYarp<YourClientIdProvider>(); // Handle CYarp IClient connections
 app.MapControllers();
 app.Run();
 ```
 
-Finally, handle the http forwarding in the Controller or endpoint handler.
+Finally, handle HTTP forwarding in a controller or endpoint handler.
 ```c#
 // Authorization verification of the requester, here the role is verified
 [Authorize(Roles = "Mobile")]
@@ -131,16 +132,16 @@ public class CYarpController : ControllerBase
 
 #### Client side
 
-Using the [CYarp.Client](https://www.nuget.org/packages/CYarp.Client/) package, you can develop the client by `.NET` as follows
+Using the [CYarp.Client](https://www.nuget.org/packages/CYarp.Client/) package, you can implement a .NET client as follows:
 ```c#
 var options = this.clientOptions.CurrentValue;
 using var client = new CYarpClient(options);
 await client.TransportAsync(stoppingToken);
 ```
 
-For C and C++ clients, you can [AOT compile](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows) the source code of the `CYarp.Client` project into a dynamic shared library exported from C for use. The [Host/CYarpClient.Native](https://github.com/xljiulang/CYarp/blob/master/Host/CYarpClient.Native) project is a C and C++ client demo, and you need to run `Host/CYarpServer` first for the server.
+For C and C++ clients, you can [AOT compile](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/?tabs=net8plus%2Cwindows) the `CYarp.Client` project source into a native shared library exported from C. The [Host/CYarpClient.Native](https://github.com/xljiulang/CYarp/blob/master/Host/CYarpClient.Native) project is a C/C++ client demo. Run `Host/CYarpServer` first as the server.
 
-The following are the dynamic shared library commands exported by AOT compilation into C for the CYarp.Client project
+The following commands show how to produce a native shared library via AOT compilation for the CYarp.Client project:
 
 | Platform and architecture | command                                                     |
 | ------------------------- | ----------------------------------------------------------- |
@@ -167,7 +168,7 @@ Authorization：{Client identity information}
 CYarp-TargetUri: {Access Uri of target httpServer}
 ```
 
-If the server authentication passes, it will respond with a `101` status code, and if the identity authentication fails, it will respond with a `401` status code. In addition, the response may also carry the Set-Cookie response header.
+If the server authentication passes, it will respond with a `101` status code; if identity authentication fails, it will respond with a `401` status code. The response may also include a Set-Cookie header.
 
 ```
 HTTP/1.1 101 Switching Protocols
@@ -175,7 +176,7 @@ Connection: Upgrade
 Set-Cookie: <load balancer cookie>
 ```
 
-At this time, the long connection based on `tcp` has been completed. Then the Stream following the long connection must implement the functions of the following table, where {tunnelId} is a 36-character guid format text, such as `c0248b3a-171c-1e9c-e75c-188daf5e773f`.
+At this point, the TCP-based long connection is established. The stream that follows the connection must implement the behaviors shown in the table below. `{tunnelId}` is a 36-character GUID string, for example `c0248b3a-171c-1e9c-e75c-188daf5e773f`.
 
 | Sender | Content          | Intention                                               | Receiver's actions                   |
 | ------ | ---------------- | ------------------------------------------------------- | ------------------------------------ |
@@ -196,13 +197,13 @@ authorization = {Client identity information}
 cyarp-targeturi = {Access Uri of target httpServer}
 ```
 
-If the server authentication passes, it will respond with a `200` status code, and if the identity authentication fails, it will respond with a `401` status code. In addition, the response may also carry the set-cookie response header.
+If the server authentication passes, it will respond with a `200` status code; if identity authentication fails, it will respond with a `401` status code. The response may also include a set-cookie header.
 ```
 :status = 200
 set-cookie = <load balancer cookie>
 ```
 
-At this time, the long connection based on `HTTP/2` has been completed. Then the Stream following the long connection must implement the functions of the following table, where {tunnelId} is a 36-character guid format text, such as `c0248b3a-171c-1e9c-e75c-188daf5e773f`.
+At this point, the HTTP/2 long connection is established. The stream that follows the connection must implement the behaviors shown in the table below. `{tunnelId}` is a 36-character GUID string, for example `c0248b3a-171c-1e9c-e75c-188daf5e773f`.
 
 | Sender | Content          | Intention                                               | Receiver's actions                   |
 | ------ | ---------------- | ------------------------------------------------------- | ------------------------------------ |
@@ -212,18 +213,19 @@ At this time, the long connection based on `HTTP/2` has been completed. Then the
 
 > by WebSocket
 
-WebSocket connection requires the following request header, requesting the `/cyarp` path. After the connection is successful, multiple binary frames are used to carry CYarp's Stream.
+WebSocket connections require the following request headers and must target the `/cyarp` path. After the connection is established, multiple binary frames are used to carry CYarp stream data.
+
 | HeaderName             | HeaderValue                       |
 | ---------------------- | --------------------------------- |
-| Authorization          | {Client identity information}     |
-| CYarp-TargetUri        | {Access Uri of target httpServer} |
+| Authorization          | Client identity information       |
+| CYarp-TargetUri        | Access Uri of target httpServer   |
 | Sec-WebSocket-Protocol | `CYarp`                           |
 
 
 #### Creation of HttpTunnel
 > by HTTP/1.1
 
-Client send the following request
+Client sends the following request
 ```
 Get /cyarp/{tunnelId} HTTP/1.1
 Host: {host}
@@ -232,18 +234,18 @@ Upgrade: CYarp
 Cookie：<if have Set-Cookie>
 ```
 
-If the server passes the verification {tunnelId}, it will respond with a `101` status code. If the verification fails, it will respond with a `401` status code. In addition, the response may also carry the Set-Cookie response header.
+If the server verifies `{tunnelId}` it will respond with a `101` status code; if verification fails, it will respond with a `401` status code. The response may also include a Set-Cookie header.
 ```
 HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
 Set-Cookie: <load balancer cookie>
 ```
 
-At this time, the creation of the HttpTunnel over `tcp` has been completed, and then the server will send an `HTTP/1.1` request to the client and receive the client's `HTTP/1.1` response in the subsequent Stream.
+At this point, the HttpTunnel over TCP has been created. The server will send an `HTTP/1.1` request to the client and receive the client's `HTTP/1.1` response over the same stream.
 
 > by HTTP/2
 
-Client send the following request
+Client sends the following request
 ```
 :authority = {host}
 :method = CONNECT
@@ -253,17 +255,17 @@ Client send the following request
 cookie = <if have set-cookie>
 ```
 
-If the server passes the verification {tunnelId}, it will respond with a `200` status code. If the verification fails, it will respond with a `401` status code. In addition, the response may also carry the set-cookie response header.
+If the server verifies `{tunnelId}` it will respond with a `200` status code; if verification fails, it will respond with a `401` status code. The response may also include a set-cookie header.
 ```
 :status = 200
 set-cookie = <load balancer cookie>
 ```
 
-At this time, the creation of the HttpTunnel over `HTTP/2` has been completed, and then the server will send an `HTTP/1.1` request to the client and receive the client's `HTTP/1.1` response in the subsequent Stream.
+At this point, the HttpTunnel over HTTP/2 has been created. The server will send an `HTTP/1.1` request to the client and receive the client's `HTTP/1.1` response over the same stream.
 
 > by WebSocket
 
-WebSocket connection requires the following request header, requesting the `/cyarp/{tunnelId}` path. After the connection is successful, multiple binary frames are used to carry CYarp's Stream.
+WebSocket connections to `/cyarp/{tunnelId}` use binary frames to carry CYarp stream data. The request must include the following header:
 
 | HeaderName             | HeaderValue                       |
 | ---------------------- | --------------------------------- |
@@ -271,8 +273,8 @@ WebSocket connection requires the following request header, requesting the `/cya
 
 
 ### Security
-When the server side uses https, the following parts are tls secure transmission
-1. The long connection establishment process and the subsequent Stream of the long connection
-2. The creation process of HttpTunnel and its subsequent Stream
+When the server uses HTTPS, the following components are protected by TLS:
+1. The long-connection establishment and its subsequent stream
+2. The HttpTunnel creation process and its subsequent stream
 
-If the TargetUri of the http server is also https, the traffic in HttpTunnel will appear as tls in tls.
+If the TargetUri of the HTTP server is also HTTPS, the traffic within the HttpTunnel will be TLS-over-TLS.
