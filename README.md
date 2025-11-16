@@ -77,11 +77,11 @@ builder.Services.AddAuthentication(<DefaultScheme>).AddYourScheme();
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp(); // Use CYarp middleware
+app.UseCYarp(); // Add CYarp middleware to the pipeline
 app.UseAuthentication(); 
 app.UseAuthorization();
 
-app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... }); // Handle CYarp IClient connections
+app.MapCYarp<YourClientIdProvider>().RequireAuthorization(p => { ... }); // Handle CYarp client connections
 app.MapControllers();
 app.Run();
 ```
@@ -91,25 +91,24 @@ Authentication and authorization for IClient connections can be skipped using th
 builder.Services.AddCYarp().Configure(cyarp=>{ ... });
 
 var app = builder.Build();
-app.UseCYarp(); // Use CYarp middleware
+app.UseCYarp(); // Add CYarp middleware to the pipeline
 
-app.MapCYarp<YourClientIdProvider>(); // Handle CYarp IClient connections
+app.MapCYarp<YourClientIdProvider>(); // Handle CYarp client connections
 app.MapControllers();
 app.Run();
 ```
 
 Finally, handle HTTP forwarding in a controller or endpoint handler.
 ```c#
-// Authorization verification of the requester, here the role is verified
+// Verify requester's authorization; this example requires the 'Mobile' role
 [Authorize(Roles = "Mobile")]
 public class CYarpController : ControllerBase
 { 
     private static readonly string clientIdClaimType = "ClientId";
 
     /// <summary>
-    /// Handle cyarp
-    /// The core operation is to get the clientId from the request context
-    /// Then use clientId to get IClient from IClientViewer service to forward HttpContext
+    /// Handle CYarp requests.
+    /// Core operation: obtain the clientId from the request context, then retrieve the corresponding IClient from IClientViewer and forward the HttpContext.
     /// </summary>
     /// <param name="clientViewer"></param>
     /// <returns></returns>
@@ -231,7 +230,7 @@ Get /cyarp/{tunnelId} HTTP/1.1
 Host: {host}
 Connection: Upgrade
 Upgrade: CYarp
-Cookie：<if have Set-Cookie>
+Cookie: <if a Set-Cookie header is present>
 ```
 
 If the server verifies `{tunnelId}` it will respond with a `101` status code; if verification fails, it will respond with a `401` status code. The response may also include a Set-Cookie header.
@@ -252,7 +251,7 @@ Client sends the following request
 :protocol = CYarp
 :scheme = https
 :path = /cyarp/{tunnelId}
-cookie = <if have set-cookie>
+cookie = <if a Set-Cookie header is present>
 ```
 
 If the server verifies `{tunnelId}` it will respond with a `200` status code; if verification fails, it will respond with a `401` status code. The response may also include a set-cookie header.
