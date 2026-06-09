@@ -147,12 +147,16 @@ C和C++客户端，可以将CYarp.Client项目的源代码[AOT编译](https://le
 
 以下是CYarp.Client项目AOT编译为C导出的动态共享库命令：
 
-| 系统和框架  | 命令                                                        |
-| ----------- | ----------------------------------------------------------- |
-| win-x64     | dotnet publish -c Release /p:PublishAot=true -r win-x64     |
-| linux-x64   | dotnet publish -c Release /p:PublishAot=true -r linux-x64   |
-| linux-arm64 | dotnet publish -c Release /p:PublishAot=true -r linux-arm64 |
-
+| 系统和框架       | 命令                                                             |
+| ---------------- | ---------------------------------------------------------------- |
+| win-x64          | dotnet publish -c Release /p:PublishAot=true -r win-x64          |
+| win-x86          | dotnet publish -c Release /p:PublishAot=true -r win-x86          |
+| linux-x64        | dotnet publish -c Release /p:PublishAot=true -r linux-x64        |
+| linux-arm64      | dotnet publish -c Release /p:PublishAot=true -r linux-arm64      |
+| linux-arm        | dotnet publish -c Release /p:PublishAot=true -r linux-arm        |
+| linux-musl-x64   | dotnet publish -c Release /p:PublishAot=true -r linux-musl-x64   |
+| linux-musl-arm64 | dotnet publish -c Release /p:PublishAot=true -r linux-musl-arm64 |
+| linux-musl-arm   | dotnet publish -c Release /p:PublishAot=true -r linux-musl-arm   |
 
 ###  CYarp协议
 

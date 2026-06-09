@@ -144,10 +144,14 @@ The following commands show how to produce a native shared library via AOT compi
 
 | Platform and architecture | command                                                     |
 | ------------------------- | ----------------------------------------------------------- |
-| win-x64                   | dotnet publish -c Release /p:PublishAot=true -r win-x64     |
-| linux-x64                 | dotnet publish -c Release /p:PublishAot=true -r linux-x64   |
-| linux-arm64               | dotnet publish -c Release /p:PublishAot=true -r linux-arm64 |
-
+| win-x64          | dotnet publish -c Release /p:PublishAot=true -r win-x64          |
+| win-x86          | dotnet publish -c Release /p:PublishAot=true -r win-x86          |
+| linux-x64        | dotnet publish -c Release /p:PublishAot=true -r linux-x64        |
+| linux-arm64      | dotnet publish -c Release /p:PublishAot=true -r linux-arm64      |
+| linux-arm        | dotnet publish -c Release /p:PublishAot=true -r linux-arm        |
+| linux-musl-x64   | dotnet publish -c Release /p:PublishAot=true -r linux-musl-x64   |
+| linux-musl-arm64 | dotnet publish -c Release /p:PublishAot=true -r linux-musl-arm64 |
+| linux-musl-arm   | dotnet publish -c Release /p:PublishAot=true -r linux-musl-arm   |
 
 ### CYarp protocol
 #### Interaction process
