@@ -22,9 +22,10 @@ namespace CYarp.Server.Clients
         private readonly ClientConnection connection;
         private readonly IHttpForwarder httpForwarder;
         private readonly TunnelFactory tunnelFactory;
-        private readonly HttpTunnelConfig httpTunnelConfig;
-        private readonly Lazy<HttpMessageInvoker> httpClientLazy;
+        private readonly ClientHttpHandler httpHandler;
+        private readonly NonDisposingHandler nonDisposingHandler;
         private readonly TunnelStatistics tunnelStatistics = new();
+        private readonly ForwarderRequestConfig requestConfig;
 
         private static readonly ForwarderRequestConfig httpRequestConfig = new()
         {
@@ -67,19 +68,14 @@ namespace CYarp.Server.Clients
             this.connection = connection;
             this.httpForwarder = httpForwarder;
             this.tunnelFactory = tunnelFactory;
-            this.httpTunnelConfig = httpTunnelConfig;
 
             this.TargetUri = targetUri;
             this.Protocol = protocol;
             this.User = user;
 
-            this.httpClientLazy = new Lazy<HttpMessageInvoker>(this.CreateHttpClient);
-        }
-
-        private HttpMessageInvoker CreateHttpClient()
-        {
-            var httpHandler = new ClientHttpHandler(this.connection, this.tunnelFactory, this.httpTunnelConfig, this.tunnelStatistics);
-            return new HttpMessageInvoker(httpHandler, disposeHandler: true);
+            this.requestConfig = targetUri.Scheme == Uri.UriSchemeHttp ? httpRequestConfig : httpsRequestConfig;
+            this.httpHandler = new ClientHttpHandler(this.connection, this.tunnelFactory, httpTunnelConfig, this.tunnelStatistics);
+            this.nonDisposingHandler = new NonDisposingHandler(this.httpHandler);
         }
 
         public async Task<Stream> CreateTcpTunnelAsync(CancellationToken cancellationToken)
@@ -108,10 +104,48 @@ namespace CYarp.Server.Clients
         {
             ObjectDisposedException.ThrowIf(this.disposed, this);
 
-            var httpClient = this.httpClientLazy.Value;
+            var httpClient = new HttpMessageInvoker(this.httpHandler, disposeHandler: false);
             var destination = this.TargetUri.OriginalString;
-            var requestConfig = this.TargetUri.Scheme == Uri.UriSchemeHttp ? httpRequestConfig : httpsRequestConfig;
-            return this.httpForwarder.SendAsync(context, destination, httpClient, requestConfig, transformer ?? HttpTransformer.Default);
+            return this.httpForwarder.SendAsync(context, destination, httpClient, this.requestConfig, transformer ?? HttpTransformer.Default);
+        }
+
+        public HttpClient CreateHttpClient(DelegatingHandler? handler = default)
+        {
+            ObjectDisposedException.ThrowIf(this.disposed, this);
+
+            if (handler == null)
+            {
+                return this.CreateHttpClientCore(this.httpHandler, disposeHandler: false);
+            }
+
+            if (handler.InnerHandler != null)
+            {
+                throw new ArgumentException($"The {nameof(handler.InnerHandler)} of the {nameof(handler)} must be null", nameof(handler));
+            }
+
+            handler.InnerHandler = this.nonDisposingHandler;
+            return this.CreateHttpClientCore(handler, disposeHandler: true);
+        }
+
+        private HttpClient CreateHttpClientCore(HttpMessageHandler handler, bool disposeHandler)
+        {
+            var requestConfig = this.requestConfig;
+            var httpClient = new HttpClient(handler, disposeHandler)
+            {
+                BaseAddress = this.TargetUri
+            };
+
+            if (requestConfig.Version != null)
+            {
+                httpClient.DefaultRequestVersion = requestConfig.Version;
+            }
+
+            if (requestConfig.VersionPolicy != null)
+            {
+                httpClient.DefaultVersionPolicy = requestConfig.VersionPolicy.Value;
+            }
+
+            return httpClient;
         }
 
         public Task<ClientCloseReason> WaitForCloseAsync()
@@ -125,10 +159,7 @@ namespace CYarp.Server.Clients
             {
                 this.disposed = true;
 
-                if (this.httpClientLazy.IsValueCreated)
-                {
-                    this.httpClientLazy.Value.Dispose();
-                }
+                this.httpHandler.Dispose();
                 await this.connection.DisposeAsync();
             }
         }
@@ -137,6 +168,19 @@ namespace CYarp.Server.Clients
         public override string ToString()
         {
             return this.Id;
+        }
+
+
+        /// <summary>
+        /// A <see cref="DelegatingHandler"/> that does not dispose its <see cref="DelegatingHandler.InnerHandler"/>
+        /// </summary>
+        private class NonDisposingHandler(HttpMessageHandler innerHandler) : DelegatingHandler(innerHandler)
+        {
+            protected override void Dispose(bool disposing)
+            {
+                // The InnerHandler is shared by all HttpClient instances created by
+                // Client.CreateHttpClient, its lifetime is managed by Client.DisposeAsync
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Channels;
@@ -87,6 +88,11 @@ namespace CYarp.Server.Clients
             }
 
             public ValueTask<ForwarderError> ForwardHttpAsync(HttpContext context, HttpTransformer? transformer = null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            public HttpClient CreateHttpClient(DelegatingHandler? handler = default)
             {
                 throw new InvalidOperationException();
             }

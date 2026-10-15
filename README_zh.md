@@ -134,6 +134,17 @@ public class CYarpController : ControllerBase
 }
 ```
 
+如果需要在隧道之上自行发起 HTTP 请求，可以从 `IClient` 实例创建 `HttpClient`。它的 `BaseAddress` 是客户端的 `TargetUri`，请求默认版本随目标 scheme 决定（http 为 HTTP/1.1，https 为 HTTP/2 可降级），因此可以直接使用相对路径：
+```c#
+using var httpClient = client.CreateHttpClient();
+var response = await httpClient.GetAsync("/api/values");
+```
+
+也可以传入自己的 `DelegatingHandler` 作为最外层 handler。它的 `InnerHandler` 必须为 null，因为 CYarp 会把它设置为隧道 handler；释放返回的 `HttpClient` 会释放你自己的 handler，但不会释放隧道 handler：
+```c#
+using var httpClient = client.CreateHttpClient(new MyLoggingHandler());
+```
+
 #### 客户端开发
 
 使用[CYarp.Client](https://www.nuget.org/packages/CYarp.Client/)包，很方便完成.NET客户端开发

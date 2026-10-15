@@ -129,6 +129,17 @@ public class CYarpController : ControllerBase
 }
 ```
 
+If you need to make HTTP requests to the target through the tunnel yourself, create an `HttpClient` from the `IClient` instance. Its `BaseAddress` is the client's `TargetUri` and the default request version follows the target scheme (HTTP/1.1 for http, HTTP/2 with downgrade allowed for https), so relative paths can be used directly:
+```c#
+using var httpClient = client.CreateHttpClient();
+var response = await httpClient.GetAsync("/api/values");
+```
+
+You can also pass your own `DelegatingHandler` as the outermost handler. Its `InnerHandler` must be null because CYarp sets it to the tunnel handler. Disposing the returned `HttpClient` disposes your handler but keeps the tunnel handler alive:
+```c#
+using var httpClient = client.CreateHttpClient(new MyLoggingHandler());
+```
+
 #### Client side
 
 Using the [CYarp.Client](https://www.nuget.org/packages/CYarp.Client/) package, you can implement a .NET client as follows:
