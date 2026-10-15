@@ -1,9 +1,9 @@
 <Project>
 	<PropertyGroup>
-		<Version>2.0.3</Version>
+		<Version>2.0.4</Version>
 		<Nullable>enable</Nullable>
 		<UseArtifactsOutput>true</UseArtifactsOutput>
-		<Copyright>Copyright © laojiu 2024-2025</Copyright>
+		<Copyright>Copyright © laojiu 2024-2026</Copyright>
 	</PropertyGroup>
 
 	<PropertyGroup>
